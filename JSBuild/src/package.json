@@ -1,0 +1,35 @@
+{
+  "name": "frontend",
+  "version": "1.0.0",
+  "description": "Cybel AI – The intelligent core behind AUTOMAT, Cybel AI is a cutting-edge artificial intelligence engine designed to understand, learn, and optimize your environment. It powers decision-making, task automation, and smart interactions, enabling AUTOMAT to act autonomously and intuitively in both home and office settings.",
+  "main": "index.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dist": "electron-builder"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "electron": "^40.1.0",
+    "electron-builder": "^23.6.0"
+  },
+  "build": {
+    "appId": "com.teamferrous.cybel",
+    "productName": "cybel",
+    "files": [
+      "**/*"
+    ],
+
+    "win": {
+      "target": "nsis",
+      "icon": "assets/cybel.ico"
+    }
+  },
+  "dependencies": {
+    "dotenv": "^17.3.1",
+    "python-shell": "^5.0.0"
+  }
+}
