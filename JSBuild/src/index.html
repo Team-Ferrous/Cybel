@@ -590,6 +590,23 @@
                             </div>
                         </div>
                     </div>
+                    <div class="glass-panel p-6 rounded-xl mt-6">
+                        <h3 class="text-cyan-400 font-bold mb-4 flex items-center gap-2">
+                            <i data-lucide="download-cloud"></i> Model Explorer
+                        </h3>
+
+                        <div class="flex gap-2 mb-4">
+                            <input type="text" id="model-search"
+                                class="flex-1 bg-black/50 border border-cyan-700 rounded p-2 text-white text-sm"
+                                placeholder="Search models (e.g. llama 3 instruct)">
+                            <button onclick="searchModels()"
+                                class="px-4 bg-cyan-700 hover:bg-cyan-600 text-white rounded text-sm">
+                                SEARCH
+                            </button>
+                        </div>
+
+                        <div id="model-results" class="space-y-3 max-h-64 overflow-y-auto"></div>
+                    </div>
                 </div>
                 
                 <div class="mt-8 flex justify-end">

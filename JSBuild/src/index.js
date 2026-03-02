@@ -1,5 +1,6 @@
 const { app, BrowserWindow, ipcMain } = require("electron");
-const { initialize, sendMessage }     = require("./backend.js");
+const { initialize, sendMessage, onImageDone, onAssetDone }     = require("./backend.js");
+const { loadModel } = require("./local_inference.js");
 const path = require("path");
 //import { app, BrowserWindow, ipcMain } from "electron";
 //import { initialize, sendMessage } from "./backend.js";
@@ -25,5 +26,15 @@ app.whenReady().then(async () => {
 
     ipcMain.handle("chat-message", async (_, message) => {
         return await sendMessage(message);
+    });
+    ipcMain.handle("image-done", async (_, message) => {
+        return await onImageDone(message);
+    });
+    ipcMain.handle("asset-done", async (_, message) => {
+        return await onAssetDone(message);
+    });
+    ipcMain.handle("load-model", async (_, modelPath) => {
+        await loadModel(modelPath);
+        return true;
     });
 });

@@ -167,6 +167,34 @@ export async function sendMessage(userInput) {
 
     // Replace this with your LLM generation logic
     const response = `Context:\n${context}\n\nUser: ${userInput}`;
-
+    /*await inference.generate(message, (token) => {
+        event.sender.send("stream-token", token);
+    });*/
     return response;
+}
+
+export async function onImageDone(message){
+
+}
+
+export async function onAssetDone(){
+
+}
+
+
+async function loadSelectedModel() {
+    const path = document.getElementById("model-path").value;
+    if (!path) {
+        showModal("Model Error", "No model path specified.");
+        return;
+    }
+
+    showModal("Engine", "Loading model...");
+
+    try {
+        await window.api.loadModel(path);
+        showModal("Engine Online", "Model successfully loaded.");
+    } catch (err) {
+        showModal("Load Failed", err.message);
+    }
 }
