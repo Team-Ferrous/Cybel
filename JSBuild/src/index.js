@@ -18,6 +18,7 @@ const {
     replicateDocument,
     mergeDocument,
     exportDocument,
+    setEngine
 } = require('./backend');
 
 let mainWindow;

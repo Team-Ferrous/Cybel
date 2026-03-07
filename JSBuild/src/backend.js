@@ -76,6 +76,10 @@ function setGroqKey(key){
     store.set("groqKey", key);
 }
 
+function setEngine(conf){
+    CONFIG.engine = conf;
+    store.set("current-engine", CONFIG.engine)
+}
 async function ensureDocumentDir() {
   await fs.mkdir(DOCUMENT_DIR, { recursive: true });
 }
@@ -440,5 +444,6 @@ module.exports = {
     sendMessage,
     setConfig,
     updateCharacter,
-    createGroqClient
+    createGroqClient,
+    setEngine
 };
