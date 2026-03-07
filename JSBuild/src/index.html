@@ -351,6 +351,75 @@
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
         }
+        .agent-form{
+    display:grid;
+    grid-template-columns:140px 1fr;
+    gap:10px 12px;
+    align-items:center;
+}
+
+.model-row{
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+
+.agent-textarea{
+    grid-column:1 / span 2;
+    height:90px;
+}
+
+.agent-input,
+.agent-select{
+    width:100%;
+}
+
+.local-toggle{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    white-space:nowrap;
+}
+.workflow-step{
+    display:grid;
+    grid-template-columns:40px 1fr 1fr 30px;
+    gap:8px;
+    align-items:center;
+    padding:6px;
+    border-bottom:1px solid rgba(0,255,200,.15);
+}
+
+.workflow-index{
+    font-family:monospace;
+    color:#00ffd5;
+}
+
+.workflow-step select{
+    background:#0b0f0e;
+    border:1px solid rgba(0,255,200,.25);
+    color:#aaffee;
+    padding:4px;
+}
+
+.workflow-remove{
+    background:none;
+    border:1px solid rgba(255,60,60,.4);
+    color:#ff6a6a;
+    cursor:pointer;
+}
+.config-buttons {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem; /* space between button and separator */
+}
+
+.separator {
+    color: var(--accent-color); /* match text-accent */
+    font-family: monospace;
+}
+.config-buttons button {
+    margin: 0;
+}
     </style><!-- --primary-cyan);-->
 </head>
 <body style="background-color: var(--bg-primary); color: var(--text-primary);" class="h-screen w-screen flex flex-col md:flex-row relative">
@@ -451,6 +520,10 @@
             <button onclick="switchTab('management')" id="nav-management" class="w-full text-left px-6 py-3 flex items-center gap-3 transition-all inactive-nav">
                 <i data-lucide="layers" class="w-5 h-5"></i>
                 <span class="font-semibold">Bot Management</span>
+            </button>
+            <button onclick="switchTab('agents')" id="nav-agents" class="w-full text-left px-6 py-3 flex items-center gap-3 transition-all inactive-nav">
+                <i data-lucide="hat-glasses" class="w-5 h-5"></i>
+                <span class="font-semibold">Agent Management</span>
             </button>
         </div>
 
@@ -575,12 +648,43 @@
                     <div class="glass-panel p-6 rounded-xl" id="local-model-panel">
                         <h3 class="text-accent font-mono">Local Model</h3>
                         <select id="local-model-selector" class="w-full">
-                            <option>LLaMA 2/3</option>
-                            <option>Mistral 7b</option>
-                            <option>Mixtral</option>
-                            <option>GPT-Q/GPT4All</option>
+                            <option class="text-accent font-mono">LLaMA 2/3</option>
+                            <option class="text-accent font-mono">Mistral 7b</option>
+                            <option class="text-accent font-mono">Mixtral</option>
+                            <option class="text-accent font-mono">GPT-Q/GPT4All</option>
+                            <option class="text-accent font-mono">deeperhermes</option>
+                            <option class="text-accent font-mono">dolphin3</option>
+                            <option class="text-accent font-mono">groq-code-cli</option> 
+                            <option class="text-accent font-mono">dolphin-2.5-mixtral-8x7b</option> 
+                            <option class="text-accent font-mono">MLewd-v2.4-13B-GGUF</option>
+                            <option class="text-accent font-mono">dolphin-2.5-mixtral-8x7b-GGUF</option>
+                            <option class="text-accent font-mono">goliath-120b-GGUF</option> 
+                            <option class="text-accent font-mono">L3-8B-Stheno-v3.2</option>
+                            <option class="text-accent font-mono">L3-8B-Niitama-v1</option> 
+                            <option class="text-accent font-mono">NeuralStar_FusionWriter_4x7b-GGUF</option> 
+                            <option class="text-accent font-mono">Noro-Hermes-3x7B-GGUF</option> 
+                            <option class="text-accent font-mono">HeroBophades-3x7B</option>
                         </select>
-                        <p class="text-xs text-amber-400 mt-2">Models will be loaded locally when selected.</p>
+                        </br>
+                        <p class="text-xs text-amber-400 mt-2">
+                            Download specific Model
+                        </p>
+                        <input type="text" id="model-search-input" placeholder="Enter Model Name" class="w-48" />
+                        <div class="flex items-center gap-4 mt-2 text-xs text-amber-400">
+                            <label class="flex items-center gap-1">
+                                <input type="checkbox" id="source-hf" checked>
+                                HuggingFace
+                            </label>
+
+                            <label class="flex items-center gap-1">
+                                <input type="checkbox" id="source-ms">
+                                ModelScope
+                            </label>
+                        </div>
+
+                        <p class="text-xs text-amber-400 mt-2">
+                            Models will be loaded locally when selected.
+                        </p>
                     </div>
                 </div>
                 <script>
@@ -589,6 +693,14 @@
                     const modeSelector = document.getElementById("modeSelector");
                     const groqPanels = document.getElementById("groq-panels");
                     const localPanels = document.getElementById("local-panels");
+                    const hf = document.getElementById("source-hf");
+                    const ms = document.getElementById("source-ms");
+                    hf.addEventListener("change", () => {
+                        if (hf.checked) ms.checked = false;
+                    });
+                    ms.addEventListener("change", () => {
+                        if (ms.checked) hf.checked = false;
+                    });
 
                     modeSelector.addEventListener("change", (e) => {
                         const mode = e.target.value;
@@ -978,8 +1090,7 @@
         </section>
 
         <!-- MODULE 6: BOT MANAGEMENT (Matrix + Create) -->
-        <section id="module-management" class="module-section flex-col h-full w-full p-4 md:p-8 overflow-hidden relative">
-            
+        <section id="module-management" class="module-section flex-col h-full w-full p-4 md:p-8 overflow-hidden relative">   
             <!-- Matrix Rain Background -->
             <canvas id="bg-bot" class="bg-canvas-container"></canvas>
 
@@ -1033,10 +1144,227 @@
                 </div>
             </div>
         </section>
+        <!-- MODULE 7: AGENT MANAGEMENT (Matrix + Create) -->
+       <section id="module-agents" class="module-section flex-col h-full w-full p-4 md:p-8 overflow-hidden relative">
+            <div class="agent-ui glass-panel">
+                <!-- Agent List -->
+                <div class="agent-sidebar">
+                    <h3 class="agent-title text-accent font-mono">Agents</h3>
+                    <div id="agent-list" class="agent-list"></div>
+                    <button class="text-accent font-mono agent-add-btn flex-end" onclick="createAgent()">
+                        + Create Agent
+                    </button>
+                </div>
+                <!-- Agent Config -->
+            <template id="agent-template">
+                <div class="agent-config glass-panel agent-instance">
+                    <h2 class="agent-title text-accent font-mono">Agent Configuration</h2>
+                    <hr>
+                    <div class="agent-form">
+                        <label class="agent-label text-accent font-mono">Agent Name</label>
+                        <input class="agent-input agent-name" placeholder="Agent Name">
+                        <label class="agent-label text-accent font-mono">Model</label>
+                        <div class="model-row">
+                            <select id="groq-select" class="agent-select agent-model">
+                                <option class="text-accent font-mono">openai/gpt-oss-20b</option>
+                                <option class="text-accent font-mono">openai/gpt-oss-120b</option>
+                                <option class="text-accent font-mono">llama-3.1-8b-instant</option>
+                                <option class="text-accent font-mono">llama-3.3-70b-versatile</option>
+                                <option class="text-accent font-mono">whisper-large-v3</option>
+                                <option class="text-accent font-mono">whisper-large-v3-turbo</option>
+                                <option class="text-accent font-mono">groq/compound</option>
+                                <option class="text-accent font-mono">groq/compound-mini</option>
+                            </select>
+                            <select id="local-select" class="agent-select agent-model" style="display:none;" disabled>
+                                <option class="text-accent font-mono">LLaMA 2/3</option>
+                                <option class="text-accent font-mono">Mistral 7b</option>
+                                <option class="text-accent font-mono">Mixtral</option>
+                                <option class="text-accent font-mono">GPT-Q/GPT4All</option>
+                                <option class="text-accent font-mono">deeperhermes</option>
+                                <option class="text-accent font-mono">dolphin3</option>
+                                <option class="text-accent font-mono">groq-code-cli</option> 
+                                <option class="text-accent font-mono">dolphin-2.5-mixtral-8x7b</option> 
+                                <option class="text-accent font-mono">MLewd-v2.4-13B-GGUF</option>
+                                <option class="text-accent font-mono">dolphin-2.5-mixtral-8x7b-GGUF</option>
+                                <option class="text-accent font-mono">goliath-120b-GGUF</option> 
+                                <option class="text-accent font-mono">L3-8B-Stheno-v3.2</option>
+                                <option class="text-accent font-mono">L3-8B-Niitama-v1</option> 
+                                <option class="text-accent font-mono">NeuralStar_FusionWriter_4x7b-GGUF</option> 
+                                <option class="text-accent font-mono">Noro-Hermes-3x7B-GGUF</option> 
+                                <option class="text-accent font-mono">HeroBophades-3x7B</option>
+                            </select>
+                            <label class="local-toggle text-accent font-mono">
+                                <input type="checkbox" class="local-model-toggle">
+                                Use Local Model
+                            </label>
+                        </div>
+                        <label class="agent-label text-accent font-mono">System Prompt</label>
+                        <textarea class="agent-textarea agent-prompt" placeholder="System Prompt"></textarea>
+                        <div class="config-buttons">
+                            <button class="border-accent text-accent font-mono">Import config</button>
+                            <button class="border-accent text-accent font-mono">Export config</button>
+                        </div>
+                </div>
+                </template>
+                <!-- Tools -->
+                <div class="agent-tools glass-panel">
 
-    </main>
+                    <h3 class="agent-title text-accent font-mono">Tools</h3>
 
-    <script>
+                    <label class="tool-item text-accent font-mono">
+                        <input type="checkbox"> Web Search
+                    </label>
+
+                    <label class="tool-item text-accent font-mono">
+                        <input type="checkbox"> Vector DB
+                    </label>
+
+                    <label class="tool-item text-accent font-mono">
+                        <input type="checkbox"> Code Interpreter
+                    </label>
+                </div>
+            </div>
+
+            <template id="workflow-step-template">
+
+<div class="workflow-step">
+
+    <span class="workflow-index"></span>
+
+    <select class="workflow-agent">
+        <option value="">Select Agent</option>
+    </select>
+
+    <select class="workflow-action">
+        <option value="respond">Respond</option>
+        <option value="research">Research</option>
+        <option value="code">Generate Code</option>
+        <option value="tool">Use Tool</option>
+    </select>
+
+    <button class="workflow-remove">✕</button>
+
+</div>
+
+</template>
+    <!-- Workflow Builder -->
+    <div class="workflow-builder glass-panel">
+        <h2 class="agent-title text-accent font-mono">Workflow</h2>
+        <div id="workflow-steps" class="workflow-steps"></div>
+        <button id="add-step-btn" class="workflow-add text-accent font-mono" onclick="addWorkflowStep()" disabled>
+            + Add Step
+        </button>
+    </div>
+    </section>
+</main>
+
+<script>
+    document.addEventListener('change', (e) => {
+        if (!e.target.classList.contains('local-model-toggle')) return;
+
+        const container = e.target.closest('.agent-instance');
+        if (!container) return;
+
+        const groqSelect = container.querySelector('#groq-select');
+        const localSelect = container.querySelector('#local-select');
+
+        if (e.target.checked) {
+            groqSelect.style.display = 'none';
+            groqSelect.disabled = true;
+
+            localSelect.style.display = '';
+            localSelect.disabled = false;
+        } else {
+            groqSelect.style.display = '';
+            groqSelect.disabled = false;
+
+            localSelect.style.display = 'none';
+            localSelect.disabled = true;
+        }
+    });
+
+    // Optional: Initialize new agents with proper toggle
+function initializeAgent(agentEl) {
+    const checkbox = agentEl.querySelector('.local-model-toggle');
+    if (!checkbox) return;
+
+    // Trigger the toggle once to set initial state
+    checkbox.dispatchEvent(new Event('change'));
+}
+
+// Example: spawning a new agent
+function addAgent() {
+    const template = document.getElementById('agent-template');
+    const clone = template.content.cloneNode(true);
+    const container = clone.querySelector('.agent-instance');
+
+    document.getElementById('workflow-steps').appendChild(clone);
+    initializeAgent(container);
+
+    // After adding agent, update + Step button state
+    updateAddStepButton();
+}
+
+// Enable / disable + Step button based on agent existence
+function updateAddStepButton() {
+    const agents = document.querySelectorAll('.agent-instance');
+    addStepBtn.disabled = agents.length === 0;
+}
+        let workflowStepCounter = 0;
+
+function addWorkflowStep(){
+
+    const template = document.getElementById("workflow-step-template");
+    const container = document.getElementById("workflow-steps");
+
+    const clone = template.content.cloneNode(true);
+
+    const stepIndex = ++workflowStepCounter;
+
+    const indexLabel = clone.querySelector(".workflow-index");
+    indexLabel.textContent = stepIndex;
+
+    const removeBtn = clone.querySelector(".workflow-remove");
+
+    removeBtn.addEventListener("click", (e)=>{
+        e.target.closest(".workflow-step").remove();
+        reindexWorkflow();
+    });
+
+    populateAgentDropdown(clone);
+
+    container.appendChild(clone);
+}
+function populateAgentDropdown(stepClone){
+
+    const agentSelect = stepClone.querySelector(".workflow-agent");
+
+    const agents = document.querySelectorAll(".agent-instance");
+
+    agents.forEach(agent => {
+
+        const nameInput = agent.querySelector(".agent-name");
+
+        const option = document.createElement("option");
+        option.value = nameInput.value || "Unnamed Agent";
+        option.textContent = option.value;
+
+        agentSelect.appendChild(option);
+
+    });
+
+}
+function reindexWorkflow(){
+
+    const steps = document.querySelectorAll(".workflow-step");
+
+    steps.forEach((step,i)=>{
+        step.querySelector(".workflow-index").textContent = i+1;
+    });
+
+    workflowStepCounter = steps.length;
+}
+
         // --- 1. Navigation ---
         function switchTab(tabId) {
             document.querySelectorAll('.module-section').forEach(el => el.classList.remove('active'));
@@ -1063,6 +1391,58 @@
                 }, 100); // small delay to let CSS render
             }
         });
+
+        let agentCounter = 0;
+
+function createAgent() {
+
+    const template = document.getElementById("agent-template");
+    const agentList = document.getElementById("agent-list");
+
+    const clone = template.content.cloneNode(true);
+
+    const agentId = "agent_" + (++agentCounter);
+
+    const agentRoot = clone.querySelector(".agent-instance");
+    agentRoot.dataset.agentId = agentId;
+
+    const modelSelect = clone.querySelector(".agent-model");
+    const localToggle = clone.querySelector(".local-model-toggle");
+
+    localToggle.addEventListener("change", () => {
+
+        modelSelect.disabled = localToggle.checked;
+
+        if(localToggle.checked){
+            modelSelect.style.opacity = "0.5";
+        } else {
+            modelSelect.style.opacity = "1";
+        }
+
+    });
+
+    agentList.appendChild(clone);
+    setAgentExists(true); // enable + Step once agent exists
+}
+
+    const addStepBtn = document.querySelector('.workflow-add');
+
+    // Example: your agent state
+    let agentExists = false;
+
+    function setAgentExists(exists) {
+        agentExists = exists;
+        addStepBtn.disabled = !agentExists; // disable if no agent
+    }
+
+    // Example function to add an agent
+    function addAgent() {
+        // your agent creation logic
+        setAgentExists(true); // enable + Step once agent exists
+    }
+
+    // Optional: initialize button state on load
+    addStepBtn.disabled = !agentExists;
 
          // --- Bot Background: Matrix Rain ---
         function initBotBackground() {
@@ -2020,13 +2400,13 @@ setInterval(draw, 50);
                     });
 
                     bgSelect.addEventListener('change', e => switchBG(e.target.value));
-                    // Temperature slider
-                    const tempRange = document.getElementById('tempRange');
-                    const tempValue = document.getElementById('tempValue');
-                    if (tempRange && tempValue) {
-                    tempRange.addEventListener('input', () => {
-                        tempValue.textContent = tempRange.value;
-                    });
+                        // Temperature slider
+                        const tempRange = document.getElementById('tempRange');
+                        const tempValue = document.getElementById('tempValue');
+                        if (tempRange && tempValue) {
+                        tempRange.addEventListener('input', () => {
+                            tempValue.textContent = tempRange.value;
+                        });
                     }
 
                     // Context window slider
