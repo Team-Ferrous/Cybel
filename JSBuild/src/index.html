@@ -632,6 +632,23 @@
                                 <option class="text-amber-400" value="groq"> Groq</option>
                                 <option class="text-amber-400" value="local">Local</option>
                             </select>
+                            <div>
+                            <button id="hf-login" class="w-full mt-2 py-2 bg-amber-600/20 hover:bg-blue-600/40 text-amber-500 border border-amber-600/50 rounded text-xs font-bold transition-colors">Login HuggingFace</button>
+                            <button id="ms-login" class="w-full mt-2 py-2 bg-amber-600/20 hover:bg-green-600/40 text-amber-500 border border-amber-600/50 rounded text-xs font-bold transition-colors">Login ModelScope</button>
+                            </div>
+                            <script type="module">
+                                import { ModelHub } from './model_hub.js';
+                                const hub = new ModelHub();
+
+                                document.getElementById('hf-login').addEventListener('click', () => hub.loginHuggingFace());
+                                document.getElementById('ms-login').addEventListener('click', () => hub.loginModelScope());
+
+                                // Example usage:
+                                async function testHF() {
+                                    const models = await hub.listHuggingFaceModels();
+                                    console.log("HF models:", models.slice(0,10));
+                                }
+                            </script>
                         </div>
                         <!-- Groq mode panels -->
                 <div id="groq-panels">
