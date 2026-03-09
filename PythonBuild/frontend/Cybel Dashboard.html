@@ -1,3 +1,5 @@
+<!-- Omar Version — merged with Miles's Agent Management tab -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,6 +8,19 @@
     <title>AUTOMAT // Cybel Interface</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                colors: {
+                    accent: 'rgb(var(--color-accent) / <alpha-value>)',
+                    'accent-dark': 'rgb(var(--color-accent-dark) / <alpha-value>)',
+                    'accent-secondary': 'rgb(var(--color-accent-secondary) / <alpha-value>)'
+                }
+            }
+        }
+    }
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -17,23 +32,15 @@
             font-size: 0.875rem;
             line-height: 1.625;
         }
-
-        .markdown-content p {
-            margin-bottom: 0.75rem;
-        }
-
-        .markdown-content p:last-child {
-            margin-bottom: 0;
-        }
-
+        .markdown-content p { margin-bottom: 0.75rem; }
+        .markdown-content p:last-child { margin-bottom: 0; }
         .markdown-content code {
-            background: rgba(6, 182, 212, 0.1);
+            background: rgba(var(--color-accent) / 0.1);
             padding: 0.125rem 0.375rem;
             border-radius: 0.25rem;
             font-family: 'JetBrains Mono', monospace;
             color: var(--primary-accent);
         }
-
         .markdown-content pre {
             background: rgba(0, 0, 0, 0.4);
             padding: 1rem;
@@ -41,52 +48,31 @@
             overflow-x: auto;
             margin: 0.75rem 0;
         }
-
-        .markdown-content pre code {
-            background: none;
-            padding: 0;
-            color: var(--primary-accent);
-        }
-
-        .markdown-content strong {
-            color: var(--primary-accent);
-            font-weight: 600;
-        }
-
-        .markdown-content em {
-            color: #a5f3fc;
-            font-style: italic;
-        }
-
-        .markdown-content ul, .markdown-content ol {
-            margin-left: 1.5rem;
-            margin-bottom: 0.75rem;
-        }
-
-        .markdown-content li {
-            margin-bottom: 0.25rem;
-        }
+        .markdown-content pre code { background: none; padding: 0; color: var(--primary-accent); }
+        .markdown-content strong { color: var(--primary-accent); font-weight: 600; }
+        .markdown-content em { color: rgba(var(--color-accent) / 0.8); font-style: italic; }
+        .markdown-content ul, .markdown-content ol { margin-left: 1.5rem; margin-bottom: 0.75rem; }
+        .markdown-content li { margin-bottom: 0.25rem; }
 
         :root {
+            --color-accent: 6 182 212;
+            --color-accent-dark: 22 78 99;
+            --color-accent-secondary: 59 130 246;
             --primary-accent: #06b6d4;
             --primary-gold: #f59e0b;
             --matrix-green: #00FF41;
-            --accent: #06b6d4;
             --bg-dark: #050505;
             --text-main: #e2e8f0;
-            --text-second: #CFFAFE;
-            --input-bg: rgba(8, 51, 68, 0.25); 
+            --text-second: rgba(var(--color-accent) / 0.9);
+            --input-bg: rgba(var(--color-accent-dark) / 0.25); 
             --glass-bg: rgba(10, 10, 15, 0.65);
-            --glass-border: rgba(6, 182, 212, 0.3);
+            --glass-border: rgba(var(--color-accent) / 0.3);
         }
-        .text-accent { color: var(--accent);          }
-        .bg-accent { background-color: var(--accent); }
-        .border-accent { border-color: var(--accent); }
 
         body.light-theme {
             --bg-dark: #f5f7fb;
             --text-main: #0f172a;
-            --text-second: #0E7490;
+            --text-second: rgba(var(--color-accent-dark) / 0.9);
             --input-bg: #ffffff;
             --glass-bg: rgba(255, 255, 255, 0.7);
             --glass-border: rgba(0, 0, 0, 0.15);
@@ -97,52 +83,22 @@
             background-color: var(--bg-dark);
             color: var(--text-main);
             overflow: hidden;
-            accent-color: ;
             transition: background-color 0.25s ease, color 0.25s ease;
         }
-
-        body.light-theme {
-            color: #0f172a;
-        }
-
-        body.light-theme .glass-panel {
-            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
-        }
-
-        .accent-text { color: var(--primary-accent) !important; }
-        .accent-border { border-color: var(--primary-accent) !important; }
-        .accent-bg { background-color: var(--primary-accent) !important; }
-        .accent-bg-soft { background-color: color-mix(in srgb, var(--primary-accent) 20%, transparent); }
-        .accent-ring { box-shadow: 0 0 15px color-mix(in srgb, var(--primary-accent) 40%, transparent); }
+        body.light-theme { color: #0f172a; }
+        body.light-theme .glass-panel { box-shadow: 0 8px 32px rgba(0,0,0,0.15); }
 
         .font-mono { font-family: 'JetBrains Mono', monospace; }
 
-        #btn-dark, #btn-light {
-            background: transparent;
-            transition: all 0.2s;
-        }
-
-        body:not(.light-theme) #btn-dark {
-            background-color: var(--primary-accent);
-            color: white;
-        }
-
-        body:not(.light-theme) #btn-light {
-            color: var(--text-second);
-        }
-
-        body.light-theme #btn-light {
-            background-color: var(--primary-accent);
-            color: white;
-        }
-
-        body.light-theme #btn-dark {
-            color: var(--text-second);
-        }
+        #btn-dark, #btn-light { background: transparent; transition: all 0.2s; }
+        body:not(.light-theme) #btn-dark { background-color: var(--primary-accent); color: white; }
+        body:not(.light-theme) #btn-light { color: var(--text-second); }
+        body.light-theme #btn-light { background-color: var(--primary-accent); color: white; }
+        body.light-theme #btn-dark { color: var(--text-second); }
 
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.3); }
-        ::-webkit-scrollbar-thumb { background: rgba(6, 182, 212, 0.4); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb { background: rgba(var(--color-accent) / 0.4); border-radius: 3px; }
 
         .glass-panel {
             background: var(--glass-bg);
@@ -153,15 +109,12 @@
         }
 
         .active-nav {
-            background: color-mix(in srgb, var(--primary-accent) 15%, transparent);
+            background: rgba(var(--color-accent) / 0.15);
             border-left: 4px solid var(--primary-accent);
             color: var(--text-main);
-            box-shadow: 0 0 15px color-mix(in srgb, var(--primary-accent) 25%, transparent);
+            box-shadow: 0 0 15px rgba(var(--color-accent) / 0.25);
         }
-        .inactive-nav {
-            border-left: 4px solid transparent;
-            color: #94a3b8;
-        }
+        .inactive-nav { border-left: 4px solid transparent; color: #94a3b8; }
         .inactive-nav:hover { background: rgba(255, 255, 255, 0.03); color: var(--text-main); }
 
         .bg-canvas-container {
@@ -171,6 +124,59 @@
             pointer-events: none;
             overflow: hidden;
         }
+
+        .module-section { display: none; animation: fadeIn 0.4s ease-in-out; }
+        .module-section.active { display: flex; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .modal-backdrop { transition: opacity 0.2s ease; }
+        .modal-content { transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%;
+            background: #fff; margin-top: -6px; box-shadow: 0 0 10px rgba(var(--color-accent) / 0.8); cursor: pointer;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%; height: 4px; cursor: pointer;
+            background: rgba(var(--color-accent-dark) / 0.8); border-radius: 2px;
+        }
+        
+        .scanline-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.3) 51%);
+            background-size: 100% 4px; pointer-events: none; z-index: 60; opacity: 0.15;
+        }
+
+        .type-card {
+            border: 1px solid var(--glass-border);
+            background: rgba(0,0,0,0.3);
+            transition: all 0.2s;
+        }
+        .type-card.selected {
+            border-color: var(--primary-accent);
+            background: rgba(var(--color-accent) / 0.1);
+            box-shadow: 0 0 15px rgba(var(--color-accent) / 0.2);
+        }
+
+        .accent-color { transition: outline 0.15s; outline: 2px solid transparent; outline-offset: 2px; }
+        .accent-color.active { outline: 2px solid white; }
+        body.light-theme .accent-color.active { outline: 2px solid rgb(0, 0, 0); }
+
+        #sidebar { transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .nav-collapsed { width: 5rem !important; }
+        .nav-collapsed .nav-text,
+        .nav-collapsed .nav-header-text,
+        .nav-collapsed .nav-footer-text { display: none; }
+        .nav-collapsed .nav-btn { padding-left: 0; padding-right: 0; justify-content: center; }
+        .nav-collapsed .nav-footer-icon { display: block !important; }
+
+        /* =====================================================
+           AGENT MANAGEMENT — from Miles's version
+           ===================================================== */
         .agent-form{
             display:grid;
             grid-template-columns:140px 1fr;
@@ -200,6 +206,7 @@
             gap:6px;
             white-space:nowrap;
         }
+
         .workflow-step{
             display:grid;
             grid-template-columns:40px 1fr 1fr 30px;
@@ -226,58 +233,6 @@
             border:1px solid rgba(255,60,60,.4);
             color:#ff6a6a;
             cursor:pointer;
-        }    
-        .module-section {
-            display: none;
-            animation: fadeIn 0.4s ease-in-out;
-        }
-        .module-section.active { display: flex; }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .modal-backdrop { transition: opacity 0.2s ease; }
-        .modal-content { transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); }
-
-        input[type=range] {
-            -webkit-appearance: none; width: 100%; background: transparent;
-        }
-        input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%;
-            background: #fff; margin-top: -6px; box-shadow: 0 0 10px rgba(6,182,212,0.8); cursor: pointer;
-        }
-        input[type=range]::-webkit-slider-runnable-track {
-            width: 100%; height: 4px; cursor: pointer; background: #164e63; border-radius: 2px;
-        }
-        
-        .scanline-overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.3) 51%);
-            background-size: 100% 4px; pointer-events: none; z-index: 60; opacity: 0.15;
-        }
-
-        .type-card {
-            border: 1px solid var(--glass-border);
-            background: rgba(0,0,0,0.3);
-            transition: all 0.2s;
-        }
-        .type-card.selected {
-            border-color: var(--primary-accent);
-            background: rgba(6, 182, 212, 0.1);
-            box-shadow: 0 0 15px rgba(6, 182, 212, 0.2);
-        }
-
-        .accent-color {
-            transition: outline 0.15s;
-            outline: 2px solid transparent;
-            outline-offset: 2px;
-        }
-        .accent-color.active {
-            outline: 2px solid white;
-        }
-        body.light-theme .accent-color.active {
-            outline: 2px solid rgb(0, 0, 0);
         }
     </style>
 </head>
@@ -285,122 +240,130 @@
 
     <div class="scanline-overlay"></div>
 
+    <!-- Custom Modal -->
     <div id="custom-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-[var(--glass-bg)] backdrop-blur-sm hidden opacity-0 modal-backdrop">
         <div class="glass-panel rounded-xl p-8 max-w-md w-full text-center transform scale-95 modal-content border-amber-500/50 shadow-[0_0_50px_rgba(245,158,11,0.2)]">
             <div class="text-amber-400 mb-4 flex justify-center">
                 <i data-lucide="terminal" class="w-12 h-12"></i>
             </div>
             <h3 id="modal-title" class="text-2xl font-bold text-white mb-2">SYSTEM ALERT</h3>
-            <p id="modal-message" class="text-cyan-200 mb-6">Operation confirmed.</p>
+            <p id="modal-message" class="text-accent/80 mb-6">Operation confirmed.</p>
             <button onclick="closeModal('custom-modal')" class="px-6 py-2 bg-amber-600 hover:bg-amber-500 text-black font-bold rounded-lg transition-colors w-full">
                 ACKNOWLEDGE
             </button>
         </div>
     </div>
 
+    <!-- Create Bot Modal -->
     <div id="create-bot-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-[var(--glass-bg)] backdrop-blur-sm hidden opacity-0 modal-backdrop">
-        <div class="glass-panel rounded-xl p-8 max-w-lg w-full transform scale-95 modal-content border-cyan-500/50 shadow-[0_0_50px_rgba(6,182,212,0.3)]">
-            <div class="flex justify-between items-center mb-6 border-b border-cyan-900/50 pb-4">
-                <h3 class="text-2xl font-bold text-cyan-400">Initialize New Instance</h3>
-                <button onclick="closeModal('create-bot-modal')" class="text-gray-400 hover:text-white">
+        <div class="glass-panel rounded-xl p-8 max-w-lg w-full transform scale-95 modal-content border-accent/50 shadow-lg shadow-accent/20">
+            <div class="flex justify-between items-center mb-6 border-b border-accent-dark/50 pb-4">
+                <h3 class="text-2xl font-bold text-accent">Initialize New Instance</h3>
+                <button onclick="closeModal('create-bot-modal')" class="text-gray-400 hover:text-white transition-colors">
                     <i data-lucide="x"></i>
                 </button>
             </div>
-
             <div class="space-y-6">
                 <div>
-                    <label class="block text-sm text-cyan-300 mb-2 font-mono">INSTANCE DESIGNATION</label>
-                    <input type="text" id="new-bot-name" class="w-full bg-black/50 border border-cyan-700 rounded-lg p-3 text-white focus:border-[var(--primary-accent)] focus:ring-1 focus:ring-[var(--primary-accent)] focus:outline-none" placeholder="e.g. Assistant_v3">
+                    <label class="block text-sm text-accent/80 mb-2 font-mono">INSTANCE DESIGNATION</label>
+                    <input type="text" id="new-bot-name" class="w-full bg-black/50 border border-accent-dark rounded-lg p-3 text-white focus:border-accent focus:ring-1 focus:ring-accent focus:outline-none transition-all" placeholder="e.g. Assistant_v3">
                 </div>
-
                 <div>
-                    <label class="block text-sm text-cyan-300 mb-2 font-mono">COGNITIVE ARCHITECTURE</label>
+                    <label class="block text-sm text-accent/80 mb-2 font-mono">COGNITIVE ARCHITECTURE</label>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div onclick="selectBotType('character')" id="type-character" class="type-card p-4 rounded-lg cursor-pointer hover:bg-black/40">
                             <h4 class="text-lg font-bold text-amber-400 mb-1">Character</h4>
                             <p class="text-xs text-gray-400">Roleplay enabled. The AI adopts a specific persona, backstory, and will.</p>
                         </div>
                         <div onclick="selectBotType('agent')" id="type-agent" class="type-card p-4 rounded-lg cursor-pointer hover:bg-black/40">
-                            <h4 class="text-lg font-bold text-cyan-400 mb-1">Agent</h4>
+                            <h4 class="text-lg font-bold text-accent mb-1">Agent</h4>
                             <p class="text-xs text-gray-400">Utility mode. Direct, factual responses without simulated personality.</p>
                         </div>
                     </div>
                 </div>
-
-                <button onclick="confirmCreateBot()" class="w-full py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-lg shadow-lg shadow-cyan-900/50 transition-all">
+                <button onclick="confirmCreateBot()" class="w-full py-3 bg-accent/90 hover:bg-accent text-white font-bold rounded-lg shadow-lg shadow-accent-dark/50 transition-all">
                     INITIALIZE INSTANCE
                 </button>
             </div>
         </div>
     </div>
 
-    <nav class="w-full md:w-64 glass-panel z-50 flex flex-col border-r border-cyan-900/50 flex-shrink-0 bg-[var(--glass-bg)]">
-        <div class="p-6 border-b border-cyan-900/50">
-        <h1 class="text-2xl font-extrabold tracking-tighter 
-            text-transparent bg-clip-text
-            bg-gradient-to-r
-            from-[var(--accent)]
-            to-white">AUTOMAT</h1>
-            <p class="text-xs text-cyan-700 font-mono tracking-widest mt-1">SYSTEM V2.4.1</p>
+    <!-- Sidebar -->
+    <nav id="sidebar" class="w-full md:w-64 glass-panel z-50 flex flex-col border-r border-accent-dark/50 flex-shrink-0 bg-[var(--glass-bg)]">
+        <div class="p-6 border-b border-accent-dark/50 flex justify-between items-center">
+            <div class="nav-header-text overflow-hidden">
+                <h1 class="text-2xl font-extrabold tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-accent to-accent-secondary">
+                    AUTOMAT
+                </h1>
+                <p class="text-xs text-accent-dark font-mono tracking-widest mt-1">SYSTEM V2.4.1</p>
+            </div>
+            <button onclick="toggleSidebar()" class="text-accent hover:text-white transition-colors">
+                <i data-lucide="menu" class="w-6 h-6"></i>
+            </button>
         </div>
 
         <div class="flex-1 overflow-y-auto py-4 space-y-1">
-            <button onclick="switchTab('chat')" id="nav-chat" class="w-full text-left px-6 py-3 flex items-center gap-3 transition-all active-nav">
-                <i data-lucide="message-square" class="w-5 h-5"></i>
-                <span class="font-semibold">Neural Chat</span>
+            <button onclick="switchTab('chat')" id="nav-chat" class="w-full nav-btn text-left px-6 py-3 flex items-center gap-3 transition-all active-nav">
+                <i data-lucide="message-square" class="w-5 h-5 flex-shrink-0"></i>
+                <span class="font-semibold nav-text whitespace-nowrap">Neural Chat</span>
             </button>
-            <button onclick="switchTab('options')" id="nav-options" class="w-full text-left px-6 py-3 flex items-center gap-3 transition-all inactive-nav">
-                <i data-lucide="wrench" class="w-5 h-5"></i>
-                <span class="font-semibold">System Options</span>
+            <button onclick="switchTab('options')" id="nav-options" class="w-full nav-btn text-left px-6 py-3 flex items-center gap-3 transition-all inactive-nav">
+                <i data-lucide="wrench" class="w-5 h-5 flex-shrink-0"></i>
+                <span class="font-semibold nav-text whitespace-nowrap">System Options</span>
             </button>
-            <!--<button disabled onclick="switchTab('creative')" id="nav-creative" class="w-full text-left px-6 py-3 flex items-center gap-3 transition-all inactive-nav">
-                <i data-lucide="sparkles" class="w-5 h-5"></i>
-                <span class="font-semibold">Creative Mode</span>
-            </button>-->
-            <button onclick="switchTab('engine')" id="nav-engine" class="w-full text-left px-6 py-3 flex items-center gap-3 transition-all inactive-nav">
-                <i data-lucide="cpu" class="w-5 h-5"></i>
-                <span class="font-semibold">Engine Config</span>
+            <button onclick="switchTab('creative')" id="nav-creative" class="w-full nav-btn text-left px-6 py-3 flex items-center gap-3 transition-all inactive-nav">
+                <i data-lucide="sparkles" class="w-5 h-5 flex-shrink-0"></i>
+                <span class="font-semibold nav-text whitespace-nowrap">Creative Mode</span>
             </button>
-            <button onclick="switchTab('appearance')" id="nav-appearance" class="w-full text-left px-6 py-3 flex items-center gap-3 transition-all inactive-nav">
-                <i data-lucide="palette" class="w-5 h-5"></i>
-                <span class="font-semibold">Appearance</span>
+            <button onclick="switchTab('engine')" id="nav-engine" class="w-full nav-btn text-left px-6 py-3 flex items-center gap-3 transition-all inactive-nav">
+                <i data-lucide="cpu" class="w-5 h-5 flex-shrink-0"></i>
+                <span class="font-semibold nav-text whitespace-nowrap">Engine Config</span>
             </button>
-            <button onclick="switchTab('management')" id="nav-management" class="w-full text-left px-6 py-3 flex items-center gap-3 transition-all inactive-nav">
-                <i data-lucide="layers" class="w-5 h-5"></i>
-                <span class="font-semibold">Bot Management</span>
+            <button onclick="switchTab('appearance')" id="nav-appearance" class="w-full nav-btn text-left px-6 py-3 flex items-center gap-3 transition-all inactive-nav">
+                <i data-lucide="palette" class="w-5 h-5 flex-shrink-0"></i>
+                <span class="font-semibold nav-text whitespace-nowrap">Appearance</span>
             </button>
-            <button onclick="switchTab('agents')" id="nav-agents" class="w-full text-left px-6 py-3 flex items-center gap-3 transition-all inactive-nav">
-                <i data-lucide="hat-glasses" class="w-5 h-5"></i>
-                <span class="font-semibold">Agent Management</span>
+            <button onclick="switchTab('management')" id="nav-management" class="w-full nav-btn text-left px-6 py-3 flex items-center gap-3 transition-all inactive-nav">
+                <i data-lucide="layers" class="w-5 h-5 flex-shrink-0"></i>
+                <span class="font-semibold nav-text whitespace-nowrap">Bot Management</span>
+            </button>
+            <button onclick="switchTab('agents')" id="nav-agents" class="w-full nav-btn text-left px-6 py-3 flex items-center gap-3 transition-all inactive-nav">
+                <i data-lucide="hat-glasses" class="w-5 h-5 flex-shrink-0"></i>
+                <span class="font-semibold nav-text whitespace-nowrap">Agent Management</span>
             </button>
         </div>
 
-        <div class="p-4 border-t border-cyan-900/50 text-xs text-cyan-700 font-mono text-center">
-            ID: A-387-CYB <br> STATUS: ONLINE
+        <div class="p-4 border-t border-accent-dark/50 text-xs text-accent-dark font-mono text-center flex justify-center items-center h-16">
+            <span class="nav-footer-text whitespace-nowrap">ID: A-387-CYB <br> STATUS: ONLINE</span>
+            <i data-lucide="activity" class="w-5 h-5 hidden nav-footer-icon text-green-500 animate-pulse"></i>
         </div>
     </nav>
 
     <main class="flex-1 relative z-10 overflow-hidden flex flex-col bg-[var(--bg-dark)]">
         
+        <!-- CHAT -->
         <section id="module-chat" class="module-section active flex-col h-full w-full relative overflow-hidden">
-            
             <div id="bg-chat" class="bg-canvas-container"></div>
-
-            <div class="relative z-10 flex-1 flex items-end justify-center p-24">
-                <div class="w-full max-w-6xl glass-panel rounded-2xl overflow-hidden bg-[var(--glass-bg)] flex flex-col" style="max-height: 500px; box-shadow: 0 10px 20px rgba(0,0,0,0.15);">
+            <div class="relative z-10 flex-1 flex items-end justify-center p-8 md:p-24 pointer-events-none">
+                <div id="chat-panel" class="relative glass-panel rounded-2xl overflow-hidden bg-[var(--glass-bg)] flex flex-col pointer-events-auto" 
+                     style="width: 100%; max-width: 1152px; height: 300px; min-width: 400px; min-height: 300px; box-shadow: 0 10px 20px rgba(0,0,0,0.15);">
                     
-                    <div class="p-4 border-b border-cyan-900/50 flex justify-between items-center bg-[var(--glass-bg)] flex-shrink-0">
+                    <div id="chat-resizer" class="absolute top-0 right-0 w-8 h-8 z-50 cursor-nesw-resize flex items-start justify-end p-2 text-accent/40 hover:text-accent bg-accent-dark/20 rounded-bl-xl transition-colors">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3l-6 6"/><path d="M21 3v6"/><path d="M21 3h-6"/></svg>
+                    </div>
+
+                    <div class="p-4 border-b border-accent-dark/50 flex justify-between items-center bg-[var(--glass-bg)] flex-shrink-0 pr-12">
                         <div class="flex items-center gap-3">
                             <div class="relative">
-                                <div class="w-3 h-3 bg-[var(--primary-accent)] rounded-full animate-ping absolute opacity-75"></div>
-                                <div class="w-3 h-3 bg-[var(--primary-accent)] rounded-full relative"></div>
+                                <div class="w-3 h-3 bg-accent rounded-full animate-ping absolute opacity-75"></div>
+                                <div class="w-3 h-3 bg-accent rounded-full relative"></div>
                             </div>
                             <div>
-                                <h2 class="font-bold text-[var(--primary-accent)]">CYBEL CORE</h2>
-                                <p class="text-[10px] text-[var(--primary-accent)] font-mono tracking-widest">HOLOGRAPHIC LINK ACTIVE</p>
+                                <h2 class="font-bold text-accent">CYBEL CORE</h2>
+                                <p class="text-[10px] text-accent font-mono tracking-widest">HOLOGRAPHIC LINK ACTIVE</p>
                             </div>
                         </div>
-                        <div class="flex gap-4 text-[var(--primary-accent)]">
+                        <div class="flex gap-4 text-accent">
                             <i data-lucide="activity" class="w-5 h-5 animate-pulse"></i>
                             <i data-lucide="shield-check" class="w-5 h-5"></i>
                         </div>
@@ -408,43 +371,36 @@
 
                     <div id="chat-history" class="flex-1 overflow-y-auto p-6 space-y-6">
                         <div class="flex gap-4">
-                            <div class="w-8 h-8 rounded-full bg-cyan-900/50 flex items-center justify-center border border-cyan-500/30 flex-shrink-0">
-                                <img
-                                    src="./assets/image2.png"
-                                    alt="AI Avatar"
-                                    class="w-full h-full object-cover"
-                                />
+                            <div class="w-8 h-8 rounded-full bg-accent-dark/50 flex items-center justify-center border border-accent/30 flex-shrink-0">
+                                <img src="./assets/image2.png" alt="AI Avatar" class="w-full h-full object-cover" />
                             </div>
-                            <div class="bg-[var(--glass-bg)] border border-[var(--primary-accent)] p-4 rounded-lg rounded-tl-none shadow-lg max-w-[80%] backdrop-blur-sm">
-                                <p class="text-[var(--primary-accent)] text-sm leading-relaxed">
+                            <div class="bg-[var(--glass-bg)] border border-accent p-4 rounded-lg rounded-tl-none shadow-lg max-w-[80%] backdrop-blur-sm">
+                                <p class="text-accent text-sm leading-relaxed">
                                     Holographic projection initialized. I am ready to receive your queries through the neural link.
                                 </p>
                             </div>
                         </div>
                     </div>
 
-                    <div class="p-4 bg-[var(--glass-bg)] border-t border-[var(--primary-accent)] flex-shrink-0">
+                    <div class="p-4 bg-[var(--glass-bg)] border-t border-accent flex-shrink-0">
                         <input type="file" id="chat-file-input" class="hidden" onchange="handleFileUpload(this)">
-                        
                         <form onsubmit="handleChatSubmit(event)" class="relative flex items-center gap-3">
-                            <button type="button" onclick="document.getElementById('chat-file-input').click()" class="p-2 hover:bg-cyan-900/50 rounded-md transition-colors text-cyan-600 hover:text-cyan-400" title="Attach File">
+                            <button type="button" onclick="document.getElementById('chat-file-input').click()" class="p-2 hover:bg-accent-dark/50 rounded-md transition-colors text-accent/70 hover:text-accent" title="Attach File">
                                 <i data-lucide="paperclip" class="w-5 h-5"></i>
                             </button>
-
                             <div class="relative flex-1">
-                                <div class="absolute left-4 text-cyan-700 pointer-events-none">
+                                <div class="absolute left-4 text-accent-dark pointer-events-none">
                                     <i data-lucide="terminal" class="w-4 h-11"></i>
                                 </div>
                                 <input type="text" id="chat-input" 
-                                    class="w-full bg-[var(--input-bg)] border border-[var(--primary-accent)] rounded-lg py-3 pl-10 pr-12 text-[var(--text-second)] focus:outline-none focus:border-[var(--primary-accent)] focus:ring-1 focus:ring-[var(--primary-accent)] transition-all font-mono text-sm"
+                                    class="w-full bg-[var(--input-bg)] border border-accent rounded-lg py-3 pl-10 pr-12 text-[var(--text-second)] focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all font-mono text-sm"
                                     placeholder="Enter command or query..." autocomplete="off">
                             </div>
-                            
-                            <button type="submit" class="p-2 rounded-md hover:bg-[var(--primary-accent)] hover:text-white transition-colors">
+                            <button type="submit" class="p-2 rounded-md hover:bg-accent text-accent/70 hover:text-white transition-colors">
                                 <i data-lucide="send" class="w-5 h-5"></i>
                             </button>
                         </form>
-                        <div class="mt-2 flex justify-between items-center text-[9px] text-[var(--primary-accent)] tracking-[0.2em] uppercase">
+                        <div class="mt-2 flex justify-between items-center text-[9px] text-accent tracking-[0.2em] uppercase">
                             <span>Secure Channel // Encrypted</span>
                             <span>Latency: 12ms</span>
                         </div>
@@ -453,78 +409,75 @@
             </div>
         </section>
 
+        <!-- OPTIONS -->
         <section id="module-options" class="module-section flex-col h-full w-full p-4 md:p-8 overflow-y-auto">
             <div class="max-w-6xl mx-auto w-full space-y-6 relative z-10">
-                <div class="mb-8 border-b border-cyan-800 pb-4">
+                <div class="mb-8 border-b border-accent-dark/60 pb-4">
                     <h2 class="text-3xl font-extrabold text-amber-400 flex items-center gap-3">
                         <i data-lucide="wrench"></i> AUTOMAT OPTIONS
                     </h2>
                 </div>
-
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div class="glass-panel p-6 rounded-xl">
                         <h3 class="text-lg font-bold text-[var(--text-second)] mb-4 flex items-center gap-2">
                             <i data-lucide="activity"></i> System Health
                         </h3>
                         <div class="space-y-4">
-                            <div class="flex justify-between text-sm border-b border-cyan-900/50 pb-2">
-                                <span class="text-cyan-600">Core Temp</span>
-                                <span id="stat-temp" class="font-mono text-green-600">--</span> <!--35.5°C-->
+                            <div class="flex justify-between text-sm border-b border-accent-dark/50 pb-2">
+                                <span class="text-accent">Core Temp</span>
+                                <span id="stat-temp" class="font-mono text-green-600">35.5°C</span>
                             </div>
-                            <div class="flex justify-between text-sm border-b border-cyan-900/50 pb-2">
-                                <span class="text-cyan-600">Latency</span>
-                                <span id="stat-latency" class="font-mono text-green-600">--</span> <!--5ms-->
+                            <div class="flex justify-between text-sm border-b border-accent-dark/50 pb-2">
+                                <span class="text-accent">Latency</span>
+                                <span id="stat-latency" class="font-mono text-green-600">5ms</span>
                             </div>
-                            <div class="flex justify-between text-sm border-b border-cyan-900/50 pb-2">
-                                <span class="text-cyan-600">Battery</span>
-                                <span id="stat-battery" class="font-mono text-green-600">--</span> <!--88%-->
+                            <div class="flex justify-between text-sm border-b border-accent-dark/50 pb-2">
+                                <span class="text-accent">Battery</span>
+                                <span id="stat-battery" class="font-mono text-green-600">88%</span>
                             </div>
                             <button onclick="showModal('Diagnostics', 'Running full diagnostic cycle...')" class="w-full mt-2 py-2 bg-amber-600/20 hover:bg-amber-600/40 text-amber-500 border border-amber-600/50 rounded text-xs font-bold transition-colors">
                                 RUN DIAGNOSTIC
                             </button>
                         </div>
                     </div>
-
                     <div class="glass-panel p-6 rounded-xl">
                         <h3 class="text-lg font-bold text-[var(--text-second)] mb-4 flex items-center gap-2">
                             <i data-lucide="globe"></i> Connectivity
                         </h3>
                         <div class="space-y-4">
                             <div class="flex items-center justify-between">
-                                <span class="text-sm text-cyan-600">Wi-Fi Link</span>
+                                <span class="text-sm text-accent">Wi-Fi Link</span>
                                 <button onclick="toggleSwitch(this)" class="w-10 h-5 bg-green-600 rounded-full relative transition-colors">
                                     <span class="absolute right-1 top-1 w-3 h-3 bg-white rounded-full"></span>
                                 </button>
                             </div>
                             <div class="flex items-center justify-between">
-                                <span class="text-sm text-cyan-600">Bluetooth</span>
+                                <span class="text-sm text-accent">Bluetooth</span>
                                 <button onclick="toggleSwitch(this)" class="w-10 h-5 bg-gray-700 rounded-full relative transition-colors">
                                     <span class="absolute left-1 top-1 w-3 h-3 bg-white rounded-full"></span>
                                 </button>
                             </div>
-                            <div class="mt-4 p-3 bg-[var(--input-bg)] rounded border border-cyan-900 text-xs font-mono text-cyan-600 shadow-[0_5px_15px_rgba(0,0,0,0.15)]">
-                                IP: 192.168.1.42<br>
-                                Signal: Strong (-42dBm)
+                            <div class="mt-4 p-3 bg-[var(--input-bg)] rounded border border-accent-dark text-xs font-mono text-accent shadow-lg shadow-[var(--glass-border)]">
+                                IP: 192.168.1.42<br>Signal: Strong (-42dBm)
                             </div>
                         </div>
                     </div>
-
                     <div class="glass-panel p-6 rounded-xl">
                         <h3 class="text-lg font-bold text-[var(--text-second)] mb-4 flex items-center gap-2">
                             <i data-lucide="sliders"></i> Pilot AI
                         </h3>
                         <div class="space-y-6">
                             <div>
-                                <label class="text-xs text-cyan-600 mb-1 block">Torque Limit</label>
+                                <label class="text-xs text-accent mb-1 block">Torque Limit</label>
                                 <input type="range" min="10" max="100" value="50" class="w-full">
                             </div>
                             <div class="flex items-center justify-between">
-                                <span class="text-sm text-cyan-600">Safety Override</span>
+                                <span class="text-sm text-accent">Safety Override</span>
                                 <button onclick="toggleSwitch(this)" class="w-10 h-5 bg-green-600 rounded-full relative transition-colors">
                                     <span class="absolute right-1 top-1 w-3 h-3 bg-white rounded-full"></span>
                                 </button>
                             </div>
-                            <button onclick="showModal('Pilot Update', 'Parameters updated. Rebooting drive systems...')" class="w-full py-3 bg-cyan-700 hover:bg-cyan-600 text-white rounded font-bold shadow-lg shadow-cyan-900/50 transition-all">
+                            <button onclick="showModal('Pilot Update', 'Parameters updated. Rebooting drive systems...')" class="w-full py-3 bg-accent/80 hover:bg-accent text-white rounded font-bold shadow-lg shadow-accent-dark/50 transition-all">
                                 APPLY CHANGES
                             </button>
                         </div>
@@ -533,291 +486,204 @@
             </div>
         </section>
 
+        <!-- CREATIVE -->
         <section id="module-creative" class="module-section flex-col h-full w-full p-4 md:p-8 overflow-y-auto">
             <div class="max-w-4xl mx-auto w-full h-full flex flex-col relative z-10">
                 <div class="mb-8">
                     <h2 class="text-3xl font-extrabold text-[var(--text-second)] flex items-center gap-3">
                         <i data-lucide="image"></i> CREATIVE MODE
                     </h2>
-                    <p class="text-cyan-600 text-sm mt-1">Configure generative parameters.</p>
+                    <p class="text-accent text-sm mt-1">Configure generative parameters.</p>
                 </div>
-
                 <div class="flex justify-between mb-8 relative">
                     <div class="absolute top-1/2 left-0 w-full h-0.5 bg-gray-800 -z-10"></div>
-                    
-                    <div class="w-10 h-10 rounded-full bg-cyan-500 text-black flex items-center justify-center font-bold ring-4 ring-black">1</div>
+                    <div class="w-10 h-10 rounded-full bg-accent text-black flex items-center justify-center font-bold ring-4 ring-black">1</div>
                     <div class="w-10 h-10 rounded-full bg-gray-800 text-gray-400 flex items-center justify-center font-bold ring-4 ring-black" id="step-ind-2">2</div>
                     <div class="w-10 h-10 rounded-full bg-gray-800 text-gray-400 flex items-center justify-center font-bold ring-4 ring-black" id="step-ind-3">3</div>
                 </div>
-
                 <div class="flex-1 glass-panel p-8 rounded-xl relative overflow-hidden">
-                    
                     <div id="creative-step-1" class="step-content">
-                        <h3 class="text-xl font-bold text-cyan-600 mb-6">Select Input Source</h3>
+                        <h3 class="text-xl font-bold text-accent mb-6">Select Input Source</h3>
                         <div class="grid grid-cols-2 gap-6">
-                            <div onclick="setCreativeInput('text')" class="cursor-pointer border border-cyan-800/50 bg-[var(--input-bg)] p-6 rounded-lg hover:border-cyan-500 hover:bg-cyan-900/20 transition-all group text-center">
-                                <i data-lucide="type" class="w-10 h-10 mx-auto mb-4 text-cyan-600 group-hover:text-cyan-400"></i>
-                                <h4 class="font-bold text-cyan-500">Text Prompt</h4>
-                                <p class="text-xs text-cyan-600 mt-2">Describe visually</p>
+                            <div onclick="setCreativeInput('text')" class="cursor-pointer border border-accent-dark/60 bg-[var(--input-bg)] p-6 rounded-lg hover:border-accent hover:bg-accent-dark/20 transition-all group text-center">
+                                <i data-lucide="type" class="w-10 h-10 mx-auto mb-4 text-accent/70 group-hover:text-accent transition-colors"></i>
+                                <h4 class="font-bold text-accent">Text Prompt</h4>
+                                <p class="text-xs text-accent/80 mt-2">Describe visually</p>
                             </div>
-                            <div onclick="setCreativeInput('image')" class="cursor-pointer border border-cyan-800/50 bg-[var(--input-bg)] p-6 rounded-lg hover:border-cyan-500 hover:bg-cyan-900/20 transition-all group text-center">
-                                <i data-lucide="upload-cloud" class="w-10 h-10 mx-auto mb-4 text-cyan-600 group-hover:text-cyan-400"></i>
-                                <h4 class="font-bold text-cyan-500">Image Upload</h4>
-                                <p class="text-xs text-cyan-600 mt-2">Style transfer</p>
+                            <div onclick="setCreativeInput('image')" class="cursor-pointer border border-accent-dark/60 bg-[var(--input-bg)] p-6 rounded-lg hover:border-accent hover:bg-accent-dark/20 transition-all group text-center">
+                                <i data-lucide="upload-cloud" class="w-10 h-10 mx-auto mb-4 text-accent/70 group-hover:text-accent transition-colors"></i>
+                                <h4 class="font-bold text-accent">Image Upload</h4>
+                                <p class="text-xs text-accent/80 mt-2">Style transfer</p>
                             </div>
                         </div>
                     </div>
-
                     <div id="creative-step-2" class="step-content hidden">
-                        <h3 class="text-xl font-bold text-cyan-200 mb-6">Select Output Dimension</h3>
+                        <h3 class="text-xl font-bold text-accent/80 mb-6">Select Output Dimension</h3>
                         <div class="grid grid-cols-2 gap-6">
-                            <div onclick="setCreativeOutput('2d')" class="cursor-pointer border border-cyan-800/50 bg-black/40 p-6 rounded-lg hover:border-cyan-500 hover:bg-cyan-900/20 transition-all group text-center">
-                                <i data-lucide="maximize-2" class="w-10 h-10 mx-auto mb-4 text-cyan-600 group-hover:text-cyan-400"></i>
-                                <h4 class="font-bold text-cyan-100">2D Image</h4>
+                            <div onclick="setCreativeOutput('2d')" class="cursor-pointer border border-accent-dark/60 bg-black/40 p-6 rounded-lg hover:border-accent hover:bg-accent-dark/20 transition-all group text-center">
+                                <i data-lucide="maximize-2" class="w-10 h-10 mx-auto mb-4 text-accent/70 group-hover:text-accent transition-colors"></i>
+                                <h4 class="font-bold text-accent/60">2D Image</h4>
                             </div>
-                            <div onclick="setCreativeOutput('3d')" class="cursor-pointer border border-cyan-800/50 bg-black/40 p-6 rounded-lg hover:border-cyan-500 hover:bg-cyan-900/20 transition-all group text-center">
-                                <i data-lucide="box" class="w-10 h-10 mx-auto mb-4 text-cyan-600 group-hover:text-cyan-400"></i>
-                                <h4 class="font-bold text-cyan-100">3D Model</h4>
+                            <div onclick="setCreativeOutput('3d')" class="cursor-pointer border border-accent-dark/60 bg-black/40 p-6 rounded-lg hover:border-accent hover:bg-accent-dark/20 transition-all group text-center">
+                                <i data-lucide="box" class="w-10 h-10 mx-auto mb-4 text-accent/70 group-hover:text-accent transition-colors"></i>
+                                <h4 class="font-bold text-accent/60">3D Model</h4>
                             </div>
                         </div>
-                        <button onclick="prevCreativeStep()" class="mt-8 text-sm text-cyan-600 hover:text-white flex items-center gap-2">
+                        <button onclick="prevCreativeStep()" class="mt-8 text-sm text-accent hover:text-white flex items-center gap-2 transition-colors">
                             <i data-lucide="arrow-left" class="w-4 h-4"></i> Back
                         </button>
                     </div>
-
                     <div id="creative-step-3" class="step-content hidden">
-                        <h3 class="text-xl font-bold text-cyan-200 mb-6">Final Parameters</h3>
+                        <h3 class="text-xl font-bold text-accent/80 mb-6">Final Parameters</h3>
                         <div class="space-y-6 max-w-lg">
                             <div>
-                                <label class="block text-sm text-cyan-400 mb-2">Style Preset</label>
-                                <select class="w-full bg-black/50 border border-cyan-700 rounded p-2 text-white">
-                                    <option>Cinematic</option>
-                                    <option>Anime</option>
-                                    <option>Photorealistic</option>
+                                <label class="block text-sm text-accent mb-2">Style Preset</label>
+                                <select class="w-full bg-black/50 border border-accent-dark rounded p-2 text-white">
+                                    <option>Cinematic</option><option>Anime</option><option>Photorealistic</option>
                                 </select>
                             </div>
                             <div>
-                                <label class="block text-sm text-cyan-400 mb-2">Complexity</label>
+                                <label class="block text-sm text-accent mb-2">Complexity</label>
                                 <input type="range" min="1" max="10" value="7" class="w-full">
                             </div>
                         </div>
                         <div class="flex gap-4 mt-8">
-                            <button onclick="prevCreativeStep()" class="px-4 py-2 rounded bg-gray-800 text-cyan-400 hover:bg-gray-700">Back</button>
-                            <button onclick="executeCreative()" class="px-6 py-2 rounded bg-amber-600 text-black font-bold hover:bg-amber-500 shadow-lg shadow-amber-900/50">
+                            <button onclick="prevCreativeStep()" class="px-4 py-2 rounded bg-gray-800 text-accent hover:bg-gray-700 transition-colors">Back</button>
+                            <button onclick="executeCreative()" class="px-6 py-2 rounded bg-amber-600 text-black font-bold hover:bg-amber-500 shadow-lg shadow-amber-900/50 transition-colors">
                                 FINALIZE & EXECUTE
                             </button>
                         </div>
                     </div>
-
                 </div>
             </div>
         </section>
 
+        <!-- ENGINE -->
         <section id="module-engine" class="module-section flex-col h-full w-full p-4 md:p-8 overflow-y-auto">
-    <div class="max-w-5xl mx-auto w-full relative z-10">
-        <h2 class="text-3xl font-extrabold text-accent flex items-center gap-3 mb-8">
-            <i data-lucide="sliders-horizontal"></i> ENGINE CONFIGURATION
-        </h2>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <!-- Hardware Panel (always visible) -->
-            <div class="glass-panel p-6 rounded-xl">
-                <h3 class="text-accent font-bold mb-4 flex items-center gap-2">
-                    <i data-lucide="cpu"></i> Hardware
-                </h3>
-                <div class="space-y-6">
-                    <div disabled>
-                        <label class="flex justify-between text-sm mb-2">
-                            <span>VRAM Limit</span>
-                            <span class="text-accent font-mono">--</span>
-                        </label>
-                        <input disabled type="range" min="2" max="12" step="0.5" value="0" class="w-full">
-                        <p class="text-[10px] text-yellow-500 mt-1 flex items-center gap-1">
-                            <i data-lucide="alert-triangle" class="w-3 h-3"></i> High usage may cause instability.
-                        </p>
-                    </div>
-                    <div>
-                        <label class="flex justify-between text-sm mb-2">
-                            <span>CPU Threads</span>
-                            <span disabled class="text-accent font-mono">1</span>
-                        </label>
-                        <input disabled type="range" min="1" max="32" step="1" value="0" class="w-full">
-                    </div>
-                    <button disabled onclick="runBenchmark()" class="w-full py-3 border border-amber-600/50 text-amber-500 hover:bg-amber-600/20 rounded transition-all font-mono text-sm font-bold flex items-center justify-center gap-2">
-                        <i disabled data-lucide="timer"></i> RUN BENCHMARK
-                    </button>
-                </div>
-            </div>
-
-            <!-- Groq Mode Panel -->
-            <div id="groq-panels">
-                <div class="glass-panel p-6 rounded-xl">
-                    <h3 class="text-accent font-bold mb-4 flex items-center gap-2">
-                        <i data-lucide="brain-circuit"></i> Generation Vibe
-                    </h3>
-                    <div class="space-y-6">
-                        <div>
-                            <label class="flex justify-between text-sm mb-2">
-                                <span>Temperature (Creativity)</span>
-                                <span id="tempValue" class="text-accent font-mono">0.75</span>
-                            </label>
-                            <input id="tempRange" type="range" min="0.1" max="1.5" step="0.05" value="0.75" class="w-full">
+            <div class="max-w-5xl mx-auto w-full relative z-10">
+                <h2 class="text-3xl font-extrabold text-amber-400 flex items-center gap-3 mb-8">
+                    <i data-lucide="sliders-horizontal"></i> ENGINE CONFIGURATION
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="glass-panel p-6 rounded-xl">
+                        <h3 class="text-accent font-bold mb-4 flex items-center gap-2"><i data-lucide="cpu"></i> Hardware</h3>
+                        <div class="space-y-6">
+                            <div>
+                                <label class="flex justify-between text-sm mb-2">
+                                    <span>VRAM Limit</span>
+                                    <span class="text-accent/80 font-mono">6.0 GB</span>
+                                </label>
+                                <input type="range" min="2" max="12" step="0.5" value="6" class="w-full">
+                                <p class="text-[10px] text-yellow-500 mt-1 flex items-center gap-1"><i data-lucide="alert-triangle" class="w-3 h-3"></i> High usage may cause instability.</p>
+                            </div>
+                            <div>
+                                <label class="flex justify-between text-sm mb-2">
+                                    <span>CPU Threads</span>
+                                    <span class="text-accent/80 font-mono">8</span>
+                                </label>
+                                <input type="range" min="1" max="32" step="1" value="8" class="w-full">
+                            </div>
+                            <button onclick="runBenchmark()" class="w-full py-3 border border-amber-600/50 text-amber-500 hover:bg-amber-600/20 rounded transition-all font-mono text-sm font-bold flex items-center justify-center gap-2">
+                                <i data-lucide="timer"></i> RUN BENCHMARK
+                            </button>
                         </div>
-                        <div>
-                            <label class="flex justify-between text-sm mb-2">
-                                <span>Context Window</span>
-                                <span id="contextValue" class="text-accent font-mono">4096</span>
-                            </label>
-                            <input id="contextRange" type="range" min="1024" max="8192" step="512" value="4096" class="w-full">
-                        </div>
-                        <div>
-                            <label class="text-accent font-mono block text-sm mb-2">Model File (Groq-use Only)</label>
-                            <select id="model-selector" class="w-full text-accent border border-accent rounded p-2 bg-black-500 text-sm">
-                                <option>openai/gpt-oss-20b</option>
-                                <option>openai/gpt-oss-120b</option>
-                                <option>llama-3.1-8b-instant</option>
-                                <option>llama-3.3-70b-versatile</option>
-                                <option>whisper-large-v3</option>
-                                <option>whisper-large-v3-turbo</option>
-                                <option>groq/compound</option>
-                                <option>groq/compound-mini</option>
-                            </select>
+                    </div>
+                    <div class="glass-panel p-6 rounded-xl">
+                        <h3 class="text-accent font-bold mb-4 flex items-center gap-2"><i data-lucide="brain-circuit"></i> Generation Vibe</h3>
+                        <div class="space-y-6">
+                            <div>
+                                <label class="flex justify-between text-sm mb-2">
+                                    <span>Temperature (Creativity)</span>
+                                    <span id="tempValue" class="text-accent/80 font-mono">0.75</span>
+                                </label>
+                                <input id="tempRange" type="range" min="0.1" max="1.5" step="0.05" value="0.75" class="w-full"
+                                    oninput="document.getElementById('tempValue').textContent = parseFloat(this.value).toFixed(2)">
+                            </div>
+                            <div>
+                                <label class="flex justify-between text-sm mb-2">
+                                    <span>Context Window</span>
+                                    <span id="contextValue" class="text-accent/80 font-mono">4096</span>
+                                </label>
+                                <input id="contextRange" type="range" min="1024" max="8192" step="512" value="4096" class="w-full"
+                                    oninput="document.getElementById('contextValue').textContent = this.value">
+                            </div>
+                            <div>
+                                <label class="text-accent font-mono block text-sm mb-2">Model File (Groq-use Only)</label>
+                                <select id="model-selector" class="w-full bg-[var(--input-bg)] border border-accent-dark rounded p-2 text-[var(--text-second)]">
+                                    <option>openai/gpt-oss-20b</option>
+                                    <option>openai/gpt-oss-120b</option>
+                                    <option>llama-3.1-8b-instant</option>
+                                    <option>llama-3.3-70b-versatile</option>
+                                    <option>whisper-large-v3</option>
+                                    <option>whisper-large-v3-turbo</option>
+                                    <option>groq/compound</option>
+                                    <option>groq/compound-mini</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Local Mode Panel -->
-            <div id="local-panels" style="display:none">
-                <div class="glass-panel p-6 rounded-xl">
-                    <h3 class="text-accent font-bold mb-4 flex items-center gap-2">
-                        <i data-lucide="brain-circuit"></i> Generation Vibe (Local)
-                    </h3>
-                    <div class="space-y-6">
-                        <div>
-                            <label class="flex justify-between text-sm mb-2">
-                                <span>Temperature (Creativity)</span>
-                                <span id="tempValueLocal" class="text-accent font-mono">0.75</span>
-                            </label>
-                            <input id="tempRangeLocal" type="range" min="0.1" max="1.5" step="0.05" value="0.75" class="w-full">
-                        </div>
-                        <div>
-                            <label class="flex justify-between text-sm mb-2">
-                                <span>Context Window</span>
-                                <span id="contextValueLocal" class="text-accent font-mono">4096</span>
-                            </label>
-                            <input id="contextRangeLocal" type="range" min="1024" max="8192" step="512" value="4096" class="w-full">
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
                 <div class="mt-8 flex justify-end">
-                    <button onclick="saveConfiguration()" class="px-8 py-3 bg-green-600 hover:bg-green-500 text-white font-bold rounded-lg shadow-lg shadow-green-900/50 transition-all">
+                    <button onclick="showModal('Config Saved', 'System will reload parameters on next session.')" class="px-8 py-3 bg-green-600 hover:bg-green-500 text-white font-bold rounded-lg shadow-lg shadow-green-900/50 transition-all">
                         SAVE CONFIGURATION
                     </button>
                 </div>
             </div>
         </section>
 
+        <!-- APPEARANCE -->
         <section id="module-appearance" class="module-section flex-col h-full w-full p-4 md:p-8 overflow-y-auto">
             <div class="max-w-4xl mx-auto w-full relative z-10">
                 <h2 class="text-3xl font-extrabold text-[var(--text-second)] flex items-center gap-3 mb-8">
                     <i data-lucide="palette"></i> APPEARANCE & UI
                 </h2>
-
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div class="glass-panel p-6 rounded-xl">
-                        <h3 class="text-[var(--text-second)] font-bold mb-4 border-b border-cyan-900/50 pb-2">Theme</h3>
-                        
+                        <h3 class="text-[var(--text-second)] font-bold mb-4 border-b border-accent-dark/50 pb-2">Theme</h3>
                         <div class="flex gap-4 mb-6 bg-[var(--input-bg)] p-1 rounded-lg w-max shadow-[0_5px_15px_rgba(0,0,0,0.15)]">
-                            <button id="btn-dark" onclick="setTheme('dark')"
-                                class="px-4 py-1 rounded text-white text-sm">
-                                Dark
-                            </button>
-
-                            <button id="btn-light" onclick="setTheme('light')"
-                                class="px-4 py-1 rounded text-[var(--text-second)] text-sm">
-                                Light
-                            </button>
+                            <button id="btn-dark" onclick="setTheme('dark')" class="px-4 py-1 rounded text-white text-sm">Dark</button>
+                            <button id="btn-light" onclick="setTheme('light')" class="px-4 py-1 rounded text-[var(--text-second)] text-sm">Light</button>
                         </div>
-
-                        <h4 class="text-sm text-cyan-600 mb-3">Accent Color</h4>
-                        <div class="flex gap-3">
-                            <div class="accent-color w-8 h-8 rounded-full bg-cyan-500 cursor-pointer hover:ring-2 hover:ring-white/50"
-                                onclick="setAccentColor('#06b6d4', this)"></div>
-
-                            <div class="accent-color w-8 h-8 rounded-full bg-blue-500 cursor-pointer hover:ring-2 hover:ring-white/50"
-                                onclick="setAccentColor('#3b82f6', this)"></div>
-
-                            <div class="accent-color w-8 h-8 rounded-full bg-amber-500 cursor-pointer hover:ring-2 hover:ring-white/50"
-                                onclick="setAccentColor('#f59e0b', this)"></div>
-
-                            <div class="accent-color w-8 h-8 rounded-full bg-green-500 cursor-pointer hover:ring-2 hover:ring-white/50"
-                                onclick="setAccentColor('#22c55e', this)"></div>
-                            
-                            <div class="accent-color w-8 h-8 rounded-full bg-red-500 cursor-pointer hover:ring-2 hover:ring-white/50"
-                                onclick="setAccentColor('#b34639', this)"></div>
-
-                            <div class="accent-color w-8 h-8 rounded-full bg-green-500 cursor-pointer hover:ring-2 hover:ring-white/50"
-                                onclick="setAccentColor('#3C8E38', this)"></div>
-
-                            <div class="accent-color w-8 h-8 rounded-full bg-indigo-500 cursor-pointer hover:ring-2 hover:ring-white/50"
-                                onclick="setAccentColor('#7E4D5D', this)"></div>
-
-                            <div class="accent-color w-8 h-8 rounded-full bg-orange-500 cursor-pointer hover:ring-2 hover:ring-white/50"
-                                onclick="setAccentColor('#B87232', this)"></div>
-                            
-                            <div class="accent-color w-8 h-8 rounded-full bg-purple-500 cursor-pointer hover:ring-2 hover:ring-white/50"
-                                onclick="setAccentColor('#5F268D', this)"></div>
-
-                            <div class="accent-color w-8 h-8 rounded-full bg-emerald-500 cursor-pointer hover:ring-2 hover:ring-white/50"
-                                onclick="setAccentColor('#627A5B', this)"></div>
-                            
-                            <div class="accent-color w-8 h-8 rounded-full bg-fuchsia-500 cursor-pointer hover:ring-2 hover:ring-white/50"
-                                onclick="setAccentColor('#914D79', this)"></div>
-
-                            <div class="accent-color w-8 h-8 rounded-full bg-stone-500 cursor-pointer hover:ring-2 hover:ring-white/50"
-                                onclick="setAccentColor('#9E8850', this)"></div>
-
-                            <div class="accent-color w-8 h-8 rounded-full bg-rose-500 cursor-pointer hover:ring-2 hover:ring-white/50"
-                                onclick="setAccentColor('#712925', this)"></div>
-
-                            <div class="accent-color w-8 h-8 rounded-full bg-zinc-500 cursor-pointer hover:ring-2 hover:ring-white/50"
-                                onclick="setAccentColor('#2B2C2B', this)"></div>
-
+                        <h4 class="text-sm text-accent mb-3">Accent Color</h4>
+                        <div class="flex flex-wrap gap-3">
+                            <div class="accent-color w-8 h-8 rounded-full bg-[#06b6d4] cursor-pointer hover:ring-2 hover:ring-white/50" onclick="setAccentColor('#06b6d4', this)"></div>
+                            <div class="accent-color w-8 h-8 rounded-full bg-[#a855f7] cursor-pointer hover:ring-2 hover:ring-white/50" onclick="setAccentColor('#a855f7', this)"></div>
+                            <div class="accent-color w-8 h-8 rounded-full bg-[#f59e0b] cursor-pointer hover:ring-2 hover:ring-white/50" onclick="setAccentColor('#f59e0b', this)"></div>
+                            <div class="accent-color w-8 h-8 rounded-full bg-[#22c55e] cursor-pointer hover:ring-2 hover:ring-white/50" onclick="setAccentColor('#22c55e', this)"></div>
+                            <div class="accent-color w-8 h-8 rounded-full bg-[#ef4444] cursor-pointer hover:ring-2 hover:ring-white/50" onclick="setAccentColor('#ef4444', this)"></div>
+                            <div class="accent-color w-8 h-8 rounded-full bg-[#3b82f6] cursor-pointer hover:ring-2 hover:ring-white/50" onclick="setAccentColor('#3b82f6', this)"></div>
+                            <div class="accent-color w-8 h-8 rounded-full bg-[#3C8E38] cursor-pointer hover:ring-2 hover:ring-white/50" onclick="setAccentColor('#3C8E38', this)"></div>
+                            <div class="accent-color w-8 h-8 rounded-full bg-[#B87232] cursor-pointer hover:ring-2 hover:ring-white/50" onclick="setAccentColor('#B87232', this)"></div>
+                            <div class="accent-color w-8 h-8 rounded-full bg-[#5F268D] cursor-pointer hover:ring-2 hover:ring-white/50" onclick="setAccentColor('#5F268D', this)"></div>
+                            <div class="accent-color w-8 h-8 rounded-full bg-[#914D79] cursor-pointer hover:ring-2 hover:ring-white/50" onclick="setAccentColor('#914D79', this)"></div>
+                            <div class="accent-color w-8 h-8 rounded-full bg-[#712925] cursor-pointer hover:ring-2 hover:ring-white/50" onclick="setAccentColor('#712925', this)"></div>
+                            <div class="accent-color w-8 h-8 rounded-full bg-[#2B2C2B] cursor-pointer hover:ring-2 hover:ring-white/50" onclick="setAccentColor('#2B2C2B', this)"></div>
                         </div>
                     </div>
-
                     <div class="glass-panel p-6 rounded-xl">
-                        <h3 class="text-[var(--text-second)] font-bold mb-4 border-b border-cyan-900/50 pb-2">Background</h3>
-                        
-                        <select class="w-full bg-[var(--input-bg)] border border-cyan-700 rounded p-2 text-[var(--text-second)] text-sm mb-4">
-                            <option>Orbital View   (3D)</option>
-                            <option>Neural Network (3D)</option>
-                            <option>Code Rain (Matrix)</option>
-                            <option>Solid Black (Perf)</option>
+                        <h3 class="text-[var(--text-second)] font-bold mb-4 border-b border-accent-dark/50 pb-2">Background</h3>
+                        <select onchange="handleBackgroundChange(this.value)" class="w-full bg-[var(--input-bg)] border border-accent-dark rounded p-2 text-[var(--text-second)] text-sm mb-4">
+                            <option value="neural">Neural Network (3D)</option>
+                            <option value="neural 2">Neural Mind</option>
+                            <option value="matrix">Code Rain (Matrix)</option>
+                            <option value="solid">Solid Black (Perf)</option>
                         </select>
-
-                        <div class="border-2 border-dashed border-cyan-800 rounded-lg p-8 text-center cursor-pointer hover:border-cyan-500 hover:bg-cyan-900/20 transition-all" id="bg-drop-zone">
-                            <i data-lucide="image" class="w-8 h-8 mx-auto mb-2 text-cyan-600"></i>
-                            <p class="text-xs text-cyan-600">Drop Custom BG Image</p>
+                        <div class="border-2 border-dashed border-accent-dark/60 rounded-lg p-8 text-center cursor-pointer hover:border-accent hover:bg-accent-dark/20 transition-all" id="bg-drop-zone">
+                            <i data-lucide="image" class="w-8 h-8 mx-auto mb-2 text-accent"></i>
+                            <p class="text-xs text-accent">Drop Custom BG Image</p>
                         </div>
-
                         <input type="file" id="bg-file-input" accept="image/*" class="hidden" />
-                        <button id="remove-bg-btn" class="w-full mt-4 py-3 bg-cyan-700 hover:bg-cyan-600 text-white rounded font-bold shadow-lg shadow-cyan-900/50 transition-all">
+                        <button id="remove-bg-btn" class="w-full mt-4 py-3 bg-accent/80 hover:bg-accent text-white rounded font-bold shadow-lg shadow-accent-dark/50 transition-all">
                             Remove Custom Bg
-                        </button> 
-            
+                        </button>
                     </div>
                 </div>
             </div>
         </section>
 
+        <!-- BOT MANAGEMENT -->
         <section id="module-management" class="module-section flex-col h-full w-full p-4 md:p-8 overflow-hidden relative">
-            
             <canvas id="bg-bot" class="bg-canvas-container"></canvas>
-
             <div class="max-w-3xl mx-auto w-full relative z-10 h-full flex flex-col justify-center">
                 <div class="glass-panel p-6 rounded-xl mb-4 border-green-900/30 bg-[var(--glass-bg)]">
                     <div class="flex justify-between items-center border-b border-green-900/50 pb-4 mb-4">
@@ -826,7 +692,6 @@
                         </h2>
                         <span class="text-xs font-mono text-green-600 bg-[var(--input-bg)] p-1 border border-green-800 rounded">ID: 0001</span>
                     </div>
-
                     <div class="flex items-center justify-between bg-green-900/20 border border-green-500/30 p-4 rounded-lg mb-4">
                         <div class="flex items-center gap-3">
                             <div class="w-3 h-3 rounded-full bg-green-600 animate-pulse shadow-[0_0_10px_#00ff00]"></div>
@@ -836,11 +701,10 @@
                             </div>
                         </div>
                         <div class="text-right">
-                             <div class="text-[10px] text-green-600 font-mono uppercase">Status</div>
-                             <div class="text-xs font-bold text-green-500">ONLINE</div>
+                            <div class="text-[10px] text-green-600 font-mono uppercase">Status</div>
+                            <div class="text-xs font-bold text-green-500">ONLINE</div>
                         </div>
                     </div>
-
                     <div onclick="openCreateBotModal()" class="flex items-center justify-between border-2 border-dashed border-green-800/50 hover:border-green-500/80 bg-[var(--input-bg)] p-6 rounded-lg cursor-pointer transition-all group">
                         <div class="flex items-center gap-3">
                             <div class="w-8 h-8 rounded-full border border-green-800 flex items-center justify-center text-green-800 group-hover:text-green-400 group-hover:border-green-400">
@@ -853,7 +717,6 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="glass-panel p-6 rounded-xl border-green-900/30 bg-[var(--input-bg)]">
                     <div class="grid grid-cols-3 gap-4">
                         <button class="py-3 px-4 border border-green-800/20 hover:bg-green-600/20 text-green-500 font-mono text-xs font-bold transition-all rounded backdrop-blur-sm">SAVE</button>
@@ -866,7 +729,8 @@
                 </div>
             </div>
         </section>
-<section id="module-agents" class="module-section flex-col h-full w-full p-4 md:p-8 overflow-hidden relative">
+
+        <section id="module-agents" class="module-section flex-col h-full w-full p-4 md:p-8 overflow-hidden relative">
             <div class="agent-ui glass-panel">
                 <!-- Agent List -->
                 <div class="agent-sidebar">
@@ -903,15 +767,15 @@
                                 <option class="text-accent font-mono">GPT-Q/GPT4All</option>
                                 <option class="text-accent font-mono">deeperhermes</option>
                                 <option class="text-accent font-mono">dolphin3</option>
-                                <option class="text-accent font-mono">groq-code-cli</option> 
-                                <option class="text-accent font-mono">dolphin-2.5-mixtral-8x7b</option> 
+                                <option class="text-accent font-mono">groq-code-cli</option>
+                                <option class="text-accent font-mono">dolphin-2.5-mixtral-8x7b</option>
                                 <option class="text-accent font-mono">MLewd-v2.4-13B-GGUF</option>
                                 <option class="text-accent font-mono">dolphin-2.5-mixtral-8x7b-GGUF</option>
-                                <option class="text-accent font-mono">goliath-120b-GGUF</option> 
+                                <option class="text-accent font-mono">goliath-120b-GGUF</option>
                                 <option class="text-accent font-mono">L3-8B-Stheno-v3.2</option>
-                                <option class="text-accent font-mono">L3-8B-Niitama-v1</option> 
-                                <option class="text-accent font-mono">NeuralStar_FusionWriter_4x7b-GGUF</option> 
-                                <option class="text-accent font-mono">Noro-Hermes-3x7B-GGUF</option> 
+                                <option class="text-accent font-mono">L3-8B-Niitama-v1</option>
+                                <option class="text-accent font-mono">NeuralStar_FusionWriter_4x7b-GGUF</option>
+                                <option class="text-accent font-mono">Noro-Hermes-3x7B-GGUF</option>
                                 <option class="text-accent font-mono">HeroBophades-3x7B</option>
                             </select>
                             <label class="local-toggle text-accent font-mono">
@@ -929,17 +793,13 @@
                 </template>
                 <!-- Tools -->
                 <div class="agent-tools glass-panel">
-
                     <h3 class="agent-title text-accent font-mono">Tools</h3>
-
                     <label class="tool-item text-accent font-mono">
                         <input type="checkbox"> Web Search
                     </label>
-
                     <label class="tool-item text-accent font-mono">
                         <input type="checkbox"> Vector DB
                     </label>
-
                     <label class="tool-item text-accent font-mono">
                         <input type="checkbox"> Code Interpreter
                     </label>
@@ -947,472 +807,398 @@
             </div>
 
             <template id="workflow-step-template">
+                <div class="workflow-step">
+                    <span class="workflow-index"></span>
+                    <select class="workflow-agent">
+                        <option value="">Select Agent</option>
+                    </select>
+                    <select class="workflow-action">
+                        <option value="respond">Respond</option>
+                        <option value="research">Research</option>
+                        <option value="code">Generate Code</option>
+                        <option value="tool">Use Tool</option>
+                    </select>
+                    <button class="workflow-remove">✕</button>
+                </div>
+            </template>
+                <!-- Workflow Builder -->
+                <div class="workflow-builder glass-panel">
+                    <h2 class="agent-title text-accent font-mono">Workflow</h2>
+                    <div id="workflow-steps" class="workflow-steps"></div>
+                    <button id="add-step-btn" class="workflow-add text-accent font-mono" onclick="addWorkflowStep()" disabled>
+                        + Add Step
+                    </button>
+                </div>
+        </section>
 
-<div class="workflow-step">
-
-    <span class="workflow-index"></span>
-
-    <select class="workflow-agent">
-        <option value="">Select Agent</option>
-    </select>
-
-    <select class="workflow-action">
-        <option value="respond">Respond</option>
-        <option value="research">Research</option>
-        <option value="code">Generate Code</option>
-        <option value="tool">Use Tool</option>
-    </select>
-
-    <button class="workflow-remove">✕</button>
-
-</div>
-
-</template>
-    <!-- Workflow Builder -->
-    <div class="workflow-builder glass-panel">
-        <h2 class="agent-title text-accent font-mono">Workflow</h2>
-        <div id="workflow-steps" class="workflow-steps"></div>
-        <button id="add-step-btn" class="workflow-add text-accent font-mono" onclick="addWorkflowStep()" disabled>
-            + Add Step
-        </button>
-    </div>
-    </section>
-    <script>
-    document.addEventListener('change', (e) => {
-        if (!e.target.classList.contains('local-model-toggle')) return;
-
-        const container = e.target.closest('.agent-instance');
-        if (!container) return;
-
-        const groqSelect = container.querySelector('#groq-select');
-        const localSelect = container.querySelector('#local-select');
-
-        if (e.target.checked) {
-            groqSelect.style.display = 'none';
-            groqSelect.disabled = true;
-
-            localSelect.style.display = '';
-            localSelect.disabled = false;
-        } else {
-            groqSelect.style.display = '';
-            groqSelect.disabled = false;
-
-            localSelect.style.display = 'none';
-            localSelect.disabled = true;
-        }
-    });
-
-    // Optional: Initialize new agents with proper toggle
-function initializeAgent(agentEl) {
-    const checkbox = agentEl.querySelector('.local-model-toggle');
-    if (!checkbox) return;
-
-    // Trigger the toggle once to set initial state
-    checkbox.dispatchEvent(new Event('change'));
-}
-
-// Example: spawning a new agent
-function addAgent() {
-    const template = document.getElementById('agent-template');
-    const clone = template.content.cloneNode(true);
-    const container = clone.querySelector('.agent-instance');
-
-    document.getElementById('workflow-steps').appendChild(clone);
-    initializeAgent(container);
-
-    // After adding agent, update + Step button state
-    updateAddStepButton();
-}
-
-// Enable / disable + Step button based on agent existence
-function updateAddStepButton() {
-    const agents = document.querySelectorAll('.agent-instance');
-    addStepBtn.disabled = agents.length === 0;
-}
-        let workflowStepCounter = 0;
-
-function addWorkflowStep(){
-
-    const template = document.getElementById("workflow-step-template");
-    const container = document.getElementById("workflow-steps");
-
-    const clone = template.content.cloneNode(true);
-
-    const stepIndex = ++workflowStepCounter;
-
-    const indexLabel = clone.querySelector(".workflow-index");
-    indexLabel.textContent = stepIndex;
-
-    const removeBtn = clone.querySelector(".workflow-remove");
-
-    removeBtn.addEventListener("click", (e)=>{
-        e.target.closest(".workflow-step").remove();
-        reindexWorkflow();
-    });
-
-    populateAgentDropdown(clone);
-
-    container.appendChild(clone);
-}
-function populateAgentDropdown(stepClone){
-
-    const agentSelect = stepClone.querySelector(".workflow-agent");
-
-    const agents = document.querySelectorAll(".agent-instance");
-
-    agents.forEach(agent => {
-
-        const nameInput = agent.querySelector(".agent-name");
-
-        const option = document.createElement("option");
-        option.value = nameInput.value || "Unnamed Agent";
-        option.textContent = option.value;
-
-        agentSelect.appendChild(option);
-
-    });
-
-}
-function reindexWorkflow(){
-
-    const steps = document.querySelectorAll(".workflow-step");
-
-    steps.forEach((step,i)=>{
-        step.querySelector(".workflow-index").textContent = i+1;
-    });
-
-    workflowStepCounter = steps.length;
-}
-
-        // --- 1. Navigation ---
-        function switchTab(tabId) {
-            document.querySelectorAll('.module-section').forEach(el => el.classList.remove('active'));
-            document.getElementById('module-' + tabId).classList.add('active');
-
-            document.querySelectorAll('nav button').forEach(btn => {
-                btn.classList.remove('active-nav');
-                btn.classList.add('inactive-nav');
-            });
-            const activeBtn = document.getElementById('nav-' + tabId);
-            activeBtn.classList.remove('inactive-nav');
-            activeBtn.classList.add('active-nav');
-
-            resizeCanvases();
-        }
-        document.addEventListener("DOMContentLoaded", () => {
-            const botModule = document.getElementById("module-management");
-            if (botModule) {
-                // Make sure the section is visible before initializing
-                setTimeout(() => {
-                    if (!window.currentBG) {
-                        window.currentBG = initMatrixRain();
-                    }
-                }, 100); // small delay to let CSS render
-            }
-        });
-
-        let agentCounter = 0;
-
-function createAgent() {
-
-    const template = document.getElementById("agent-template");
-    const agentList = document.getElementById("agent-list");
-
-    const clone = template.content.cloneNode(true);
-
-    const agentId = "agent_" + (++agentCounter);
-
-    const agentRoot = clone.querySelector(".agent-instance");
-    agentRoot.dataset.agentId = agentId;
-
-    const modelSelect = clone.querySelector(".agent-model");
-    const localToggle = clone.querySelector(".local-model-toggle");
-
-    localToggle.addEventListener("change", () => {
-
-        modelSelect.disabled = localToggle.checked;
-
-        if(localToggle.checked){
-            modelSelect.style.opacity = "0.5";
-        } else {
-            modelSelect.style.opacity = "1";
-        }
-
-    });
-
-    agentList.appendChild(clone);
-    setAgentExists(true); // enable + Step once agent exists
-}
-
-    const addStepBtn = document.querySelector('.workflow-add');
-
-    // Example: your agent state
-    let agentExists = false;
-
-    function setAgentExists(exists) {
-        agentExists = exists;
-        addStepBtn.disabled = !agentExists; // disable if no agent
-    }
-
-    // Example function to add an agent
-    function addAgent() {
-        // your agent creation logic
-        setAgentExists(true); // enable + Step once agent exists
-    }
-
-    // Optional: initialize button state on load
-    addStepBtn.disabled = !agentExists;
-    </script>
     </main>
 
     <script>
-        // --- 1. Navigation ---
+        // =====================================================
+        // AGENT MANAGEMENT — Miles's version, verbatim
+        // =====================================================
+
+        document.addEventListener('change', (e) => {
+            if (!e.target.classList.contains('local-model-toggle')) return;
+
+            const container = e.target.closest('.agent-instance');
+            if (!container) return;
+
+            const groqSelect = container.querySelector('#groq-select');
+            const localSelect = container.querySelector('#local-select');
+
+            if (e.target.checked) {
+                groqSelect.style.display = 'none';
+                groqSelect.disabled = true;
+                localSelect.style.display = '';
+                localSelect.disabled = false;
+            } else {
+                groqSelect.style.display = '';
+                groqSelect.disabled = false;
+                localSelect.style.display = 'none';
+                localSelect.disabled = true;
+            }
+        });
+
+        function initializeAgent(agentEl) {
+            const checkbox = agentEl.querySelector('.local-model-toggle');
+            if (!checkbox) return;
+            checkbox.dispatchEvent(new Event('change'));
+        }
+
+        function addAgent() {
+            const template = document.getElementById('agent-template');
+            const clone = template.content.cloneNode(true);
+            const container = clone.querySelector('.agent-instance');
+            document.getElementById('workflow-steps').appendChild(clone);
+            initializeAgent(container);
+            updateAddStepButton();
+        }
+
+        function updateAddStepButton() {
+            const agents = document.querySelectorAll('.agent-instance');
+            addStepBtn.disabled = agents.length === 0;
+        }
+
+        let workflowStepCounter = 0;
+
+        function addWorkflowStep() {
+            const template = document.getElementById("workflow-step-template");
+            const container = document.getElementById("workflow-steps");
+            const clone = template.content.cloneNode(true);
+            const stepIndex = ++workflowStepCounter;
+            clone.querySelector(".workflow-index").textContent = stepIndex;
+            const removeBtn = clone.querySelector(".workflow-remove");
+            removeBtn.addEventListener("click", (e) => {
+                e.target.closest(".workflow-step").remove();
+                reindexWorkflow();
+            });
+            populateAgentDropdown(clone);
+            container.appendChild(clone);
+        }
+
+        function populateAgentDropdown(stepClone) {
+            const agentSelect = stepClone.querySelector(".workflow-agent");
+            const agents = document.querySelectorAll(".agent-instance");
+            agents.forEach(agent => {
+                const nameInput = agent.querySelector(".agent-name");
+                const option = document.createElement("option");
+                option.value = nameInput.value || "Unnamed Agent";
+                option.textContent = option.value;
+                agentSelect.appendChild(option);
+            });
+        }
+
+        function reindexWorkflow() {
+            const steps = document.querySelectorAll(".workflow-step");
+            steps.forEach((step, i) => {
+                step.querySelector(".workflow-index").textContent = i + 1;
+            });
+            workflowStepCounter = steps.length;
+        }
+
+        let agentCounter = 0;
+
+        function createAgent() {
+            const template = document.getElementById("agent-template");
+            const agentList = document.getElementById("agent-list");
+            const clone = template.content.cloneNode(true);
+            const agentId = "agent_" + (++agentCounter);
+            const agentRoot = clone.querySelector(".agent-instance");
+            agentRoot.dataset.agentId = agentId;
+            const modelSelect = clone.querySelector(".agent-model");
+            const localToggle = clone.querySelector(".local-model-toggle");
+            localToggle.addEventListener("change", () => {
+                modelSelect.disabled = localToggle.checked;
+                if (localToggle.checked) {
+                    modelSelect.style.opacity = "0.5";
+                } else {
+                    modelSelect.style.opacity = "1";
+                }
+            });
+            agentList.appendChild(clone);
+            setAgentExists(true);
+        }
+
+        const addStepBtn = document.querySelector('.workflow-add');
+        let agentExists = false;
+
+        function setAgentExists(exists) {
+            agentExists = exists;
+            addStepBtn.disabled = !agentExists;
+        }
+
+        addStepBtn.disabled = !agentExists;
+
+        // =====================================================
+        // NAVIGATION
+        // =====================================================
         function switchTab(tabId) {
             document.querySelectorAll('.module-section').forEach(el => el.classList.remove('active'));
             document.getElementById('module-' + tabId).classList.add('active');
-
             document.querySelectorAll('nav button').forEach(btn => {
                 btn.classList.remove('active-nav');
                 btn.classList.add('inactive-nav');
             });
             const activeBtn = document.getElementById('nav-' + tabId);
-            activeBtn.classList.remove('inactive-nav');
-            activeBtn.classList.add('active-nav');
-
+            if (activeBtn) {
+                activeBtn.classList.remove('inactive-nav');
+                activeBtn.classList.add('active-nav');
+            }
             resizeCanvases();
         }
 
-        // --- GLOBAL VARIABLES ---
+        // =====================================================
+        // THREE.JS GLOBE BACKGROUND
+        // =====================================================
         let renderer, scene, camera, globe, core, particles;
         let globeMaterial, coreMaterial, particlesMaterial;
         let animateId;
         const bgChatContainer = document.getElementById('bg-chat');
         let customBgSelected = false;
 
-        // --- FIX 1: initChatBackground — accentColor declared BEFORE use ---
         function initChatBackground() {
-            // Clear any custom background
             bgChatContainer.style.backgroundImage = "none";
             bgChatContainer.style.backgroundSize = "";
             bgChatContainer.style.backgroundPosition = "";
 
-            // Stop any existing animation loop
-            if (animateId) {
-                cancelAnimationFrame(animateId);
-                animateId = null;
-            }
-
-            // Remove any existing canvas
+            if (animateId) { cancelAnimationFrame(animateId); animateId = null; }
             if (renderer && renderer.domElement && renderer.domElement.parentNode) {
                 renderer.domElement.parentNode.removeChild(renderer.domElement);
                 renderer.dispose();
                 renderer = null;
             }
 
-            // Read accent color FIRST before using it
-            const accentColor = getComputedStyle(document.documentElement)
-                .getPropertyValue('--primary-accent')
-                .trim() || '#06b6d4';
-
+            const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--primary-accent').trim() || '#06b6d4';
             scene = new THREE.Scene();
             scene.fog = new THREE.FogExp2(0x000000, 0.02);
-
             camera = new THREE.PerspectiveCamera(75, bgChatContainer.clientWidth / bgChatContainer.clientHeight, 0.1, 1000);
             camera.position.z = 15;
-
             renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
             renderer.setSize(bgChatContainer.clientWidth, bgChatContainer.clientHeight);
             renderer.setPixelRatio(window.devicePixelRatio);
             bgChatContainer.appendChild(renderer.domElement);
 
-            // Globe — uses accentColor (now safely declared above)
             const globeGeometry = new THREE.IcosahedronGeometry(6, 2);
-            const wireframeGeometry = new THREE.WireframeGeometry(globeGeometry);
-            globeMaterial = new THREE.LineBasicMaterial({
-                color: accentColor,
-                transparent: true,
-                opacity: 0.15
-            });
-            globe = new THREE.LineSegments(wireframeGeometry, globeMaterial);
+            globeMaterial = new THREE.LineBasicMaterial({ color: accentColor, transparent: true, opacity: 0.15 });
+            globe = new THREE.LineSegments(new THREE.WireframeGeometry(globeGeometry), globeMaterial);
             scene.add(globe);
 
-            // Core
-            const coreGeo = new THREE.IcosahedronGeometry(2, 1);
-            coreMaterial = new THREE.MeshBasicMaterial({
-                color: accentColor,
-                wireframe: true,
-                transparent: true,
-                opacity: 0.3
-            });
-            core = new THREE.Mesh(coreGeo, coreMaterial);
+            coreMaterial = new THREE.MeshBasicMaterial({ color: accentColor, wireframe: true, transparent: true, opacity: 0.3 });
+            core = new THREE.Mesh(new THREE.IcosahedronGeometry(2, 1), coreMaterial);
             scene.add(core);
 
-            // Particles
+            const posArray = new Float32Array(400 * 3);
+            for (let i = 0; i < 1200; i++) posArray[i] = (Math.random() - 0.5) * 25;
             const particlesGeo = new THREE.BufferGeometry();
-            const particleCount = 400;
-            const posArray = new Float32Array(particleCount * 3);
-            for (let i = 0; i < particleCount * 3; i++) posArray[i] = (Math.random() - 0.5) * 25;
             particlesGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
-            particlesMaterial = new THREE.PointsMaterial({
-                size: 0.1,
-                color: accentColor,
-                transparent: true,
-                opacity: 0.6
-            });
+            particlesMaterial = new THREE.PointsMaterial({ size: 0.1, color: accentColor, transparent: true, opacity: 0.6 });
             particles = new THREE.Points(particlesGeo, particlesMaterial);
             scene.add(particles);
 
             const animate = () => {
                 animateId = requestAnimationFrame(animate);
-                globe.rotation.y += 0.002;
-                globe.rotation.x += 0.0005;
+                globe.rotation.y += 0.002; globe.rotation.x += 0.0005;
                 core.rotation.y -= 0.004;
                 particles.rotation.y += 0.0005;
                 renderer.render(scene, camera);
             };
             animate();
 
-            // Remove any previous globe resize listener before adding a new one
-            if (window._globeResizeHandler) {
-                window.removeEventListener('resize', window._globeResizeHandler);
-            }
+            if (window._globeResizeHandler) window.removeEventListener('resize', window._globeResizeHandler);
             window._globeResizeHandler = () => {
                 if (!renderer || customBgSelected) return;
-                const w = bgChatContainer.clientWidth;
-                const h = bgChatContainer.clientHeight;
+                const w = bgChatContainer.clientWidth, h = bgChatContainer.clientHeight;
                 if (w === 0 || h === 0) return;
                 camera.aspect = w / h;
                 camera.updateProjectionMatrix();
                 renderer.setSize(w, h);
             };
             window.addEventListener('resize', window._globeResizeHandler);
-
             customBgSelected = false;
         }
 
-        // --- FIX 2: updateGlobeAccent — also updates particlesMaterial ---
         function updateGlobeAccent() {
-            const accent = getComputedStyle(document.documentElement)
-                .getPropertyValue('--primary-accent')
-                .trim();
-
+            const accent = getComputedStyle(document.documentElement).getPropertyValue('--primary-accent').trim();
             if (globeMaterial) globeMaterial.color.set(accent);
             if (coreMaterial) coreMaterial.color.set(accent);
             if (particlesMaterial) particlesMaterial.color.set(accent);
         }
 
-        // --- FIX 3: setAccentColor — now saves to localStorage ---
-        function setAccentColor(color, element) {
-            document.documentElement.style.setProperty('--primary-accent', color);
-            document.documentElement.style.setProperty('--glass-border', color + '55');
-            localStorage.setItem('cybel-accent', color);
-            updateGlobeAccent();
+        // =====================================================
+        // ACCENT + THEME
+        // =====================================================
+        const themeProfiles = {
+            '#06b6d4': { rgb: '6 182 212',   darkRgb: '22 78 99',    gradRgb: '59 130 246' },
+            '#a855f7': { rgb: '168 85 247',  darkRgb: '88 28 135',   gradRgb: '236 72 153' },
+            '#f59e0b': { rgb: '245 158 11',  darkRgb: '120 53 15',   gradRgb: '249 115 22' },
+            '#22c55e': { rgb: '34 197 94',   darkRgb: '20 83 45',    gradRgb: '20 184 166' },
+            '#ef4444': { rgb: '239 68 68',   darkRgb: '127 29 29',   gradRgb: '249 115 22' },
+            '#3b82f6': { rgb: '59 130 246',  darkRgb: '30 58 138',   gradRgb: '99 102 241' },
+            '#3C8E38': { rgb: '60 142 56',   darkRgb: '20 60 20',    gradRgb: '20 184 166' },
+            '#B87232': { rgb: '184 114 50',  darkRgb: '92 46 10',    gradRgb: '249 115 22' },
+            '#5F268D': { rgb: '95 38 141',   darkRgb: '50 10 80',    gradRgb: '236 72 153' },
+            '#914D79': { rgb: '145 77 121',  darkRgb: '80 20 60',    gradRgb: '236 72 153' },
+            '#712925': { rgb: '113 41 37',   darkRgb: '70 15 12',    gradRgb: '249 115 22' },
+            '#2B2C2B': { rgb: '43 44 43',    darkRgb: '20 20 20',    gradRgb: '75 85 99'   },
+        };
 
+        const aiPfps = {
+            '#06b6d4': './assets/image2.png',
+            '#a855f7': './assets/purple.png',
+            '#f59e0b': './assets/yellow.png',
+            '#22c55e': './assets/green.png',
+            '#ef4444': './assets/red.png'
+        };
+
+        function setAccentColor(hexCode, element) {
+            const profile = themeProfiles[hexCode] || { rgb: '6 182 212', darkRgb: '22 78 99', gradRgb: '59 130 246' };
+            document.documentElement.style.setProperty('--color-accent', profile.rgb);
+            document.documentElement.style.setProperty('--color-accent-dark', profile.darkRgb);
+            document.documentElement.style.setProperty('--color-accent-secondary', profile.gradRgb);
+            document.documentElement.style.setProperty('--primary-accent', hexCode);
+            document.documentElement.style.setProperty('--glass-border', `rgba(${profile.rgb} / 0.3)`);
+            localStorage.setItem('cybel-accent', hexCode);
+            updateGlobeAccent();
             syncAccentColor(element);
+            updateAvatars(hexCode);
+            
+            const iframe = document.querySelector('#bg-chat iframe');
+            if (iframe) {
+                iframe.contentWindow.postMessage({ accent: hexCode.replace('#', '') }, '*');
+            }
         }
 
-        function syncAccentColor(activeEl){
+        function syncAccentColor(activeEl) {
             document.querySelectorAll('.accent-color').forEach(el => el.classList.remove('active'));
             if (activeEl) activeEl.classList.add('active');
         }
 
-
-
-
-        // --- Custom background file input ---
-        const dropZone = document.getElementById('bg-drop-zone');
-        const fileInput = document.getElementById('bg-file-input');
-
-        dropZone.addEventListener('click', () => fileInput.click());
-
-        fileInput.addEventListener('change', (event) => {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const imageData = e.target.result;
-
-                if (animateId) cancelAnimationFrame(animateId);
-
-                if (renderer && renderer.domElement.parentNode) {
-                    renderer.domElement.parentNode.removeChild(renderer.domElement);
-                    renderer.dispose();
-                    renderer = null;
-                }
-
-                bgChatContainer.style.backgroundImage = `url(${imageData})`;
-                bgChatContainer.style.backgroundSize = 'cover';
-                bgChatContainer.style.backgroundPosition = 'center';
-
-                customBgSelected = true;
-                dropZone.querySelector('p').innerText = `Loaded: ${file.name}`;
-            };
-            reader.readAsDataURL(file);
-        });
-
-        // --- Bot Background: Matrix Rain ---
-        function initBotBackground() {
-            const canvas = document.getElementById('bg-bot');
-            if (!canvas) return;
-
-            const ctx = canvas.getContext('2d');
-            const fontSize = 14;
-            let columns = Math.floor(canvas.width / fontSize);
-            const drops = new Array(columns).fill(1);
-            const chars = "010101XYZAUTOMATSYSTEM";
-
-            function resizeCanvas() {
-                canvas.width = canvas.parentElement.clientWidth;
-                canvas.height = canvas.parentElement.clientHeight;
-                columns = Math.floor(canvas.width / fontSize);
-                drops.length = columns;
-                for (let i = 0; i < columns; i++) drops[i] = 1;
-            }
-            resizeCanvas();
-            window.addEventListener('resize', resizeCanvas);
-
-            function draw() {
-                if (canvas.width === 0 || canvas.height === 0) return;
-
-                const isLight = document.body.classList.contains('light-theme');
-                ctx.fillStyle = isLight ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.05)";
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = isLight ? "#009900" : "#0F0";
-                ctx.font = fontSize + "px monospace";
-
-                for (let i = 0; i < drops.length; i++) {
-                    const text = chars.charAt(Math.floor(Math.random() * chars.length));
-                    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-                    if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
-                    drops[i]++;
-                }
-            }
-
-            setInterval(draw, 33);
+        function updateAvatars(hexCode) {
+            const src = aiPfps[hexCode] || './assets/image2.png';
+            document.querySelectorAll('img[alt="AI Avatar"]').forEach(img => img.src = src);
         }
 
-        // --- UI Logic ---
-        function toggleSwitch(btn) {
-            const knob = btn.querySelector('span');
-            const isActive = btn.classList.contains('bg-green-600');
-            if (isActive) {
-                btn.classList.remove('bg-green-600'); btn.classList.add('bg-gray-700');
-                knob.classList.remove('right-1'); knob.classList.add('left-1');
-            } else {
-                btn.classList.remove('bg-gray-700'); btn.classList.add('bg-green-600');
-                knob.classList.remove('left-1'); knob.classList.add('right-1');
+        function loadSavedAccent() {
+            const saved = localStorage.getItem('cybel-accent');
+            if (!saved) return;
+            const el = Array.from(document.querySelectorAll('.accent-color')).find(
+                b => b.getAttribute('onclick')?.includes(saved)
+            );
+            setAccentColor(saved, el || null);
+        }
+
+        function setTheme(mode) {
+            document.body.classList.toggle('light-theme', mode === 'light');
+            localStorage.setItem('cybel-theme', mode);
+
+            const iframe = document.querySelector('#bg-chat iframe');
+            if (iframe) {
+                iframe.contentWindow.postMessage({ theme: mode }, '*');
             }
         }
 
-        function closeModal(id) {
-            const modal = document.getElementById(id);
-            modal.classList.add('opacity-0');
-            modal.querySelector('.modal-content').classList.remove('scale-100');
-            modal.querySelector('.modal-content').classList.add('scale-95');
-            setTimeout(() => modal.classList.add('hidden'), 200);
+        function loadSavedTheme() {
+            setTheme(localStorage.getItem('cybel-theme') || 'dark');
         }
 
+        // =====================================================
+        // CHAT
+        // =====================================================
+        async function handleChatSubmit(e) {
+            e.preventDefault();
+            const input = document.getElementById('chat-input');
+            const history = document.getElementById('chat-history');
+            const text = input.value.trim();
+            if (!text) return;
+
+            history.insertAdjacentHTML('beforeend', `
+                <div class="flex gap-4 justify-end">
+                    <div class="border border-accent-dark/50 p-4 rounded-lg rounded-tr-none shadow-lg max-w-[80%]">
+                        <p class="text-accent/80 text-sm leading-relaxed">${text}</p>
+                    </div>
+                </div>`);
+            input.value = '';
+            history.scrollTop = history.scrollHeight;
+
+            const thinkingId = `thinking-${Date.now()}`;
+            history.insertAdjacentHTML('beforeend', `
+                <div id="${thinkingId}" class="flex gap-4">
+                    <div class="w-8 h-8 rounded-full bg-accent-dark/50 flex items-center justify-center border border-accent/30">
+                        <img src="./assets/image2.png" alt="AI Avatar" class="w-full h-full object-cover" />
+                    </div>
+                    <div class="bg-black/60 border border-accent/30 p-4 rounded-lg rounded-tl-none max-w-[80%]">
+                        <p class="text-accent/80 text-sm font-mono animate-pulse">Processing…</p>
+                    </div>
+                </div>`);
+            lucide.createIcons();
+            history.scrollTop = history.scrollHeight;
+
+            try {
+                const res = await fetch("http://localhost:8000/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: text })
+                });
+                const data = await res.json();
+                const content = marked.parse(data.response);
+                document.getElementById(thinkingId).outerHTML = `
+                    <div class="flex gap-4">
+                        <div class="w-8 h-8 rounded-full bg-accent-dark/50 flex items-center justify-center border border-accent/30">
+                            <img src="./assets/image2.png" alt="AI Avatar" class="w-full h-full object-cover" />
+                        </div>
+                        <div class="bg-black/60 border border-accent/30 p-4 rounded-lg rounded-tl-none shadow-lg max-w-[80%]">
+                            <div class="markdown-content">${content}</div>
+                        </div>
+                    </div>`;
+                lucide.createIcons();
+                history.scrollTop = history.scrollHeight;
+            } catch (err) {
+                document.getElementById(thinkingId)?.remove();
+                showModal("Connection Error", "Unable to reach CYBEL core.");
+            }
+        }
+
+        function handleFileUpload(input) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const history = document.getElementById('chat-history');
+                history.insertAdjacentHTML('beforeend', `
+                    <div class="flex gap-4 justify-end">
+                        <div class="bg-accent-dark/30 border border-accent-dark/50 p-4 rounded-lg rounded-tr-none shadow-lg max-w-[80%]">
+                            <p class="text-accent/80 text-sm leading-relaxed flex items-center gap-2">
+                                <i data-lucide="file"></i> Attached: ${file.name}
+                            </p>
+                        </div>
+                    </div>`);
+                history.scrollTop = history.scrollHeight;
+                lucide.createIcons();
+            }
+        }
+
+        // =====================================================
+        // MODAL
+        // =====================================================
         function showModal(title, message) {
             const modal = document.getElementById('custom-modal');
             document.getElementById('modal-title').innerText = title;
@@ -1425,104 +1211,33 @@ function createAgent() {
             }, 10);
         }
 
-        async function handleChatSubmit(e) {
-            e.preventDefault();
-
-            const input = document.getElementById('chat-input');
-            const history = document.getElementById('chat-history');
-            const text = input.value.trim();
-            if (!text) return;
-
-            history.insertAdjacentHTML('beforeend', `
-                <div class="flex gap-4 justify-end">
-                    <div class="bg-cyan-900/30 border border-cyan-700/50 p-4 rounded-lg rounded-tr-none shadow-lg max-w-[80%]">
-                        <p class="text-cyan-100 text-sm leading-relaxed">${text}</p>
-                    </div>
-                </div>
-            `);
-
-            input.value = '';
-            history.scrollTop = history.scrollHeight;
-
-            const thinkingId = `thinking-${Date.now()}`;
-            history.insertAdjacentHTML('beforeend', `
-                <div id="${thinkingId}" class="flex gap-4">
-                    <div class="w-8 h-8 rounded-full bg-cyan-900/50 flex items-center justify-center border border-cyan-500/30">
-                        <img src="./assets/image2.png" alt="AI Avatar" class="w-full h-full object-cover" />
-                    </div>
-                    <div class="bg-black/60 border border-cyan-500/30 p-4 rounded-lg rounded-tl-none max-w-[80%]">
-                        <p class="text-cyan-300 text-sm font-mono animate-pulse">Processing…</p>
-                    </div>
-                </div>
-            `);
-            lucide.createIcons();
-            history.scrollTop = history.scrollHeight;
-
-            try {
-                const res = await fetch("http://localhost:8000/chat", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ message: text })
-                });
-
-                const data = await res.json();
-                const content = marked.parse(data.response);
-
-                document.getElementById(thinkingId).outerHTML = `
-                    <div class="flex gap-4">
-                        <div class="w-8 h-8 rounded-full bg-cyan-900/50 flex items-center justify-center border border-cyan-500/30">
-                            <img src="./assets/image2.png" alt="AI Avatar" class="w-full h-full object-cover" />
-                        </div>
-                        <div class="bg-black/60 border border-cyan-500/30 p-4 rounded-lg rounded-tl-none shadow-lg max-w-[80%]">
-                            <div class="markdown-content">${content}</div>
-                        </div>
-                    </div>
-                `;
-                lucide.createIcons();
-                history.scrollTop = history.scrollHeight;
-
-            } catch (err) {
-                document.getElementById(thinkingId).remove();
-                showModal("Connection Error", "Unable to reach CYBEL core.");
-            }
+        function closeModal(id) {
+            const modal = document.getElementById(id);
+            modal.classList.add('opacity-0');
+            modal.querySelector('.modal-content').classList.remove('scale-100');
+            modal.querySelector('.modal-content').classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 200);
         }
 
-        function handleFileUpload(input) {
-            if (input.files && input.files[0]) {
-                const file = input.files[0];
-                const history = document.getElementById('chat-history');
-                history.insertAdjacentHTML('beforeend', `
-                    <div class="flex gap-4 justify-end">
-                        <div class="bg-cyan-900/30 border border-cyan-700/50 p-4 rounded-lg rounded-tr-none shadow-lg max-w-[80%]">
-                            <p class="text-cyan-100 text-sm leading-relaxed flex items-center gap-2">
-                                <i data-lucide="file"></i> Attached: ${file.name}
-                            </p>
-                        </div>
-                    </div>`);
-                history.scrollTop = history.scrollHeight;
-                lucide.createIcons();
-            }
-        }
-
-        // --- Create Bot Logic ---
+        // =====================================================
+        // CREATE BOT
+        // =====================================================
         let selectedBotType = null;
-
         function openCreateBotModal() {
-            document.getElementById('create-bot-modal').classList.remove('hidden');
+            const m = document.getElementById('create-bot-modal');
+            m.classList.remove('hidden');
             setTimeout(() => {
-                document.getElementById('create-bot-modal').classList.remove('opacity-0');
-                document.getElementById('create-bot-modal').querySelector('.modal-content').classList.remove('scale-95');
-                document.getElementById('create-bot-modal').querySelector('.modal-content').classList.add('scale-100');
+                m.classList.remove('opacity-0');
+                m.querySelector('.modal-content').classList.remove('scale-95');
+                m.querySelector('.modal-content').classList.add('scale-100');
             }, 10);
         }
-
         function selectBotType(type) {
             selectedBotType = type;
             document.getElementById('type-character').classList.remove('selected');
             document.getElementById('type-agent').classList.remove('selected');
             document.getElementById('type-' + type).classList.add('selected');
         }
-
         function confirmCreateBot() {
             const name = document.getElementById('new-bot-name').value;
             if (!name) { alert("Please enter an Instance Designation."); return; }
@@ -1531,191 +1246,224 @@ function createAgent() {
             showModal('Initializing Instance', `Instance ${name} (${selectedBotType.toUpperCase()} mode) is being provisioned...`);
         }
 
-        // --- Creative Mode Logic ---
+        // =====================================================
+        // CREATIVE MODE
+        // =====================================================
         let creativeStep = 1;
-        
-        function setCreativeInput(type) { creativeStep = 2; updateCreativeView(); }
-        function setCreativeOutput(type) { creativeStep = 3; updateCreativeView(); }
+        function setCreativeInput() { creativeStep = 2; updateCreativeView(); }
+        function setCreativeOutput() { creativeStep = 3; updateCreativeView(); }
         function prevCreativeStep() { if (creativeStep > 1) creativeStep--; updateCreativeView(); }
-
         function updateCreativeView() {
-            document.getElementById('creative-step-1').classList.add('hidden');
-            document.getElementById('creative-step-2').classList.add('hidden');
-            document.getElementById('creative-step-3').classList.add('hidden');
+            [1,2,3].forEach(n => document.getElementById(`creative-step-${n}`).classList.add('hidden'));
             document.getElementById(`creative-step-${creativeStep}`).classList.remove('hidden');
-
-            const ind2 = document.getElementById('step-ind-2');
-            const ind3 = document.getElementById('step-ind-3');
-            
-            if (creativeStep >= 2) {
-                ind2.classList.remove('bg-gray-800', 'text-gray-400');
-                ind2.classList.add('bg-cyan-500', 'text-black');
-            } else {
-                ind2.classList.add('bg-gray-800', 'text-gray-400');
-                ind2.classList.remove('bg-cyan-500', 'text-black');
-            }
-
-            if (creativeStep >= 3) {
-                ind3.classList.remove('bg-gray-800', 'text-gray-400');
-                ind3.classList.add('bg-cyan-500', 'text-black');
-            } else {
-                ind3.classList.add('bg-gray-800', 'text-gray-400');
-                ind3.classList.remove('bg-cyan-500', 'text-black');
-            }
+            const ind2 = document.getElementById('step-ind-2'), ind3 = document.getElementById('step-ind-3');
+            ind2.className = creativeStep >= 2 ? 'w-10 h-10 rounded-full bg-accent text-black flex items-center justify-center font-bold ring-4 ring-black' : 'w-10 h-10 rounded-full bg-gray-800 text-gray-400 flex items-center justify-center font-bold ring-4 ring-black';
+            ind3.className = creativeStep >= 3 ? 'w-10 h-10 rounded-full bg-accent text-black flex items-center justify-center font-bold ring-4 ring-black' : 'w-10 h-10 rounded-full bg-gray-800 text-gray-400 flex items-center justify-center font-bold ring-4 ring-black';
         }
+        function executeCreative() { showModal('Generation Initiated', 'The engine has received the parameters.'); creativeStep = 1; updateCreativeView(); }
 
-        function executeCreative() {
-            showModal('Generation Initiated', 'The engine has received the parameters.');
-            creativeStep = 1;
-            updateCreativeView();
-        }
-
-        // --- Engine Logic ---
+        // =====================================================
+        // ENGINE
+        // =====================================================
         function runBenchmark() {
             const btn = event.currentTarget;
-            const originalText = btn.innerHTML;
+            const orig = btn.innerHTML;
             btn.innerHTML = '<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> RUNNING...';
             lucide.createIcons();
-            setTimeout(() => {
-                btn.innerHTML = originalText;
-                lucide.createIcons();
-                showModal('Benchmark Complete', 'Performance: 45.2 tokens/sec.');
-            }, 2000);
+            setTimeout(() => { btn.innerHTML = orig; lucide.createIcons(); showModal('Benchmark Complete', 'Performance: 45.2 tokens/sec.'); }, 2000);
         }
 
-        // --- Stats Loop ---
+        // =====================================================
+        // STATS LOOP
+        // =====================================================
         setInterval(() => {
             const tempEl = document.getElementById('stat-temp');
             if (tempEl) {
                 let t = parseFloat(tempEl.innerText) + (Math.random() * 0.4 - 0.2);
+                if (isNaN(t)) t = 35.5;
                 tempEl.innerText = t.toFixed(1) + "°C";
                 tempEl.className = t > 45 ? "font-mono text-red-500" : "font-mono text-green-600";
             }
             const latEl = document.getElementById('stat-latency');
-            if (latEl) {
-                let l = 3 + Math.random() * 4;
-                latEl.innerText = l.toFixed(1) + "ms";
-            }
+            if (latEl) latEl.innerText = (3 + Math.random() * 4).toFixed(1) + "ms";
         }, 2000);
 
-        function resizeCanvases() {
-            window.dispatchEvent(new Event('resize'));
+        // =====================================================
+        // UI HELPERS
+        // =====================================================
+        function toggleSwitch(btn) {
+            const knob = btn.querySelector('span');
+            const isActive = btn.classList.contains('bg-green-600');
+            btn.classList.toggle('bg-green-600', !isActive);
+            btn.classList.toggle('bg-gray-700', isActive);
+            knob.classList.toggle('right-1', !isActive);
+            knob.classList.toggle('left-1', isActive);
         }
 
-        // --- Theme System ---
-        function setTheme(mode) {
-            if (mode === 'light') {
-                document.body.classList.add('light-theme');
-            } else {
-                document.body.classList.remove('light-theme');
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('nav-collapsed');
+            setTimeout(resizeCanvases, 300);
+        }
+
+        function resizeCanvases() { window.dispatchEvent(new Event('resize')); }
+
+        // =====================================================
+        // BACKGROUND SYSTEM
+        // =====================================================
+        function initBotBackground() {
+            const canvas = document.getElementById('bg-bot');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const fontSize = 14;
+            let columns, drops;
+            const chars = "010101XYZAUTOMATSYSTEM";
+
+            function resizeCanvas() {
+                canvas.width = canvas.parentElement.clientWidth;
+                canvas.height = canvas.parentElement.clientHeight;
+                columns = Math.floor(canvas.width / fontSize);
+                drops = new Array(columns).fill(1);
             }
-            localStorage.setItem('cybel-theme', mode);
-        }
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
 
-        function loadSavedTheme() {
-            const saved = localStorage.getItem('cybel-theme') || 'dark';
-            setTheme(saved);
-        }
-
-        // FIX: loadSavedAccent also updates globe after Three.js is ready
-        function loadSavedAccent() {
-            const saved = localStorage.getItem('cybel-accent');
-            if (!saved) return;
-            document.documentElement.style.setProperty('--primary-accent', saved);
-            document.documentElement.style.setProperty('--glass-border', saved + '55');
-
-            document.querySelectorAll('.accent-color').forEach(el => {
-                const color = el.getAttribute('onclick').match(/'(#[^']+)'/)?.[1];
-                if (color === saved) el.classList.add('active');
-            });
-        }
-        
-        function switchBG(type) {
-            // Clean previous
-            if (currentBG?.cleanup) {
-                currentBG.cleanup();
-                currentBG = null;
-            }
-            const accent = getComputedStyle(document.documentElement)
-                .getPropertyValue('--accent')
-                .trim();
-            switch (type) {
-                case "Orbital View (3D)":
-                    currentBG = initChatBackground();
-                    currentBG.setAccent(accent);
-                    break;
-
-                case "Neural Network (3D)":
-                    currentBG = initCircuitBackground();
-                    currentBG.setAccent(accent);
-                    break;
-
-                case "Code Rain (Matrix)":
-                    currentBG = initBotBackground();
-                    currentBG.setAccent(accent);
-                    break;
-
-                case "Solid Black (Perf)":
-                    //document.body.style.background = "#000";
-                    currentBG.cleanup()
-                    break;
-
-                case "Custom":
-                    currentBG = initImageBackground(file);
-            }
-        }
-        
-        const colorSwatches = document.querySelectorAll('[data-color]');
-        colorSwatches.forEach(swatch => {
-        swatch.addEventListener("click", () => {
-                const color = swatch.dataset.color;
-
-                document.documentElement.style.setProperty("--accent", color);
-                const bgSelectS = document.getElementById('bgSelector');
-                switchBG(bgSelectS.value)
-                // swap avatar
-                if (avatarMap[color]) {
-                avatarImage.src = avatarMap[color];
-                avatar = avatarMap[color];
+            setInterval(() => {
+                if (canvas.width === 0 || canvas.height === 0) return;
+                const isLight = document.body.classList.contains('light-theme');
+                ctx.fillStyle = isLight ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = isLight ? "#009900" : "#0F0";
+                ctx.font = fontSize + "px monospace";
+                for (let i = 0; i < drops.length; i++) {
+                    ctx.fillText(chars.charAt(Math.floor(Math.random() * chars.length)), i * fontSize, drops[i] * fontSize);
+                    if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                    drops[i]++;
                 }
+            }, 33);
+        }
 
-                // update selected ring
-                colorSwatches.forEach(s => 
-                s.classList.remove("ring-4", "ring-white")
-                );
-                swatch.classList.add("ring-4", "ring-white");
-            });
+        function initNeuralBackground() {
+            const bgContainer = document.getElementById('bg-chat');
+            const iframe = document.createElement('iframe');
+
+            let currentAccent = getComputedStyle(document.documentElement).getPropertyValue('--primary-accent').trim().replace('#', '');
+
+            iframe.src = `assets/neural_net_bg.html?color=${currentAccent}`;
+
+            Object.assign(iframe.style, { width:'100%', height:'100%', border:'none', position:'absolute', top:'0', left:'0', zIndex:'0', pointerEvents:'none' });
+
+            bgContainer.appendChild(iframe);
+
+            iframe.addEventListener('load', () => {
+            const currentTheme = document.body.classList.contains('light-theme') ? 'light' : 'dark';
+            iframe.contentWindow.postMessage({ theme: currentTheme }, '*');
         });
-        // --- Init ---
+        }
+
+        function handleBackgroundChange(val) {
+            const bgContainer = document.getElementById('bg-chat');
+            bgContainer.innerHTML = '';
+            if (animateId) { cancelAnimationFrame(animateId); animateId = null; }
+            if (renderer) { renderer.dispose(); renderer = null; }
+
+            switch (val) {
+                case 'neural':   initChatBackground(); break;
+                case 'neural 2': initNeuralBackground(); break;
+                case 'matrix': {
+                    const canvas = document.createElement('canvas');
+                    bgContainer.appendChild(canvas);
+                    const ctx = canvas.getContext('2d');
+                    const fontSize = 14;
+                    let columns, drops;
+                    const chars = "010101XYZAUTOMATSYSTEM";
+                    function resizeCanvas() {
+                        canvas.width = bgContainer.clientWidth; canvas.height = bgContainer.clientHeight;
+                        columns = Math.floor(canvas.width / fontSize); drops = new Array(columns).fill(1);
+                    }
+                    resizeCanvas();
+                    window.addEventListener('resize', resizeCanvas);
+                    setInterval(() => {
+                        if (!canvas.width || !canvas.height) return;
+                        ctx.fillStyle = document.body.classList.contains('light-theme') ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)";
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                        ctx.fillStyle = "#0F0"; ctx.font = fontSize + "px monospace";
+                        for (let i = 0; i < drops.length; i++) {
+                            ctx.fillText(chars.charAt(Math.floor(Math.random() * chars.length)), i * fontSize, drops[i] * fontSize);
+                            if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                            drops[i]++;
+                        }
+                    }, 33);
+                    break;
+                }
+                case 'solid': break;
+                default: initChatBackground();
+            }
+        }
+
+        // =====================================================
+        // CUSTOM BG FILE INPUT
+        // =====================================================
+        const dropZone = document.getElementById('bg-drop-zone');
+        const fileInput = document.getElementById('bg-file-input');
+        dropZone.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                if (animateId) cancelAnimationFrame(animateId);
+                if (renderer && renderer.domElement.parentNode) { renderer.domElement.parentNode.removeChild(renderer.domElement); renderer.dispose(); renderer = null; }
+                bgChatContainer.style.backgroundImage = `url(${e.target.result})`;
+                bgChatContainer.style.backgroundSize = 'cover';
+                bgChatContainer.style.backgroundPosition = 'center';
+                customBgSelected = true;
+                dropZone.querySelector('p').innerText = `Loaded: ${file.name}`;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // =====================================================
+        // CHAT PANEL RESIZER
+        // =====================================================
+        const chatPanel = document.getElementById('chat-panel');
+        const chatResizer = document.getElementById('chat-resizer');
+        let isResizing = false;
+        chatResizer.addEventListener('mousedown', (e) => { isResizing = true; document.body.style.cursor = 'nesw-resize'; e.preventDefault(); });
+        window.addEventListener('mousemove', (e) => {
+            if (!isResizing) return;
+            const panelRect = chatPanel.getBoundingClientRect();
+            const parentRect = chatPanel.parentElement.getBoundingClientRect();
+            const newHeight = panelRect.bottom - e.clientY;
+            const newWidth = (e.clientX - (parentRect.left + parentRect.width / 2)) * 2;
+            if (newHeight > 300 && newHeight < parentRect.height - 40) chatPanel.style.height = `${newHeight}px`;
+            if (newWidth > 400 && newWidth < parentRect.width - 40) { chatPanel.style.maxWidth = 'none'; chatPanel.style.width = `${newWidth}px`; }
+        });
+        window.addEventListener('mouseup', () => { if (isResizing) { isResizing = false; document.body.style.cursor = 'default'; } });
+
+        // =====================================================
+        // INIT
+        // =====================================================
         window.addEventListener('DOMContentLoaded', () => {
             loadSavedTheme();
             loadSavedAccent();
             lucide.createIcons();
             initChatBackground();
-            // After globe is built, apply saved accent to it
             const savedAccent = localStorage.getItem('cybel-accent');
             if (savedAccent) updateGlobeAccent();
             initBotBackground();
 
-            const dropZoneEl = document.getElementById('bg-drop-zone');
-            dropZoneEl.addEventListener('dragover', (e) => {
+            document.getElementById('remove-bg-btn').addEventListener('click', initChatBackground);
+
+            dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-accent/80'); });
+            dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-accent/80'));
+            dropZone.addEventListener('drop', (e) => {
                 e.preventDefault();
-                dropZoneEl.classList.add('border-cyan-400');
-            });
-            dropZoneEl.addEventListener('dragleave', () => {
-                dropZoneEl.classList.remove('border-cyan-400');
-            });
-            dropZoneEl.addEventListener('drop', (e) => {
-                e.preventDefault();
-                dropZoneEl.classList.remove('border-cyan-400');
-                dropZoneEl.querySelector('p').innerText = "Image Loaded: custom_bg.png";
-                dropZoneEl.querySelector('i').classList.add('text-green-400');
-                dropZoneEl.querySelector('i').classList.remove('text-cyan-600');
+                dropZone.classList.remove('border-accent/80');
+                dropZone.querySelector('p').innerText = "Image Loaded: custom_bg.png";
+                dropZone.querySelector('i').classList.add('text-green-400');
+                dropZone.querySelector('i').classList.remove('text-accent');
             });
         });
-    
-        document.getElementById('remove-bg-btn').addEventListener('click', initChatBackground);
-
     </script>
 </body>
 </html>
