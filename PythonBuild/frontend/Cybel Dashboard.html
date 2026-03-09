@@ -1,3 +1,5 @@
+<!-- Omar Version — merged with Miles's Agent Management tab -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -172,7 +174,9 @@
         .nav-collapsed .nav-btn { padding-left: 0; padding-right: 0; justify-content: center; }
         .nav-collapsed .nav-footer-icon { display: block !important; }
 
-       
+        /* =====================================================
+           AGENT MANAGEMENT — from Miles's version
+           ===================================================== */
         .agent-form{
             display:grid;
             grid-template-columns:140px 1fr;
@@ -830,8 +834,10 @@
     </main>
 
     <script>
+        // =====================================================
+        // AGENT MANAGEMENT — Miles's version, verbatim
+        // =====================================================
 
-        
         document.addEventListener('change', (e) => {
             if (!e.target.classList.contains('local-model-toggle')) return;
 
