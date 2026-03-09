@@ -1,4 +1,5 @@
 const { embedText, faiss } = require("./embeddings"); // your embedding function
+const vestauth = require("./vestauth");
 
 /*
 npm i -g vestauth
@@ -21,7 +22,41 @@ class InstanceEngine {
   /**
    * Create a new instance with optional FAISS vector store
    */
-  async spawn(config) {
+
+async spawn(config) {
+
+  if (this.instances.has(config.id)) {
+    return { success: false, error: "Instance already exists" };
+  }
+
+  const dimension = config.embeddingDim || 1536;
+  const index = new faiss.IndexFlatL2(dimension);
+
+  // Fetch provider secret if needed
+  let providerToken = null;
+
+  if (config.secretKey) {
+    providerToken = await vestauth.get(config.secretKey);
+  }
+
+  const instance = {
+    id: config.id,
+    provider: config.provider,
+    providerToken,
+    tools: config.tools,
+    mode: config.mode,
+    sessionState: {},
+    faissIndex: index,
+    agent: null,
+    createdAt: Date.now()
+  };
+
+  this.instances.set(config.id, instance);
+
+  return { success: true, instance };
+}
+
+  /*async spawn(config) {
     if (this.instances.has(config.id)) {
       return { success: false, error: "Instance already exists" };
     }
@@ -44,7 +79,7 @@ class InstanceEngine {
     this.instances.set(config.id, instance);
 
     return { success: true, instance };
-  }
+  }*/
 
   get(id) {
     return this.instances.get(id);
@@ -98,4 +133,15 @@ class InstanceEngine {
   }
 }
 
-module.exports = new InstanceEngine();
+//example invocation
+/*const engine = new InstanceEngine();
+engine.spawn({
+  id: "chat-agent",
+  provider: "huggingface",
+  secretKey: "HF_TOKEN",
+  tools: ["search", "filesystem"]
+});*/
+
+module.exports = {
+ InstanceEngine
+}
