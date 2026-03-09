@@ -643,6 +643,20 @@
                     <div class="glass-panel p-6 rounded-xl" id="groq-key-panel">
                         <h3 class="text-accent font-mono">Groq Key</h3>
                         <input type="text" id="groq-key-input" placeholder="Enter Groq Key" class="w-48" />
+                        </br>
+                         <div>
+                            <label class="text-accent font-mono block text-sm mb-2">Groq File</label>
+                            <select id="model-selector" class="w-full text-accent border border-accent rounded p-2 bg-black-500 text-sm">
+                                <option>openai/gpt-oss-20b</option>
+                                <option>openai/gpt-oss-120b</option>
+                                <option>llama-3.1-8b-instant</option>
+                                <option>llama-3.3-70b-versatile</option>
+                                <option>whisper-large-v3</option>
+                                <option>whisper-large-v3-turbo</option>
+                                <option>groq/compound</option>
+                                <option>groq/compound-mini</option>
+                            </select>
+                        </div>
                         <button id="groq-key-confirm" class="text-accent border-accent">Confirm</button>
                     </div>
                     <!-- other Groq-specific panels -->
@@ -1097,19 +1111,12 @@
                                 <span id="contextValue" class="text-accent font-mono">4096</span>
                             </label>
                             <input id="contextRange" class="text-accent" type="range" min="1024" max="8192" step="512" value="4096" class="w-full">
-                        </div>
-                        <div>
-                            <label class="text-accent font-mono block text-sm mb-2">Model File (Groq-use Only)</label>
-                            <select id="model-selector" class="w-full text-accent border border-accent rounded p-2 bg-black-500 text-sm">
-                                <option>openai/gpt-oss-20b</option>
-                                <option>openai/gpt-oss-120b</option>
-                                <option>llama-3.1-8b-instant</option>
-                                <option>llama-3.3-70b-versatile</option>
-                                <option>whisper-large-v3</option>
-                                <option>whisper-large-v3-turbo</option>
-                                <option>groq/compound</option>
-                                <option>groq/compound-mini</option>
-                            </select>
+                            <br>
+                            <br>
+                            <br>
+                            <button onclick="saveConfiguration()" class="flex justify-between bg-green-600 hover:bg-green-500 text-white font-bold rounded-lg shadow-lg shadow-green-900/50 transition-all">
+                                SAVE CONFIGURATION
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -1135,17 +1142,15 @@
                                 <span id="contextValueLocal" class="text-accent font-mono">4096</span>
                             </label>
                             <input id="contextRangeLocal" type="range" min="1024" max="8192" step="512" value="4096" class="w-full">
+                            <button onclick="saveConfiguration()" class="flex justify-between bg-green-600 hover:bg-green-500 text-white font-bold rounded-lg shadow-lg shadow-green-900/50 transition-all">
+                                SAVE CONFIGURATION
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-                <div class="mt-8 flex justify-end">
-                    <button onclick="saveConfiguration()" class="px-8 py-3 bg-green-600 hover:bg-green-500 text-white font-bold rounded-lg shadow-lg shadow-green-900/50 transition-all">
-                        SAVE CONFIGURATION
-                    </button>
-                </div>
             </div>
+        </div>
         </section>
         <!-- MODULE 5: APPEARANCE (Restored) -->
         <section id="module-appearance" class="module-section flex-col h-full w-full p-4 md:p-8 overflow-y-auto">
@@ -1182,25 +1187,22 @@
 
                     <div class="glass-panel p-6 rounded-xl">
                         <h3 class="text-accent font-bold mb-4 border-b border-accent/50 pb-2">Background</h3>
-                        
                         <select id="bgSelector" class="w-full text-accent border border-accent rounded p-2 text-accent text-sm mb-4">
                             <option>None</option>
                             <option>Orbital View   (3D)</option>
                             <option>Neural Network (3D)</option>
-                            <option>Code Rain (Matrix)</option>
+                            <option>Cold Rain (3d)</option>
                             <option>Solid Black (Perf)</option>
+                            <!--<option>Matrix Rain (2d)</option>-->
                         </select>
-
-                        <div class="border-2 border-dashed border-accent rounded-lg p-8 text-center cursor-pointer hover:border-cyan-500 hover:bg-accent/20 transition-all" id="bg-drop-zone">
-                            <i data-lucide="image" class="w-8 h-8 mx-auto mb-2 text-accent"></i>
-                            <p class="text-xs text-accent">Drop Custom BG Image</p>
-                            <input 
-                                disabled
-                                type="file" 
-                                id="bgFileInput" 
-                                accept="image/*" 
-                                class="hidden"
-                            />
+                        <div class="border-2 border-dashed border-accent-dark/60 rounded-lg p-8 text-center cursor-pointer hover:border-accent hover:bg-accent-dark/20 transition-all" id="bg-drop-zone">
+                        <i data-lucide="image" class="w-8 h-8 mx-auto mb-2 text-accent"></i>
+                        <p class="text-xs text-accent">Drop Custom BG Image</p>
+                        </div>
+                        <input type="file" id="bg-file-input" accept="image/*" class="hidden" />
+                        <button id="remove-bg-btn" class="w-full mt-4 py-3 bg-accent/80 hover:bg-accent text-white rounded font-bold shadow-lg shadow-accent-dark/50 transition-all">
+                            Remove Custom Bg
+                        </button>
                         </div>
                     </div>
                 </div>
@@ -1377,6 +1379,7 @@
 </main>
 
 <script>
+    const bgChatContainer = document.getElementById('bg-chat');
     document.addEventListener('change', (e) => {
         if (!e.target.classList.contains('local-model-toggle')) return;
 
@@ -1534,8 +1537,13 @@
                     currentBG.setAccent(accent);
                     break;
 
+                case "Cold Rain":
+                    currentBG = initRainBackground();
+                    currentBG.setAccent(accent);
+                    break;
+
                 case "Code Rain (Matrix)":
-                    currentBG = initBotBackground();
+                    currentBG = initMatrixRain();
                     currentBG.setAccent(accent);
                     break;
 
@@ -1647,39 +1655,7 @@ function createAgent() {
         //    const saved = localStorage.getItem('cybel-theme') || 'dark';
         //    setTheme(saved);
         //}
-        
-        // --- Bot Background: Matrix Rain ---
-        function initBotBackground() {
-            const canvas = document.getElementById('bg-bot');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            const fontSize = 14;
-            let drops = [];
-            const chars = "010101XYZAUTOMATSYSTEM";
-
-            function resize() {
-                canvas.width  = canvas.parentElement.clientWidth;
-                canvas.height = canvas.parentElement.clientHeight;
-                drops = Array(Math.floor(canvas.width / fontSize)).fill(1);
-            }
-            resize();
-            window.addEventListener('resize', resize);
-
-            setInterval(() => {
-                if (!canvas.width || !canvas.height) return;
-                const light = document.body.classList.contains('light-theme');
-                ctx.fillStyle = light ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = light ? '#009900' : '#0F0';
-                ctx.font = fontSize + 'px monospace';
-                drops.forEach((y, i) => {
-                    ctx.fillText(chars[Math.floor(Math.random() * chars.length)], i * fontSize, y * fontSize);
-                    if (y * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
-                    drops[i]++;
-                });
-            }, 33);
-        }
-
+    
         // FIX: loadSavedAccent also updates globe after Three.js is ready
         function loadSavedAccent() {
             const saved = localStorage.getItem('cybel-accent');
@@ -1725,65 +1701,77 @@ function createAgent() {
             section.classList.add('active');
 
             if (id === 'module-management') {
-                if (!currentBG) currentBG = initBotBackground();
+                if (!currentBG) currentBG = initMatrixRain();
                 currentBG.start(); // start rain **after module becomes visible**
             } else if (currentBG) {
                 currentBG.cleanup(); // stop rain when switching away
                 currentBG = null;
             }
         }
-                // --- 2. Chat Background: Holographic Globe ---
+
+        // --- 2. Chat Background: Holographic Globe ---
         function initMatrixRain() {
             const canvas = document.getElementById('bg-bot');
+            if (!canvas) return;
             const ctx = canvas.getContext('2d');
 
-            // Make canvas fill container
-            function resize() {
-                canvas.width = canvas.offsetWidth;
-                canvas.height = canvas.offsetHeight;
-            }
-            window.addEventListener('resize', resize);
-            resize();
-
-            const letters = 'アカサタナハマヤラワABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
             const fontSize = 16;
-            const columns = Math.floor(canvas.width / fontSize);
-            const drops = Array(columns).fill(0);
+            const letters = 'アカサタナハマヤラワABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let columns, drops;
 
-            function draw() {
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.05)'; // fading trail
+    function resize() {
+        canvas.width = canvas.parentElement.clientWidth;
+        canvas.height = canvas.parentElement.clientHeight;
+        columns = Math.floor(canvas.width / fontSize);
+        drops = Array(columns).fill(0);
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+        function draw() {
+                const light = document.body.classList.contains('light-theme');
+                const accent = getComputedStyle(document.documentElement)
+                            .getPropertyValue('--accent')
+                            .trim();
+                ctx.fillStyle = light ? 'rgba(240,240,240,0.1)' : 'rgba(0,0,0,0.05)';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-                ctx.fillStyle = 'lime'; // text color
+                ctx.fillStyle = accent;
                 ctx.font = fontSize + 'px monospace';
 
                 for (let i = 0; i < drops.length; i++) {
                     const text = letters[Math.floor(Math.random() * letters.length)];
                     ctx.fillText(text, i * fontSize, drops[i] * fontSize);
 
+                    drops[i]++;
                     if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
                         drops[i] = 0;
                     }
-                    drops[i]++;
                 }
+                requestAnimationFrame(draw);
             }
-
-            const interval = setInterval(draw, 50);
-
-            // Return cleanup function if needed
-            return {
-                cleanup() {
-                    clearInterval(interval);
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                },
-                setAccent(color) {
-                    ctx.fillStyle = color; // optional if you want dynamic accent
-                }
-            };
+            draw();
         }
 
         // Example usage:
         let currentBG = initMatrixRain();
+        let currentBackground = null;
+        function setBackground(type) {
+
+            if (currentBackground && currentBackground.cleanup) {
+                currentBackground.cleanup();
+                currentBackground = null;
+            }
+
+            if (type === "2d") {
+                currentBackground = initCanvasRain();
+            }
+
+            if (type === "3d") {
+                currentBackground = initRainBackground();
+            }
+        }
+
         function initImageBackground(imageSrc) {
         const container = document.getElementById('bg-chat');
 
@@ -2031,7 +2019,70 @@ function createAgent() {
     return { setAccent, cleanup };
     }   
 
-function initBotBackground() {
+    function initMatrixBotBackground() {
+    const canvas = document.getElementById('bg-bot');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    const fontSize = 16;
+    const chars = '010101XYZAUTOMATSYSTEMアカサタナハマヤラワABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let columns, drops;
+
+    function resize() {
+        canvas.width  = canvas.parentElement.clientWidth;
+        canvas.height = canvas.parentElement.clientHeight;
+        columns = Math.floor(canvas.width / fontSize);
+        drops = Array(columns).fill(0);
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    function draw() {
+        const light = document.body.classList.contains('light-theme');
+        ctx.fillStyle = light ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = light ? '#009900' : '#0F0';
+        ctx.font = fontSize + 'px monospace';
+
+        for (let i = 0; i < drops.length; i++) {
+            ctx.fillText(chars[Math.floor(Math.random() * chars.length)], i * fontSize, drops[i] * fontSize);
+            if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+            drops[i]++;
+        }
+
+        requestAnimationFrame(draw);
+    }
+
+    draw();
+}
+
+function createCharSprite(char, color) {
+
+    const canvas = document.createElement("canvas");
+    canvas.width = 64;
+    canvas.height = 64;
+
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "transparent";
+    ctx.fillRect(0,0,64,64);
+
+    ctx.fillStyle = color;
+    ctx.font = "48px monospace";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(char, 32, 32);
+
+    const texture = new THREE.CanvasTexture(canvas);
+
+    const material = new THREE.SpriteMaterial({
+        map: texture,
+        transparent: true
+    });
+
+    return new THREE.Sprite(material);
+}
+
+function initRainBackground() {
     const container = document.getElementById('bg-chat'); // reuse bg-chat for consistency
     const scene = new THREE.Scene();
     scene.fog = new THREE.FogExp2(0x000000, 0.02);
@@ -2050,7 +2101,7 @@ function initBotBackground() {
     container.appendChild(renderer.domElement);
 
     // ---- PARTICLES AS CHARACTERS ----
-    const chars = "010101XYZAUTOMATSYSTEM";
+    const chars = '010101XYZAUTOMATSYSTEMアカサタナハマヤラワABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     const particleCount = 1000;
     const geometry = new THREE.BufferGeometry();
     const positions = new Float32Array(particleCount * 3);
@@ -2559,8 +2610,13 @@ setInterval(draw, 50);
                                 currentBG.setAccent(accent);
                                 break;
 
-                            case "Code Rain (Matrix)":
-                                currentBG = initBotBackground();
+                            case "Matrix Rain (2d)":
+                                currentBG = initMatrixRain();
+                                setBackground("2d");
+                                break;
+                                
+                            case "Cold Rain (3d)":
+                                currentBG = initRainBackground();
                                 currentBG.setAccent(accent);
                                 break;
 
@@ -2659,7 +2715,7 @@ setInterval(draw, 50);
             });
             // Drag and drop for appearance
             const dropZone  = document.getElementById('bg-drop-zone');
-            const fileInput = document.getElementById('bgFileInput');
+            const fileInput = document.getElementById('bg-file-input');
 
             // Click = open picker
             dropZone.addEventListener('click', () => {
@@ -2694,6 +2750,38 @@ setInterval(draw, 50);
                 reader.readAsDataURL(file);
             });
                     
+        // =====================================================
+        // CUSTOM BG FILE INPUT
+        // =====================================================
+        //const dropZone = document.getElementById('bg-drop-zone');
+        //const fileInput = document.getElementById('bg-file-input');
+        dropZone.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                //if (animateId) cancelAnimationFrame(animateId);
+                //if (renderer && renderer.domElement.parentNode) { renderer.domElement.parentNode.removeChild(renderer.domElement); renderer.dispose(); renderer = null; }
+                bgChatContainer.style.backgroundImage = `url(${e.target.result})`;
+                bgChatContainer.style.backgroundSize = 'cover';
+                bgChatContainer.style.backgroundPosition = 'center';
+                customBgSelected = true;
+                dropZone.querySelector('p').innerText = `Loaded: ${file.name}`;
+            };
+            reader.readAsDataURL(file);
+        });
+    
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-accent/80'); });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-accent/80'));
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('border-accent/80');
+            dropZone.querySelector('p').innerText = "Image Loaded: custom_bg.png";
+            dropZone.querySelector('i').classList.add('text-green-400');
+            dropZone.querySelector('i').classList.remove('text-accent');
+        });
+        document.getElementById('remove-bg-btn').addEventListener('click', (() => {bgChatContainer.style.backgroundImage = null; dropZone.querySelector('p').innerText = `Ready for Upload`;}));
     </script>
 </body>
 </html>
