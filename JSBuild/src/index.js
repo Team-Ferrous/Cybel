@@ -16,7 +16,8 @@ const {
     replicateDocument,
     mergeDocument,
     exportDocument,
-    setEngine
+    setEngine,
+    loadModel
 } = require('./backend');
 
 const { spawn } = require("child_process");

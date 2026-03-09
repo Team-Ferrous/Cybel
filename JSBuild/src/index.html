@@ -597,11 +597,8 @@
                             <select id="modeSelector" class="font-mono text-accent">
                                 <option class="text-amber-400" value="groq"> Groq</option>
                                 <option class="text-amber-400" value="local">Local</option>
+                                <option class="text-amber-400" value="grok">Grok</option>
                             </select>
-                            <div>
-                            <button id="hf-login" class="w-full mt-2 py-2 bg-amber-600/20 hover:bg-blue-600/40 text-amber-500 border border-amber-600/50 rounded text-xs font-bold transition-colors">Login HuggingFace</button>
-                            <button id="ms-login" class="w-full mt-2 py-2 bg-amber-600/20 hover:bg-green-600/40 text-amber-500 border border-amber-600/50 rounded text-xs font-bold transition-colors">Login ModelScope</button>
-                            </div>
                             <script type="module">
                                 import { ModelHub } from './model_hub.js';
                                 const hub = new ModelHub();
@@ -656,18 +653,24 @@
                                 <option>groq/compound</option>
                                 <option>groq/compound-mini</option>
                             </select>
-                        </div>
-                        <button id="groq-key-confirm" class="text-accent border-accent">Confirm</button>
+                            <div>
+                                <button id="hf-login" class="w-full mt-2 py-2 bg-amber-600/20 hover:bg-blue-600/40 text-amber-500 border border-amber-600/50 rounded text-xs font-bold transition-colors">Login HuggingFace</button>
+                                <button id="ms-login" class="w-full mt-2 py-2 bg-amber-600/20 hover:bg-green-600/40 text-amber-500 border border-amber-600/50 rounded text-xs font-bold transition-colors">Login ModelScope</button>
+                            </div>
+                            </div>
+                                <button id="groq-key-confirm" class="text-accent border-accent">Confirm</button>
+                            </div>
+                        <!-- other Groq-specific panels -->
                     </div>
-                    <!-- other Groq-specific panels -->
-                </div>
 
                 <!-- Local mode panels -->
                 <div id="local-panels" style="display:none">
                     <div class="glass-panel p-6 rounded-xl" id="local-model-panel">
                         <h3 class="text-accent font-mono">Local Model</h3>
                         <select id="local-model-selector" class="w-full">
-                            <option class="font-mono">LLaMA 2/3</option>
+                            <option class="font-mono">LLaMA 2</option>
+                            <option class="font-mono">LLaMA 3</option>
+                            <option class="font-mono">grok-2-GGUF</option>
                             <option class="font-mono">Mistral 7b</option>
                             <option class="font-mono">Mixtral</option>
                             <option class="font-mono">GPT-Q/GPT4All</option>
@@ -732,6 +735,7 @@
                         /*
                             "LLaMA 2", 
                             "LLaMA 3", 
+                            "grok-2-GGUF",
                             "Mistral 7b", 
                             "Mixtral", 
                             "GPT-Q/GPT4All", 
@@ -1296,7 +1300,9 @@
                                 <option class="font-mono">groq/compound-mini</option>
                             </select>
                             <select id="local-select" class="agent-select agent-model" style="display:none;" disabled>
-                                <option class="font-mono">LLaMA 2/3</option>
+                                <option class="font-mono">LLaMA 2</option>
+                                <option class="font-mono">LLaMA 3</option>
+                                <option class="font-mono">grok-2-GGUF</option>
                                 <option class="font-mono">Mistral 7b</option>
                                 <option class="font-mono">Mixtral</option>
                                 <option class="font-mono">GPT-Q/GPT4All</option>
@@ -1651,10 +1657,10 @@ function createAgent() {
             localStorage.setItem('cybel-theme', mode);
         }
 
-        //function loadSavedTheme() {
-        //    const saved = localStorage.getItem('cybel-theme') || 'dark';
-        //    setTheme(saved);
-        //}
+        function loadSavedTheme() {
+            const saved = localStorage.getItem('cybel-theme') || 'dark';
+            setTheme(saved);
+        }
     
         // FIX: loadSavedAccent also updates globe after Three.js is ready
         function loadSavedAccent() {
@@ -1672,6 +1678,8 @@ function createAgent() {
         window.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
             loadSavedAppearance();
+            loadSavedTheme();
+            loadSavedAccent();
             //initChatBackground();
 
             // After globe is built, apply saved accent to it

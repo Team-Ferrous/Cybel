@@ -3,6 +3,7 @@ const fs  = require("fs");
 const path   = require("path");
 const crypto = require("crypto");
 const { app } = require('electron');
+const {findGenerator} = require('./model_switcher')
 
 const OpenAI = require("openai");
 const { pipeline } = require("@xenova/transformers");
