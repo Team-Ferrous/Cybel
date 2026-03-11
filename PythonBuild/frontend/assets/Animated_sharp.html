@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Symmetrical Sci-Fi Background - Emerald</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000000;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="bg-canvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+
+        let width, height;
+        let time = 0;
+
+        // Handle resizing for crisp rendering on high-DPI displays
+        function resize() {
+            const dpr = window.devicePixelRatio || 1;
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width * dpr;
+            canvas.height = height * dpr;
+            ctx.scale(dpr, dpr);
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+
+        // Utility to draw something symmetrically across the vertical center axis
+        function drawSymmetrical(drawFunction) {
+            ctx.save();
+            drawFunction(); // Draw right side
+            ctx.restore();
+
+            ctx.save();
+            ctx.scale(-1, 1); // Flip horizontally
+            drawFunction(); // Draw left side
+            ctx.restore();
+        }
+
+        function drawBackgroundGlow() {
+            // Deep gradient from black to dark emerald at the bottom
+            const gradient = ctx.createLinearGradient(0, -height/2, 0, height/2);
+            gradient.addColorStop(0, '#000201');
+            gradient.addColorStop(0.5, '#000a05');
+            gradient.addColorStop(1, '#002b11');
+            
+            ctx.fillStyle = gradient;
+            ctx.fillRect(-width/2, -height/2, width, height);
+        }
+
+        // Draws the sweeping, curved background lines
+        function drawFlowingLines() {
+            ctx.lineWidth = 1;
+            
+            drawSymmetrical(() => {
+                for (let i = 0; i < 40; i++) {
+                    // Calculate moving offset
+                    const speed = 20;
+                    const spacing = 40;
+                    const maxDist = height * 1.5;
+                    
+                    let offset = ((time * speed) + (i * spacing)) % maxDist;
+                    
+                    // Fade out as they get further
+                    let alpha = 1 - (offset / maxDist);
+                    if (alpha < 0) alpha = 0;
+
+                    // Emerald green lines
+                    ctx.strokeStyle = `rgba(0, 180, 70, ${alpha * 0.3})`;
+                    ctx.beginPath();
+                    
+                    // Start from top center
+                    ctx.moveTo(0, -height/2 + offset * 0.5);
+                    
+                    // Complex sweeping curves
+                    ctx.bezierCurveTo(
+                        width * 0.1, -height/2 + offset * 0.8,
+                        width * 0.3, offset - height*0.2,
+                        width * 0.6, offset + height*0.3
+                    );
+                    
+                    ctx.stroke();
+                }
+            });
+        }
+
+        // Draws the sharp, angled "tech/circuit" lines
+        function drawGeometricTechLines() {
+            ctx.lineWidth = 1.5;
+
+            drawSymmetrical(() => {
+                for (let i = 0; i < 25; i++) {
+                    const spacing = 50;
+                    const speed = 15;
+                    const maxR = Math.max(width, height) * 1.2;
+                    
+                    // Lines move outward
+                    let r = ((time * speed) + (i * spacing)) % maxR;
+                    let alpha = 1 - (r / maxR);
+                    
+                    // Light emerald/mint geometric lines
+                    ctx.strokeStyle = `rgba(30, 255, 100, ${alpha * 0.5})`;
+                    ctx.beginPath();
+                    
+                    // Path with 45 and 90 degree sharp turns
+                    ctx.moveTo(0, -r * 0.8);
+                    ctx.lineTo(r * 0.3, -r * 0.5);
+                    ctx.lineTo(r * 0.3, -r * 0.1);
+                    ctx.lineTo(r * 0.7, r * 0.3);
+                    ctx.lineTo(r * 0.7, height / 2);
+                    
+                    ctx.stroke();
+
+                    // Inner parallel detailing
+                    ctx.lineWidth = 0.5;
+                    ctx.strokeStyle = `rgba(0, 255, 80, ${alpha * 0.2})`;
+                    ctx.beginPath();
+                    ctx.moveTo(r * 0.32, -r * 0.5);
+                    ctx.lineTo(r * 0.32, -r * 0.1);
+                    ctx.lineTo(r * 0.72, r * 0.3);
+                    ctx.stroke();
+                    ctx.lineWidth = 1.5; // Reset
+                }
+            });
+        }
+
+        // Draws the massive dark emerald structural pillars on the sides
+        function drawPillars() {
+            drawSymmetrical(() => {
+                // Main pillar shape
+                ctx.fillStyle = '#000f05';
+                ctx.strokeStyle = '#006622';
+                ctx.lineWidth = 2;
+                
+                ctx.beginPath();
+                ctx.moveTo(width * 0.15, height / 2);
+                ctx.lineTo(width * 0.25, -height * 0.2);
+                ctx.lineTo(width * 0.4, -height / 2);
+                ctx.lineTo(width / 2, -height / 2);
+                ctx.lineTo(width / 2, height / 2);
+                ctx.closePath();
+                
+                ctx.fill();
+                ctx.stroke();
+
+                // Add horizontal striations/details to the pillar
+                ctx.strokeStyle = 'rgba(0, 200, 80, 0.15)';
+                ctx.lineWidth = 1;
+                for(let y = -height/2; y < height/2; y += 15) {
+                    // Add a slight moving scanline effect to the striations
+                    let yOffset = y + (Math.sin(time + y*0.01) * 5);
+                    
+                    ctx.beginPath();
+                    // Math to keep lines roughly inside the pillar bounds
+                    let startX = width * 0.15 + ((height/2 - y) * 0.08); 
+                    if(startX > width/2) continue;
+                    
+                    ctx.moveTo(startX, yOffset);
+                    ctx.lineTo(width/2, yOffset);
+                    ctx.stroke();
+                }
+            });
+        }
+
+        // Draws the central glowing bat/bird/spaceship emblem
+        function drawCentralEmblem() {
+            ctx.save();
+            
+            // Pulsing effect
+            const pulse = Math.sin(time * 2);
+            const scale = 1 + pulse * 0.03;
+            ctx.scale(scale, scale);
+
+            // Intense emerald glow
+            ctx.shadowBlur = 30 + pulse * 10;
+            ctx.shadowColor = '#00ff55';
+
+            drawSymmetrical(() => {
+                // Main sharp emerald wing shape
+                ctx.fillStyle = '#05ff55';
+                ctx.beginPath();
+                ctx.moveTo(0, 50);          // Bottom center spike
+                ctx.lineTo(15, 10);         // Inner valley
+                ctx.lineTo(80, 25);         // Outer long wing tip
+                ctx.lineTo(25, -10);        // Cut back in
+                ctx.lineTo(35, -35);        // Upper side spike
+                ctx.lineTo(10, -15);        // Inner upper valley
+                ctx.lineTo(0, -40);         // Top center spike
+                ctx.closePath();
+                ctx.fill();
+
+                // Inner dark hollow/faceted area
+                ctx.shadowBlur = 0; // Turn off glow for inner detail
+                ctx.fillStyle = '#004415';
+                ctx.beginPath();
+                ctx.moveTo(0, 20);
+                ctx.lineTo(8, 0);
+                ctx.lineTo(30, 5);
+                ctx.lineTo(12, -10);
+                ctx.lineTo(0, -20);
+                ctx.closePath();
+                ctx.fill();
+            });
+
+            ctx.restore();
+        }
+
+        // Main animation loop
+        function animate() {
+            // Translate origin to the center of the canvas
+            ctx.save();
+            ctx.translate(width / 2, height / 2);
+
+            // 1. Clear & draw dark gradient background
+            drawBackgroundGlow();
+
+            // 2. Draw sweeping organic/curved background traces
+            drawFlowingLines();
+
+            // 3. Draw sharp, angular technological expanding traces
+            drawGeometricTechLines();
+
+            // 4. Draw massive monolithic foreground framing pillars
+            drawPillars();
+
+            // 5. Draw the central glowing focal point
+            drawCentralEmblem();
+
+            ctx.restore();
+
+            // Increment time for animations
+            time += 0.02;
+            requestAnimationFrame(animate);
+        }
+
+        // Start the loop
+        animate();
+        
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        window.onload = init;
+
+        window.addEventListener('message', (e) => {
+            if (e.data?.theme === 'light') {
+                document.body.style.background = '#f5f7fb';
+                if (renderer) renderer.setClearColor(0xf5f7fb, 1);
+            } else if (e.data?.theme === 'dark') {
+                document.body.style.background = '#020205';
+                if (renderer) renderer.setClearColor(0x020205, 1);
+            }
+
+            if (e.data?.accent) {
+                const newColor = parseInt('0x' + e.data.accent);
+                nodes.forEach(node => node.material.color.setHex(newColor));
+                if (linesMesh) linesMesh.material.color.setHex(newColor);
+            }
+        });
+    </script>
+</body>
+</html>

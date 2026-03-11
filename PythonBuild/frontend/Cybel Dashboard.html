@@ -1,12 +1,10 @@
-<!-- Omar Version — merged with Miles's Agent Management tab -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AUTOMAT // Cybel Interface</title>
-    
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
     tailwind.config = {
@@ -27,69 +25,53 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 
     <style>
-        .markdown-content {
-            color: var(--text-main);            
-            font-size: 0.875rem;
-            line-height: 1.625;
-        }
+        /* ─── Markdown ─── */
+        .markdown-content { color: var(--text-main); font-size: 0.875rem; line-height: 1.625; }
         .markdown-content p { margin-bottom: 0.75rem; }
         .markdown-content p:last-child { margin-bottom: 0; }
-        .markdown-content code {
-            background: rgba(var(--color-accent) / 0.1);
-            padding: 0.125rem 0.375rem;
-            border-radius: 0.25rem;
-            font-family: 'JetBrains Mono', monospace;
-            color: var(--primary-accent);
-        }
-        .markdown-content pre {
-            background: rgba(0, 0, 0, 0.4);
-            padding: 1rem;
-            border-radius: 0.5rem;
-            overflow-x: auto;
-            margin: 0.75rem 0;
-        }
+        .markdown-content code { background: rgba(var(--color-accent) / 0.1); padding: 0.125rem 0.375rem; border-radius: 0.25rem; font-family: 'JetBrains Mono', monospace; color: var(--primary-accent); }
+        .markdown-content pre { background: rgba(0,0,0,0.4); padding: 1rem; border-radius: 0.5rem; overflow-x: auto; margin: 0.75rem 0; }
         .markdown-content pre code { background: none; padding: 0; color: var(--primary-accent); }
         .markdown-content strong { color: var(--primary-accent); font-weight: 600; }
         .markdown-content em { color: rgba(var(--color-accent) / 0.8); font-style: italic; }
         .markdown-content ul, .markdown-content ol { margin-left: 1.5rem; margin-bottom: 0.75rem; }
         .markdown-content li { margin-bottom: 0.25rem; }
 
+        /* ─── Global vars ─── */
         :root {
             --color-accent: 6 182 212;
             --color-accent-dark: 22 78 99;
             --color-accent-secondary: 59 130 246;
             --primary-accent: #06b6d4;
             --primary-gold: #f59e0b;
-            --matrix-green: #00FF41;
             --bg-dark: #050505;
             --text-main: #e2e8f0;
             --text-second: rgba(var(--color-accent) / 0.9);
-            --input-bg: rgba(var(--color-accent-dark) / 0.25); 
+            --input-bg: rgba(var(--color-accent-dark) / 0.25);
             --glass-bg: rgba(10, 10, 15, 0.65);
             --glass-border: rgba(var(--color-accent) / 0.3);
+            /* Bot Manager vars (sync with --primary-accent) */
+            --bm-cyan: #06b6d4;
+            --bm-glow: rgba(6,182,212,0.2);
+            --bm-card: rgba(10,15,22,0.82);
+            --bm-border: rgba(6,182,212,0.18);
+            --bm-border2: rgba(30,41,59,0.9);
+            --bm-muted: #64748b;
+            --bm-bright: #e2e8f0;
+            --bm-red: #ff4757;
+            --bm-frost: rgba(8,14,24,0.78);
         }
-
         body.light-theme {
-            --bg-dark: #f5f7fb;
-            --text-main: #0f172a;
+            --bg-dark: #f5f7fb; --text-main: #0f172a;
             --text-second: rgba(var(--color-accent-dark) / 0.9);
-            --input-bg: #ffffff;
-            --glass-bg: rgba(255, 255, 255, 0.7);
-            --glass-border: rgba(0, 0, 0, 0.15);
+            --input-bg: #ffffff; --glass-bg: rgba(255,255,255,0.7);
+            --glass-border: rgba(0,0,0,0.15);
         }
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-dark);
-            color: var(--text-main);
-            overflow: hidden;
-            transition: background-color 0.25s ease, color 0.25s ease;
-        }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-dark); color: var(--text-main); overflow: hidden; transition: background-color 0.25s, color 0.25s; }
         body.light-theme { color: #0f172a; }
         body.light-theme .glass-panel { box-shadow: 0 8px 32px rgba(0,0,0,0.15); }
-
         .font-mono { font-family: 'JetBrains Mono', monospace; }
-
         #btn-dark, #btn-light { background: transparent; transition: all 0.2s; }
         body:not(.light-theme) #btn-dark { background-color: var(--primary-accent); color: white; }
         body:not(.light-theme) #btn-light { color: var(--text-second); }
@@ -97,171 +79,282 @@
         body.light-theme #btn-dark { color: var(--text-second); }
 
         ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.3); }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); }
         ::-webkit-scrollbar-thumb { background: rgba(var(--color-accent) / 0.4); border-radius: 3px; }
 
-        .glass-panel {
-            background: var(--glass-bg);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--glass-border);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6);
-        }
+        .glass-panel { background: var(--glass-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid var(--glass-border); box-shadow: 0 8px 32px 0 rgba(0,0,0,0.6); }
 
-        .active-nav {
-            background: rgba(var(--color-accent) / 0.15);
-            border-left: 4px solid var(--primary-accent);
-            color: var(--text-main);
-            box-shadow: 0 0 15px rgba(var(--color-accent) / 0.25);
-        }
+        .active-nav { background: rgba(var(--color-accent) / 0.15); border-left: 4px solid var(--primary-accent); color: var(--text-main); box-shadow: 0 0 15px rgba(var(--color-accent) / 0.25); }
         .inactive-nav { border-left: 4px solid transparent; color: #94a3b8; }
-        .inactive-nav:hover { background: rgba(255, 255, 255, 0.03); color: var(--text-main); }
+        .inactive-nav:hover { background: rgba(255,255,255,0.03); color: var(--text-main); }
 
-        .bg-canvas-container {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 0;
-            pointer-events: none;
-            overflow: hidden;
-        }
+        .bg-canvas-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; overflow: hidden; }
 
         .module-section { display: none; animation: fadeIn 0.4s ease-in-out; }
         .module-section.active { display: flex; }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         .modal-backdrop { transition: opacity 0.2s ease; }
         .modal-content { transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); }
 
         input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
-        input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%;
-            background: #fff; margin-top: -6px; box-shadow: 0 0 10px rgba(var(--color-accent) / 0.8); cursor: pointer;
-        }
-        input[type=range]::-webkit-slider-runnable-track {
-            width: 100%; height: 4px; cursor: pointer;
-            background: rgba(var(--color-accent-dark) / 0.8); border-radius: 2px;
-        }
-        
-        .scanline-overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.3) 51%);
-            background-size: 100% 4px; pointer-events: none; z-index: 60; opacity: 0.15;
-        }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #fff; margin-top: -6px; box-shadow: 0 0 10px rgba(var(--color-accent) / 0.8); cursor: pointer; }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: rgba(var(--color-accent-dark) / 0.8); border-radius: 2px; }
 
-        .type-card {
-            border: 1px solid var(--glass-border);
-            background: rgba(0,0,0,0.3);
-            transition: all 0.2s;
-        }
-        .type-card.selected {
-            border-color: var(--primary-accent);
-            background: rgba(var(--color-accent) / 0.1);
-            box-shadow: 0 0 15px rgba(var(--color-accent) / 0.2);
-        }
+        .scanline-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.3) 51%); background-size: 100% 4px; pointer-events: none; z-index: 60; opacity: 0.15; }
+
+        .type-card { border: 1px solid var(--glass-border); background: rgba(0,0,0,0.3); transition: all 0.2s; }
+        .type-card.selected { border-color: var(--primary-accent); background: rgba(var(--color-accent) / 0.1); box-shadow: 0 0 15px rgba(var(--color-accent) / 0.2); }
 
         .accent-color { transition: outline 0.15s; outline: 2px solid transparent; outline-offset: 2px; }
         .accent-color.active { outline: 2px solid white; }
-        body.light-theme .accent-color.active { outline: 2px solid rgb(0, 0, 0); }
+        body.light-theme .accent-color.active { outline: 2px solid rgb(0,0,0); }
 
         #sidebar { transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .nav-collapsed { width: 5rem !important; }
-        .nav-collapsed .nav-text,
-        .nav-collapsed .nav-header-text,
-        .nav-collapsed .nav-footer-text { display: none; }
+        .nav-collapsed .nav-text, .nav-collapsed .nav-header-text, .nav-collapsed .nav-footer-text { display: none; }
         .nav-collapsed .nav-btn { padding-left: 0; padding-right: 0; justify-content: center; }
         .nav-collapsed .nav-footer-icon { display: block !important; }
 
-        /* =====================================================
-           AGENT MANAGEMENT — from Miles's version
-           ===================================================== */
-        .agent-form{
-            display:grid;
-            grid-template-columns:140px 1fr;
-            gap:10px 12px;
-            align-items:center;
+        /* ═══════════════════════════════════════
+           BOT MANAGER — frosted glass layer
+           Everything rides on a glass container
+           so the matrix rain behind is dimmed but
+           still visible through the frost.
+        ═══════════════════════════════════════ */
+
+        /* The outer section already has the matrix canvas;
+           we wrap content in a glass frost panel */
+        #bm-frost-wrap {
+            position: relative; z-index: 2;
+            background: rgba(4, 8, 16, 0.72);
+            backdrop-filter: blur(14px) saturate(1.4);
+            -webkit-backdrop-filter: blur(14px) saturate(1.4);
+            border: 1px solid rgba(var(--color-accent) / 0.12);
+            border-radius: 16px;
+            padding: 32px 36px 40px;
+            width: 100%; max-width: 1060px;
+            box-shadow: 0 0 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.04);
         }
 
-        .model-row{
-            display:flex;
-            align-items:center;
-            gap:12px;
+        /* ── Security badge & title ── */
+        .bm-security-badge {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 10px; letter-spacing: 2px; color: var(--bm-cyan);
+            margin-bottom: 8px; text-transform: uppercase;
         }
+        .bm-h1 { font-size: 42px; font-weight: 900; letter-spacing: -1px; text-transform: uppercase; line-height: 1; color: white; }
+        .bm-h1 span { color: var(--bm-cyan); }
+        .bm-subtitle { font-size: 10px; letter-spacing: 4px; color: #8b949e; margin: 6px 0 12px; text-transform: uppercase; }
+        .bm-desc { color: #8b949e; font-size: 13px; line-height: 1.6; max-width: 520px; }
+        .bm-hr { border: none; border-top: 1px solid rgba(48,54,61,0.7); margin: 22px 0; }
 
-        .agent-textarea{
-            grid-column:1 / span 2;
-            height:90px;
+        /* ── Toolbar ── */
+        .bm-toolbar {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 24px; gap: 10px; flex-wrap: wrap;
         }
+        .bm-section-title { font-size: 10px; letter-spacing: 3px; color: #8b949e; text-transform: uppercase; }
+        .bm-toolbar-btns { display: flex; gap: 7px; flex-wrap: wrap; }
 
-        .agent-input,
-        .agent-select{
-            width:100%;
+        .bm-tool-btn {
+            background: rgba(6, 12, 22, 0.75);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(48,54,61,0.8);
+            color: #8b949e;
+            padding: 7px 13px; border-radius: 6px;
+            font-size: 10px; font-weight: 700; letter-spacing: 1px;
+            font-family: 'Inter', sans-serif; cursor: pointer;
+            transition: color 0.15s, border-color 0.15s, background 0.15s;
+            display: flex; align-items: center; gap: 6px; white-space: nowrap;
         }
+        .bm-tool-btn:hover { color: var(--bm-cyan); border-color: var(--bm-cyan); background: rgba(var(--color-accent) / 0.08); }
+        .bm-tool-btn.bm-primary {
+            background: rgba(var(--color-accent) / 0.12);
+            border-color: var(--bm-cyan); color: var(--bm-cyan);
+        }
+        .bm-tool-btn.bm-primary:hover { background: rgba(var(--color-accent) / 0.2); }
 
-        .local-toggle{
-            display:flex;
-            align-items:center;
-            gap:6px;
-            white-space:nowrap;
-        }
+        /* ── Bot Grid ── */
+        .bm-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+        @media (max-width: 900px) { .bm-grid { grid-template-columns: repeat(2, 1fr); } }
 
-        .workflow-step{
-            display:grid;
-            grid-template-columns:40px 1fr 1fr 30px;
-            gap:8px;
-            align-items:center;
-            padding:6px;
-            border-bottom:1px solid rgba(0,255,200,.15);
+        .bm-card {
+            background: rgba(6, 12, 22, 0.82);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(48,54,61,0.75);
+            border-radius: 12px; padding: 20px; position: relative;
+            transition: border-color 0.2s, box-shadow 0.2s, opacity 0.3s, transform 0.3s;
+            cursor: pointer;
         }
+        .bm-card:hover { border-color: var(--bm-cyan); box-shadow: 0 0 16px var(--bm-glow); }
+        .bm-card.bm-selected { border-color: var(--bm-cyan); box-shadow: 0 0 16px var(--bm-glow); }
+        .bm-card.bm-selected::after { content: ''; position: absolute; top: 9px; left: 9px; width: 7px; height: 7px; border-radius: 50%; background: var(--bm-cyan); box-shadow: 0 0 6px var(--bm-cyan); }
+        .bm-card.bm-deleting { opacity: 0; transform: scale(0.92); pointer-events: none; }
 
-        .workflow-index{
-            font-family:monospace;
-            color:#00ffd5;
-        }
+        .bm-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+        .bm-bot-icon { background: rgba(22,27,34,0.9); padding: 7px; border-radius: 6px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(30,41,59,0.8); color: var(--bm-cyan); }
+        .bm-top-right { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
+        .bm-status-dot { width: 8px; height: 8px; background: #23d160; border-radius: 50%; box-shadow: 0 0 7px #23d160; }
+        .bm-status-dot.offline { background: #444; box-shadow: none; }
+        .bm-agent-tag { font-size: 7px; background: rgba(6,182,212,0.1); color: var(--bm-cyan); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(6,182,212,0.3); letter-spacing: 1px; }
+        .bm-agent-tag.character { background: rgba(245,158,11,0.1); color: #f59e0b; border-color: rgba(245,158,11,0.3); }
 
-        .workflow-step select{
-            background:#0b0f0e;
-            border:1px solid rgba(0,255,200,.25);
-            color:#aaffee;
-            padding:4px;
-        }
+        .bm-bot-name { font-size: 16px; font-weight: 700; margin-bottom: 3px; color: white; }
+        .bm-bot-load { font-size: 10px; color: var(--bm-muted); font-family: 'JetBrains Mono', monospace; margin-bottom: 7px; }
+        .bm-bot-desc { font-size: 11px; color: #8b949e; line-height: 1.4; min-height: 34px; margin-bottom: 16px; }
 
-        .workflow-remove{
-            background:none;
-            border:1px solid rgba(255,60,60,.4);
-            color:#ff6a6a;
-            cursor:pointer;
+        .bm-card-footer { display: flex; align-items: center; gap: 8px; border-top: 1px solid rgba(48,54,61,0.6); padding-top: 13px; }
+
+        .bm-icon-btn {
+            background: rgba(22,27,34,0.9); border: 1px solid rgba(30,41,59,0.8);
+            color: #8b949e; cursor: pointer; width: 28px; height: 28px; border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            transition: color 0.15s, border-color 0.15s, background 0.15s; padding: 0;
         }
+        .bm-icon-btn:hover { color: var(--bm-cyan); border-color: var(--bm-cyan); background: rgba(var(--color-accent) / 0.08); }
+        .bm-icon-btn.bm-del:hover { color: var(--bm-red); border-color: var(--bm-red); background: rgba(255,71,87,0.07); }
+
+        .bm-launch {
+            margin-left: auto; background: rgba(var(--color-accent) / 0.08);
+            border: 1px solid var(--bm-cyan); color: var(--bm-cyan);
+            padding: 5px 13px; border-radius: 4px; font-size: 9px; font-weight: 700;
+            letter-spacing: 1px; cursor: pointer; transition: background 0.15s;
+            font-family: 'Inter', sans-serif;
+        }
+        .bm-launch:hover { background: rgba(var(--color-accent) / 0.16); }
+
+        /* ── Empty slot ── */
+        .bm-empty {
+            border: 2px dashed rgba(48,54,61,0.65); border-radius: 12px;
+            background: rgba(4,8,14,0.55);
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; color: #8b949e; font-size: 10px;
+            letter-spacing: 2px; text-transform: uppercase; gap: 10px;
+            min-height: 178px; cursor: pointer;
+            transition: border-color 0.2s, color 0.2s, background 0.2s;
+        }
+        .bm-empty:hover { border-color: rgba(var(--color-accent) / 0.4); color: rgba(var(--color-accent) / 0.6); background: rgba(var(--color-accent) / 0.03); }
+        .bm-empty svg { opacity: 0.22; transition: opacity 0.2s; }
+        .bm-empty:hover svg { opacity: 0.5; }
+
+        /* ── Pagination ── */
+        .bm-pagination { display: flex; justify-content: center; align-items: center; gap: 36px; margin-top: 36px; color: #8b949e; font-size: 10px; letter-spacing: 2px; }
+        .bm-arrow { background: rgba(22,27,34,0.9); border: 1px solid rgba(48,54,61,0.7); width: 30px; height: 30px; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #8b949e; transition: border-color 0.15s, color 0.15s; }
+        .bm-arrow:hover { border-color: var(--bm-cyan); color: var(--bm-cyan); }
+
+        /* ─── BM MODALS shared overlay ─── */
+        .bm-overlay { display: none; position: fixed; inset: 0; background: rgba(2,5,12,0.88); backdrop-filter: blur(10px); z-index: 1100; align-items: center; justify-content: center; padding: 24px; }
+        .bm-overlay.bm-open { display: flex; animation: bmPop 0.2s ease; }
+        @keyframes bmPop { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+
+        /* ── Confirm Delete ── */
+        .bm-confirm-box { background: #080f1a; border: 1px solid rgba(30,41,59,0.9); border-radius: 12px; padding: 34px 30px; width: 350px; box-shadow: 0 0 60px rgba(255,71,87,0.1); text-align: center; }
+        .bm-confirm-icon { width: 48px; height: 48px; background: rgba(255,71,87,0.1); border: 1px solid rgba(255,71,87,0.25); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 18px; color: var(--bm-red); }
+        .bm-confirm-box h3 { font-size: 14px; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 9px; color: white; }
+        .bm-confirm-box p { font-size: 12px; color: var(--bm-muted); margin-bottom: 24px; line-height: 1.6; }
+        .bm-confirm-actions { display: flex; gap: 10px; }
+        .bm-btn-keep { flex: 1; background: none; border: 1px solid rgba(30,41,59,0.9); color: var(--bm-bright); padding: 9px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; transition: border-color 0.15s; }
+        .bm-btn-keep:hover { border-color: var(--bm-bright); }
+        .bm-btn-destroy { flex: 1; background: var(--bm-red); border: none; color: white; padding: 9px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; transition: opacity 0.15s; }
+        .bm-btn-destroy:hover { opacity: 0.85; }
+
+        /* ── Create Bot ── */
+        .bm-create-box { background: #080f1a; border: 1px solid rgba(var(--color-accent) / 0.3); border-radius: 14px; padding: 30px; width: 100%; max-width: 500px; box-shadow: 0 0 50px rgba(var(--color-accent) / 0.08); }
+        .bm-create-box h2 { font-size: 17px; font-weight: 700; color: var(--bm-cyan); margin-bottom: 22px; letter-spacing: 0.5px; }
+        .bm-field-label { font-size: 10px; letter-spacing: 2px; color: var(--bm-cyan); text-transform: uppercase; margin-bottom: 7px; display: block; font-family: 'JetBrains Mono', monospace; }
+        .bm-field-input { width: 100%; background: rgba(0,0,0,0.5); border: 1px solid rgba(30,41,59,0.9); border-radius: 8px; padding: 10px 13px; color: white; font-family: 'Inter', sans-serif; font-size: 13px; margin-bottom: 18px; transition: border-color 0.15s; outline: none; }
+        .bm-field-input:focus { border-color: var(--bm-cyan); }
+        .bm-type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 22px; }
+        .bm-type-card { border: 1px solid rgba(30,41,59,0.9); background: rgba(0,0,0,0.35); border-radius: 10px; padding: 14px; cursor: pointer; transition: all 0.15s; }
+        .bm-type-card:hover { border-color: rgba(var(--color-accent) / 0.5); }
+        .bm-type-card.bm-type-selected { border-color: var(--bm-cyan); background: rgba(var(--color-accent) / 0.08); box-shadow: 0 0 12px rgba(var(--color-accent) / 0.12); }
+        .bm-type-card h4 { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+        .bm-type-card.bm-agent-t h4 { color: var(--bm-cyan); }
+        .bm-type-card.bm-char-t h4 { color: #f59e0b; }
+        .bm-type-card p { font-size: 11px; color: var(--bm-muted); line-height: 1.4; }
+        .bm-create-footer { display: flex; justify-content: space-between; align-items: center; }
+        .bm-btn-cancel-c { background: none; border: 1px solid rgba(30,41,59,0.9); color: var(--bm-bright); padding: 8px 18px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; transition: border-color 0.15s; }
+        .bm-btn-cancel-c:hover { border-color: var(--bm-bright); }
+        .bm-btn-init { background: rgba(var(--color-accent) / 0.9); border: none; color: #000; padding: 10px 22px; border-radius: 8px; font-size: 11px; font-weight: 700; letter-spacing: 1px; cursor: pointer; font-family: 'Inter', sans-serif; transition: opacity 0.15s; }
+        .bm-btn-init:hover { opacity: 0.85; }
+
+        /* ── Edit Bot Modal ── */
+        .bm-edit-box { background: #070e1a; width: 100%; max-width: 820px; max-height: 90vh; overflow-y: auto; border-radius: 14px; border: 1px solid rgba(30,41,59,0.9); padding: 28px; box-shadow: 0 20px 60px rgba(0,0,0,0.7), 0 0 40px rgba(var(--color-accent) / 0.04); color: var(--bm-bright); }
+        .bm-edit-box::-webkit-scrollbar { width: 4px; }
+        .bm-edit-box::-webkit-scrollbar-thumb { background: rgba(30,41,59,0.9); border-radius: 2px; }
+        .bm-modal-hdr { display: flex; align-items: center; margin-bottom: 32px; }
+        .bm-modal-icon { background: #0f1e30; padding: 9px; border-radius: 8px; margin-right: 13px; border: 1px solid rgba(30,41,59,0.9); color: var(--bm-cyan); display: flex; }
+        .bm-modal-title h2 { font-size: 18px; letter-spacing: 0.3px; color: white; }
+        .bm-modal-title p { font-size: 10px; color: var(--bm-muted); text-transform: uppercase; letter-spacing: 2px; margin-top: 3px; }
+        .bm-close-x { margin-left: auto; width: 32px; height: 32px; border-radius: 50%; border: 1px solid rgba(30,41,59,0.9); background: none; color: var(--bm-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 17px; transition: border-color 0.15s, color 0.15s; }
+        .bm-close-x:hover { border-color: var(--bm-cyan); color: var(--bm-cyan); }
+        .bm-sec-label { display: flex; justify-content: space-between; align-items: center; font-size: 10px; letter-spacing: 2px; color: var(--bm-cyan); text-transform: uppercase; margin-bottom: 13px; }
+        .bm-json-tag { border: 1px solid var(--bm-muted); color: var(--bm-muted); padding: 2px 7px; border-radius: 4px; font-size: 8px; }
+        .bm-action-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+        .bm-action-card { background: rgba(14,23,38,0.9); border: 1px solid rgba(30,41,59,0.9); border-radius: 8px; padding: 16px; display: flex; align-items: center; gap: 13px; cursor: pointer; transition: border-color 0.15s; }
+        .bm-action-card:hover { border-color: rgba(var(--color-accent) / 0.4); }
+        .bm-action-card.bm-ac-on { border-color: var(--bm-cyan); box-shadow: inset 0 0 10px rgba(var(--color-accent) / 0.07); }
+        .bm-ac-title { font-size: 11px; font-weight: 700; display: block; }
+        .bm-ac-sub { font-size: 9px; color: var(--bm-muted); }
+        .bm-editor { background: #060c16; border: 1px solid var(--bm-cyan); border-radius: 8px; padding: 13px; font-family: 'JetBrains Mono', monospace; font-size: 12px; line-height: 1.6; margin-bottom: 26px; color: #d1d5db; box-shadow: 0 0 12px rgba(var(--color-accent) / 0.07); }
+        .bm-first-msg { background: rgba(17,27,39,0.9); border: 1px solid rgba(30,41,59,0.9); border-radius: 8px; padding: 16px; font-size: 12px; color: #94a3b8; margin-bottom: 32px; line-height: 1.5; }
+        .bm-bot-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 32px; }
+        .bm-drop-z { border: 1px solid rgba(30,41,59,0.9); background: rgba(13,22,36,0.9); border-radius: 8px; height: 130px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: var(--bm-muted); gap: 5px; cursor: pointer; transition: border-color 0.15s; }
+        .bm-drop-z:hover { border-color: rgba(var(--color-accent) / 0.35); }
+        .bm-drop-z span { font-size: 10px; font-weight: 700; color: var(--bm-bright); }
+        .bm-drop-z p { font-size: 9px; margin: 0; }
+        .bm-ctrl-panel { background: rgba(13,22,36,0.9); border: 1px solid rgba(30,41,59,0.9); border-radius: 8px; padding: 16px; }
+        .bm-ctrl-panel h4 { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--bm-bright); margin-bottom: 3px; }
+        .bm-ctrl-panel p { font-size: 10px; color: var(--bm-muted); margin-bottom: 16px; }
+        .bm-toggle-row { background: #040a12; border-radius: 20px; padding: 6px 16px; display: flex; justify-content: space-between; align-items: center; font-size: 10px; font-weight: 700; color: var(--bm-muted); }
+        .bm-switch { width: 48px; height: 19px; background: rgba(30,41,59,0.9); border-radius: 10px; position: relative; cursor: pointer; }
+        .bm-switch::after { content: ''; position: absolute; right: 2px; top: 2px; width: 24px; height: 15px; background: var(--bm-cyan); border-radius: 8px; box-shadow: 0 0 7px var(--bm-cyan); transition: right 0.2s; }
+        .bm-switch.bm-left::after { right: auto; left: 2px; background: var(--bm-muted); box-shadow: none; }
+        .bm-edit-footer { display: flex; justify-content: space-between; align-items: center; }
+        .bm-btn-cancel-e { background: none; border: 1px solid rgba(30,41,59,0.9); color: var(--bm-bright); padding: 9px 22px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; transition: border-color 0.15s; }
+        .bm-btn-cancel-e:hover { border-color: var(--bm-bright); }
+        .bm-btn-save { background: var(--bm-cyan); border: none; color: #000; padding: 9px 26px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; font-family: 'Inter', sans-serif; transition: opacity 0.15s; }
+        .bm-btn-save:hover { opacity: 0.85; }
+
+        /* ── Toast ── */
+        .bm-toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(18px); background: #070e1a; border: 1px solid var(--bm-cyan); color: var(--bm-cyan); padding: 9px 22px; border-radius: 8px; font-size: 11px; font-family: 'JetBrains Mono', monospace; letter-spacing: 1px; z-index: 9999; opacity: 0; transition: opacity 0.2s, transform 0.2s; box-shadow: 0 0 18px rgba(var(--color-accent) / 0.14); pointer-events: none; }
+        .bm-toast.bm-toast-show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        .bm-toast.bm-toast-warn { border-color: #f59e0b; color: #f59e0b; }
+
+        /* ─── Agent Management styles (from Miles) ─── */
+        .agent-form { display: grid; grid-template-columns: 140px 1fr; gap: 10px 12px; align-items: center; }
+        .model-row { display: flex; align-items: center; gap: 12px; }
+        .agent-textarea { grid-column: 1 / span 2; height: 90px; }
+        .agent-input, .agent-select { width: 100%; }
+        .local-toggle { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+        .workflow-step { display: grid; grid-template-columns: 40px 1fr 1fr 30px; gap: 8px; align-items: center; padding: 6px; border-bottom: 1px solid rgba(0,255,200,0.15); }
+        .workflow-index { font-family: monospace; color: #00ffd5; }
+        .workflow-step select { background: #0b0f0e; border: 1px solid rgba(0,255,200,0.25); color: #aaffee; padding: 4px; }
+        .workflow-remove { background: none; border: 1px solid rgba(255,60,60,0.4); color: #ff6a6a; cursor: pointer; }
     </style>
 </head>
 <body class="h-screen w-screen flex flex-col md:flex-row relative">
 
     <div class="scanline-overlay"></div>
 
-    <!-- Custom Modal -->
+    <!-- ═══════ CUSTOM MODAL ═══════ -->
     <div id="custom-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-[var(--glass-bg)] backdrop-blur-sm hidden opacity-0 modal-backdrop">
         <div class="glass-panel rounded-xl p-8 max-w-md w-full text-center transform scale-95 modal-content border-amber-500/50 shadow-[0_0_50px_rgba(245,158,11,0.2)]">
-            <div class="text-amber-400 mb-4 flex justify-center">
-                <i data-lucide="terminal" class="w-12 h-12"></i>
-            </div>
+            <div class="text-amber-400 mb-4 flex justify-center"><i data-lucide="terminal" class="w-12 h-12"></i></div>
             <h3 id="modal-title" class="text-2xl font-bold text-white mb-2">SYSTEM ALERT</h3>
             <p id="modal-message" class="text-accent/80 mb-6">Operation confirmed.</p>
-            <button onclick="closeModal('custom-modal')" class="px-6 py-2 bg-amber-600 hover:bg-amber-500 text-black font-bold rounded-lg transition-colors w-full">
-                ACKNOWLEDGE
-            </button>
+            <button onclick="closeModal('custom-modal')" class="px-6 py-2 bg-amber-600 hover:bg-amber-500 text-black font-bold rounded-lg transition-colors w-full">ACKNOWLEDGE</button>
         </div>
     </div>
 
-    <!-- Create Bot Modal -->
+    <!-- ═══════ CREATE BOT MODAL (used by old Bot Management) ═══════ -->
     <div id="create-bot-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-[var(--glass-bg)] backdrop-blur-sm hidden opacity-0 modal-backdrop">
         <div class="glass-panel rounded-xl p-8 max-w-lg w-full transform scale-95 modal-content border-accent/50 shadow-lg shadow-accent/20">
             <div class="flex justify-between items-center mb-6 border-b border-accent-dark/50 pb-4">
                 <h3 class="text-2xl font-bold text-accent">Initialize New Instance</h3>
-                <button onclick="closeModal('create-bot-modal')" class="text-gray-400 hover:text-white transition-colors">
-                    <i data-lucide="x"></i>
-                </button>
+                <button onclick="closeModal('create-bot-modal')" class="text-gray-400 hover:text-white transition-colors"><i data-lucide="x"></i></button>
             </div>
             <div class="space-y-6">
                 <div>
@@ -273,7 +366,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div onclick="selectBotType('character')" id="type-character" class="type-card p-4 rounded-lg cursor-pointer hover:bg-black/40">
                             <h4 class="text-lg font-bold text-amber-400 mb-1">Character</h4>
-                            <p class="text-xs text-gray-400">Roleplay enabled. The AI adopts a specific persona, backstory, and will.</p>
+                            <p class="text-xs text-gray-400">Roleplay enabled. Adopts a specific persona, backstory, and will.</p>
                         </div>
                         <div onclick="selectBotType('agent')" id="type-agent" class="type-card p-4 rounded-lg cursor-pointer hover:bg-black/40">
                             <h4 class="text-lg font-bold text-accent mb-1">Agent</h4>
@@ -281,220 +374,116 @@
                         </div>
                     </div>
                 </div>
-                <button onclick="confirmCreateBot()" class="w-full py-3 bg-accent/90 hover:bg-accent text-white font-bold rounded-lg shadow-lg shadow-accent-dark/50 transition-all">
-                    INITIALIZE INSTANCE
-                </button>
+                <button onclick="confirmCreateBot()" class="w-full py-3 bg-accent/90 hover:bg-accent text-white font-bold rounded-lg shadow-lg shadow-accent-dark/50 transition-all">INITIALIZE INSTANCE</button>
             </div>
         </div>
     </div>
 
-    <!-- Sidebar -->
+    <!-- ═══════ SIDEBAR ═══════ -->
     <nav id="sidebar" class="w-full md:w-64 glass-panel z-50 flex flex-col border-r border-accent-dark/50 flex-shrink-0 bg-[var(--glass-bg)]">
         <div class="p-6 border-b border-accent-dark/50 flex justify-between items-center">
             <div class="nav-header-text overflow-hidden">
-                <h1 class="text-2xl font-extrabold tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-accent to-accent-secondary">
-                    AUTOMAT
-                </h1>
+                <h1 class="text-2xl font-extrabold tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-accent to-accent-secondary">AUTOMAT</h1>
                 <p class="text-xs text-accent-dark font-mono tracking-widest mt-1">SYSTEM V2.4.1</p>
             </div>
-            <button onclick="toggleSidebar()" class="text-accent hover:text-white transition-colors">
-                <i data-lucide="menu" class="w-6 h-6"></i>
-            </button>
+            <button onclick="toggleSidebar()" class="text-accent hover:text-white transition-colors"><i data-lucide="menu" class="w-6 h-6"></i></button>
         </div>
-
         <div class="flex-1 overflow-y-auto py-4 space-y-1">
-            <button onclick="switchTab('chat')" id="nav-chat" class="w-full nav-btn text-left px-6 py-3 flex items-center gap-3 transition-all active-nav">
-                <i data-lucide="message-square" class="w-5 h-5 flex-shrink-0"></i>
-                <span class="font-semibold nav-text whitespace-nowrap">Neural Chat</span>
-            </button>
-            <button onclick="switchTab('options')" id="nav-options" class="w-full nav-btn text-left px-6 py-3 flex items-center gap-3 transition-all inactive-nav">
-                <i data-lucide="wrench" class="w-5 h-5 flex-shrink-0"></i>
-                <span class="font-semibold nav-text whitespace-nowrap">System Options</span>
-            </button>
-            <button onclick="switchTab('creative')" id="nav-creative" class="w-full nav-btn text-left px-6 py-3 flex items-center gap-3 transition-all inactive-nav">
-                <i data-lucide="sparkles" class="w-5 h-5 flex-shrink-0"></i>
-                <span class="font-semibold nav-text whitespace-nowrap">Creative Mode</span>
-            </button>
-            <button onclick="switchTab('engine')" id="nav-engine" class="w-full nav-btn text-left px-6 py-3 flex items-center gap-3 transition-all inactive-nav">
-                <i data-lucide="cpu" class="w-5 h-5 flex-shrink-0"></i>
-                <span class="font-semibold nav-text whitespace-nowrap">Engine Config</span>
-            </button>
-            <button onclick="switchTab('appearance')" id="nav-appearance" class="w-full nav-btn text-left px-6 py-3 flex items-center gap-3 transition-all inactive-nav">
-                <i data-lucide="palette" class="w-5 h-5 flex-shrink-0"></i>
-                <span class="font-semibold nav-text whitespace-nowrap">Appearance</span>
-            </button>
-            <button onclick="switchTab('management')" id="nav-management" class="w-full nav-btn text-left px-6 py-3 flex items-center gap-3 transition-all inactive-nav">
-                <i data-lucide="layers" class="w-5 h-5 flex-shrink-0"></i>
-                <span class="font-semibold nav-text whitespace-nowrap">Bot Management</span>
-            </button>
-            <button onclick="switchTab('agents')" id="nav-agents" class="w-full nav-btn text-left px-6 py-3 flex items-center gap-3 transition-all inactive-nav">
-                <i data-lucide="hat-glasses" class="w-5 h-5 flex-shrink-0"></i>
-                <span class="font-semibold nav-text whitespace-nowrap">Agent Management</span>
-            </button>
+            <button onclick="switchTab('chat')"       id="nav-chat"       class="w-full nav-btn text-left px-6 py-3 flex items-center gap-3 transition-all active-nav"><i data-lucide="message-square" class="w-5 h-5 flex-shrink-0"></i><span class="font-semibold nav-text whitespace-nowrap">Neural Chat</span></button>
+            <button onclick="switchTab('options')"    id="nav-options"    class="w-full nav-btn text-left px-6 py-3 flex items-center gap-3 transition-all inactive-nav"><i data-lucide="wrench" class="w-5 h-5 flex-shrink-0"></i><span class="font-semibold nav-text whitespace-nowrap">System Options</span></button>
+            <button onclick="switchTab('creative')"   id="nav-creative"   class="w-full nav-btn text-left px-6 py-3 flex items-center gap-3 transition-all inactive-nav"><i data-lucide="sparkles" class="w-5 h-5 flex-shrink-0"></i><span class="font-semibold nav-text whitespace-nowrap">Creative Mode</span></button>
+            <button onclick="switchTab('engine')"     id="nav-engine"     class="w-full nav-btn text-left px-6 py-3 flex items-center gap-3 transition-all inactive-nav"><i data-lucide="cpu" class="w-5 h-5 flex-shrink-0"></i><span class="font-semibold nav-text whitespace-nowrap">Engine Config</span></button>
+            <button onclick="switchTab('appearance')" id="nav-appearance" class="w-full nav-btn text-left px-6 py-3 flex items-center gap-3 transition-all inactive-nav"><i data-lucide="palette" class="w-5 h-5 flex-shrink-0"></i><span class="font-semibold nav-text whitespace-nowrap">Appearance</span></button>
+            <button onclick="switchTab('management')" id="nav-management" class="w-full nav-btn text-left px-6 py-3 flex items-center gap-3 transition-all inactive-nav"><i data-lucide="layers" class="w-5 h-5 flex-shrink-0"></i><span class="font-semibold nav-text whitespace-nowrap">Agent Manager</span></button>
         </div>
-
         <div class="p-4 border-t border-accent-dark/50 text-xs text-accent-dark font-mono text-center flex justify-center items-center h-16">
             <span class="nav-footer-text whitespace-nowrap">ID: A-387-CYB <br> STATUS: ONLINE</span>
             <i data-lucide="activity" class="w-5 h-5 hidden nav-footer-icon text-green-500 animate-pulse"></i>
         </div>
     </nav>
 
+    <!-- ═══════ MAIN ═══════ -->
     <main class="flex-1 relative z-10 overflow-hidden flex flex-col bg-[var(--bg-dark)]">
-        
-        <!-- CHAT -->
+
+        <!-- ── CHAT ── -->
         <section id="module-chat" class="module-section active flex-col h-full w-full relative overflow-hidden">
             <div id="bg-chat" class="bg-canvas-container"></div>
             <div class="relative z-10 flex-1 flex items-end justify-center p-8 md:p-24 pointer-events-none">
-                <div id="chat-panel" class="relative glass-panel rounded-2xl overflow-hidden bg-[var(--glass-bg)] flex flex-col pointer-events-auto" 
-                     style="width: 100%; max-width: 1152px; height: 300px; min-width: 400px; min-height: 300px; box-shadow: 0 10px 20px rgba(0,0,0,0.15);">
-                    
+                <div id="chat-panel" class="relative glass-panel rounded-2xl overflow-hidden bg-[var(--glass-bg)] flex flex-col pointer-events-auto" style="width:100%;max-width:1152px;height:300px;min-width:400px;min-height:300px;">
                     <div id="chat-resizer" class="absolute top-0 right-0 w-8 h-8 z-50 cursor-nesw-resize flex items-start justify-end p-2 text-accent/40 hover:text-accent bg-accent-dark/20 rounded-bl-xl transition-colors">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3l-6 6"/><path d="M21 3v6"/><path d="M21 3h-6"/></svg>
                     </div>
-
                     <div class="p-4 border-b border-accent-dark/50 flex justify-between items-center bg-[var(--glass-bg)] flex-shrink-0 pr-12">
                         <div class="flex items-center gap-3">
-                            <div class="relative">
-                                <div class="w-3 h-3 bg-accent rounded-full animate-ping absolute opacity-75"></div>
-                                <div class="w-3 h-3 bg-accent rounded-full relative"></div>
-                            </div>
-                            <div>
-                                <h2 class="font-bold text-accent">CYBEL CORE</h2>
-                                <p class="text-[10px] text-accent font-mono tracking-widest">HOLOGRAPHIC LINK ACTIVE</p>
-                            </div>
+                            <div class="relative"><div class="w-3 h-3 bg-accent rounded-full animate-ping absolute opacity-75"></div><div class="w-3 h-3 bg-accent rounded-full relative"></div></div>
+                            <div><h2 class="font-bold text-accent">CYBEL CORE</h2><p class="text-[10px] text-accent font-mono tracking-widest">HOLOGRAPHIC LINK ACTIVE</p></div>
                         </div>
-                        <div class="flex gap-4 text-accent">
-                            <i data-lucide="activity" class="w-5 h-5 animate-pulse"></i>
-                            <i data-lucide="shield-check" class="w-5 h-5"></i>
-                        </div>
+                        <div class="flex gap-4 text-accent"><i data-lucide="activity" class="w-5 h-5 animate-pulse"></i><i data-lucide="shield-check" class="w-5 h-5"></i></div>
                     </div>
-
                     <div id="chat-history" class="flex-1 overflow-y-auto p-6 space-y-6">
                         <div class="flex gap-4">
                             <div class="w-8 h-8 rounded-full bg-accent-dark/50 flex items-center justify-center border border-accent/30 flex-shrink-0">
                                 <img src="./assets/image2.png" alt="AI Avatar" class="w-full h-full object-cover" />
                             </div>
                             <div class="bg-[var(--glass-bg)] border border-accent p-4 rounded-lg rounded-tl-none shadow-lg max-w-[80%] backdrop-blur-sm">
-                                <p class="text-accent text-sm leading-relaxed">
-                                    Holographic projection initialized. I am ready to receive your queries through the neural link.
-                                </p>
+                                <p class="text-accent text-sm leading-relaxed">Holographic projection initialized. I am ready to receive your queries through the neural link.</p>
                             </div>
                         </div>
                     </div>
-
                     <div class="p-4 bg-[var(--glass-bg)] border-t border-accent flex-shrink-0">
                         <input type="file" id="chat-file-input" class="hidden" onchange="handleFileUpload(this)">
                         <form onsubmit="handleChatSubmit(event)" class="relative flex items-center gap-3">
-                            <button type="button" onclick="document.getElementById('chat-file-input').click()" class="p-2 hover:bg-accent-dark/50 rounded-md transition-colors text-accent/70 hover:text-accent" title="Attach File">
-                                <i data-lucide="paperclip" class="w-5 h-5"></i>
-                            </button>
+                            <button type="button" onclick="document.getElementById('chat-file-input').click()" class="p-2 hover:bg-accent-dark/50 rounded-md transition-colors text-accent/70 hover:text-accent"><i data-lucide="paperclip" class="w-5 h-5"></i></button>
                             <div class="relative flex-1">
-                                <div class="absolute left-4 text-accent-dark pointer-events-none">
-                                    <i data-lucide="terminal" class="w-4 h-11"></i>
-                                </div>
-                                <input type="text" id="chat-input" 
-                                    class="w-full bg-[var(--input-bg)] border border-accent rounded-lg py-3 pl-10 pr-12 text-[var(--text-second)] focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all font-mono text-sm"
-                                    placeholder="Enter command or query..." autocomplete="off">
+                                <div class="absolute left-4 text-accent-dark pointer-events-none"><i data-lucide="terminal" class="w-4 h-11"></i></div>
+                                <input type="text" id="chat-input" class="w-full bg-[var(--input-bg)] border border-accent rounded-lg py-3 pl-10 pr-12 text-[var(--text-second)] focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all font-mono text-sm" placeholder="Enter command or query..." autocomplete="off">
                             </div>
-                            <button type="submit" class="p-2 rounded-md hover:bg-accent text-accent/70 hover:text-white transition-colors">
-                                <i data-lucide="send" class="w-5 h-5"></i>
-                            </button>
+                            <button type="submit" class="p-2 rounded-md hover:bg-accent text-accent/70 hover:text-white transition-colors"><i data-lucide="send" class="w-5 h-5"></i></button>
                         </form>
-                        <div class="mt-2 flex justify-between items-center text-[9px] text-accent tracking-[0.2em] uppercase">
-                            <span>Secure Channel // Encrypted</span>
-                            <span>Latency: 12ms</span>
-                        </div>
+                        <div class="mt-2 flex justify-between items-center text-[9px] text-accent tracking-[0.2em] uppercase"><span>Secure Channel // Encrypted</span><span>Latency: 12ms</span></div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- OPTIONS -->
+        <!-- ── OPTIONS ── -->
         <section id="module-options" class="module-section flex-col h-full w-full p-4 md:p-8 overflow-y-auto">
             <div class="max-w-6xl mx-auto w-full space-y-6 relative z-10">
-                <div class="mb-8 border-b border-accent-dark/60 pb-4">
-                    <h2 class="text-3xl font-extrabold text-amber-400 flex items-center gap-3">
-                        <i data-lucide="wrench"></i> AUTOMAT OPTIONS
-                    </h2>
-                </div>
+                <div class="mb-8 border-b border-accent-dark/60 pb-4"><h2 class="text-3xl font-extrabold text-amber-400 flex items-center gap-3"><i data-lucide="wrench"></i> AUTOMAT OPTIONS</h2></div>
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div class="glass-panel p-6 rounded-xl">
-                        <h3 class="text-lg font-bold text-[var(--text-second)] mb-4 flex items-center gap-2">
-                            <i data-lucide="activity"></i> System Health
-                        </h3>
+                        <h3 class="text-lg font-bold text-[var(--text-second)] mb-4 flex items-center gap-2"><i data-lucide="activity"></i> System Health</h3>
                         <div class="space-y-4">
-                            <div class="flex justify-between text-sm border-b border-accent-dark/50 pb-2">
-                                <span class="text-accent">Core Temp</span>
-                                <span id="stat-temp" class="font-mono text-green-600">35.5°C</span>
-                            </div>
-                            <div class="flex justify-between text-sm border-b border-accent-dark/50 pb-2">
-                                <span class="text-accent">Latency</span>
-                                <span id="stat-latency" class="font-mono text-green-600">5ms</span>
-                            </div>
-                            <div class="flex justify-between text-sm border-b border-accent-dark/50 pb-2">
-                                <span class="text-accent">Battery</span>
-                                <span id="stat-battery" class="font-mono text-green-600">88%</span>
-                            </div>
-                            <button onclick="showModal('Diagnostics', 'Running full diagnostic cycle...')" class="w-full mt-2 py-2 bg-amber-600/20 hover:bg-amber-600/40 text-amber-500 border border-amber-600/50 rounded text-xs font-bold transition-colors">
-                                RUN DIAGNOSTIC
-                            </button>
+                            <div class="flex justify-between text-sm border-b border-accent-dark/50 pb-2"><span class="text-accent">Core Temp</span><span id="stat-temp" class="font-mono text-green-600">35.5°C</span></div>
+                            <div class="flex justify-between text-sm border-b border-accent-dark/50 pb-2"><span class="text-accent">Latency</span><span id="stat-latency" class="font-mono text-green-600">5ms</span></div>
+                            <div class="flex justify-between text-sm border-b border-accent-dark/50 pb-2"><span class="text-accent">Battery</span><span id="stat-battery" class="font-mono text-green-600">88%</span></div>
+                            <button onclick="showModal('Diagnostics','Running full diagnostic cycle...')" class="w-full mt-2 py-2 bg-amber-600/20 hover:bg-amber-600/40 text-amber-500 border border-amber-600/50 rounded text-xs font-bold transition-colors">RUN DIAGNOSTIC</button>
                         </div>
                     </div>
                     <div class="glass-panel p-6 rounded-xl">
-                        <h3 class="text-lg font-bold text-[var(--text-second)] mb-4 flex items-center gap-2">
-                            <i data-lucide="globe"></i> Connectivity
-                        </h3>
+                        <h3 class="text-lg font-bold text-[var(--text-second)] mb-4 flex items-center gap-2"><i data-lucide="globe"></i> Connectivity</h3>
                         <div class="space-y-4">
-                            <div class="flex items-center justify-between">
-                                <span class="text-sm text-accent">Wi-Fi Link</span>
-                                <button onclick="toggleSwitch(this)" class="w-10 h-5 bg-green-600 rounded-full relative transition-colors">
-                                    <span class="absolute right-1 top-1 w-3 h-3 bg-white rounded-full"></span>
-                                </button>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <span class="text-sm text-accent">Bluetooth</span>
-                                <button onclick="toggleSwitch(this)" class="w-10 h-5 bg-gray-700 rounded-full relative transition-colors">
-                                    <span class="absolute left-1 top-1 w-3 h-3 bg-white rounded-full"></span>
-                                </button>
-                            </div>
-                            <div class="mt-4 p-3 bg-[var(--input-bg)] rounded border border-accent-dark text-xs font-mono text-accent shadow-lg shadow-[var(--glass-border)]">
-                                IP: 192.168.1.42<br>Signal: Strong (-42dBm)
-                            </div>
+                            <div class="flex items-center justify-between"><span class="text-sm text-accent">Wi-Fi Link</span><button onclick="toggleSwitch(this)" class="w-10 h-5 bg-green-600 rounded-full relative transition-colors"><span class="absolute right-1 top-1 w-3 h-3 bg-white rounded-full"></span></button></div>
+                            <div class="flex items-center justify-between"><span class="text-sm text-accent">Bluetooth</span><button onclick="toggleSwitch(this)" class="w-10 h-5 bg-gray-700 rounded-full relative transition-colors"><span class="absolute left-1 top-1 w-3 h-3 bg-white rounded-full"></span></button></div>
+                            <div class="mt-4 p-3 bg-[var(--input-bg)] rounded border border-accent-dark text-xs font-mono text-accent">IP: 192.168.1.42<br>Signal: Strong (-42dBm)</div>
                         </div>
                     </div>
                     <div class="glass-panel p-6 rounded-xl">
-                        <h3 class="text-lg font-bold text-[var(--text-second)] mb-4 flex items-center gap-2">
-                            <i data-lucide="sliders"></i> Pilot AI
-                        </h3>
+                        <h3 class="text-lg font-bold text-[var(--text-second)] mb-4 flex items-center gap-2"><i data-lucide="sliders"></i> Pilot AI</h3>
                         <div class="space-y-6">
-                            <div>
-                                <label class="text-xs text-accent mb-1 block">Torque Limit</label>
-                                <input type="range" min="10" max="100" value="50" class="w-full">
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <span class="text-sm text-accent">Safety Override</span>
-                                <button onclick="toggleSwitch(this)" class="w-10 h-5 bg-green-600 rounded-full relative transition-colors">
-                                    <span class="absolute right-1 top-1 w-3 h-3 bg-white rounded-full"></span>
-                                </button>
-                            </div>
-                            <button onclick="showModal('Pilot Update', 'Parameters updated. Rebooting drive systems...')" class="w-full py-3 bg-accent/80 hover:bg-accent text-white rounded font-bold shadow-lg shadow-accent-dark/50 transition-all">
-                                APPLY CHANGES
-                            </button>
+                            <div><label class="text-xs text-accent mb-1 block">Torque Limit</label><input type="range" min="10" max="100" value="50" class="w-full"></div>
+                            <div class="flex items-center justify-between"><span class="text-sm text-accent">Safety Override</span><button onclick="toggleSwitch(this)" class="w-10 h-5 bg-green-600 rounded-full relative transition-colors"><span class="absolute right-1 top-1 w-3 h-3 bg-white rounded-full"></span></button></div>
+                            <button onclick="showModal('Pilot Update','Parameters updated. Rebooting drive systems...')" class="w-full py-3 bg-accent/80 hover:bg-accent text-white rounded font-bold shadow-lg shadow-accent-dark/50 transition-all">APPLY CHANGES</button>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- CREATIVE -->
+        <!-- ── CREATIVE ── -->
         <section id="module-creative" class="module-section flex-col h-full w-full p-4 md:p-8 overflow-y-auto">
             <div class="max-w-4xl mx-auto w-full h-full flex flex-col relative z-10">
-                <div class="mb-8">
-                    <h2 class="text-3xl font-extrabold text-[var(--text-second)] flex items-center gap-3">
-                        <i data-lucide="image"></i> CREATIVE MODE
-                    </h2>
-                    <p class="text-accent text-sm mt-1">Configure generative parameters.</p>
-                </div>
+                <div class="mb-8"><h2 class="text-3xl font-extrabold text-[var(--text-second)] flex items-center gap-3"><i data-lucide="image"></i> CREATIVE MODE</h2><p class="text-accent text-sm mt-1">Configure generative parameters.</p></div>
                 <div class="flex justify-between mb-8 relative">
                     <div class="absolute top-1/2 left-0 w-full h-0.5 bg-gray-800 -z-10"></div>
                     <div class="w-10 h-10 rounded-full bg-accent text-black flex items-center justify-center font-bold ring-4 ring-black">1</div>
@@ -505,472 +494,492 @@
                     <div id="creative-step-1" class="step-content">
                         <h3 class="text-xl font-bold text-accent mb-6">Select Input Source</h3>
                         <div class="grid grid-cols-2 gap-6">
-                            <div onclick="setCreativeInput('text')" class="cursor-pointer border border-accent-dark/60 bg-[var(--input-bg)] p-6 rounded-lg hover:border-accent hover:bg-accent-dark/20 transition-all group text-center">
-                                <i data-lucide="type" class="w-10 h-10 mx-auto mb-4 text-accent/70 group-hover:text-accent transition-colors"></i>
-                                <h4 class="font-bold text-accent">Text Prompt</h4>
-                                <p class="text-xs text-accent/80 mt-2">Describe visually</p>
-                            </div>
-                            <div onclick="setCreativeInput('image')" class="cursor-pointer border border-accent-dark/60 bg-[var(--input-bg)] p-6 rounded-lg hover:border-accent hover:bg-accent-dark/20 transition-all group text-center">
-                                <i data-lucide="upload-cloud" class="w-10 h-10 mx-auto mb-4 text-accent/70 group-hover:text-accent transition-colors"></i>
-                                <h4 class="font-bold text-accent">Image Upload</h4>
-                                <p class="text-xs text-accent/80 mt-2">Style transfer</p>
-                            </div>
+                            <div onclick="setCreativeInput('text')" class="cursor-pointer border border-accent-dark/60 bg-[var(--input-bg)] p-6 rounded-lg hover:border-accent hover:bg-accent-dark/20 transition-all group text-center"><i data-lucide="type" class="w-10 h-10 mx-auto mb-4 text-accent/70 group-hover:text-accent transition-colors"></i><h4 class="font-bold text-accent">Text Prompt</h4><p class="text-xs text-accent/80 mt-2">Describe visually</p></div>
+                            <div onclick="setCreativeInput('image')" class="cursor-pointer border border-accent-dark/60 bg-[var(--input-bg)] p-6 rounded-lg hover:border-accent hover:bg-accent-dark/20 transition-all group text-center"><i data-lucide="upload-cloud" class="w-10 h-10 mx-auto mb-4 text-accent/70 group-hover:text-accent transition-colors"></i><h4 class="font-bold text-accent">Image Upload</h4><p class="text-xs text-accent/80 mt-2">Style transfer</p></div>
                         </div>
                     </div>
                     <div id="creative-step-2" class="step-content hidden">
                         <h3 class="text-xl font-bold text-accent/80 mb-6">Select Output Dimension</h3>
                         <div class="grid grid-cols-2 gap-6">
-                            <div onclick="setCreativeOutput('2d')" class="cursor-pointer border border-accent-dark/60 bg-black/40 p-6 rounded-lg hover:border-accent hover:bg-accent-dark/20 transition-all group text-center">
-                                <i data-lucide="maximize-2" class="w-10 h-10 mx-auto mb-4 text-accent/70 group-hover:text-accent transition-colors"></i>
-                                <h4 class="font-bold text-accent/60">2D Image</h4>
-                            </div>
-                            <div onclick="setCreativeOutput('3d')" class="cursor-pointer border border-accent-dark/60 bg-black/40 p-6 rounded-lg hover:border-accent hover:bg-accent-dark/20 transition-all group text-center">
-                                <i data-lucide="box" class="w-10 h-10 mx-auto mb-4 text-accent/70 group-hover:text-accent transition-colors"></i>
-                                <h4 class="font-bold text-accent/60">3D Model</h4>
-                            </div>
+                            <div onclick="setCreativeOutput('2d')" class="cursor-pointer border border-accent-dark/60 bg-black/40 p-6 rounded-lg hover:border-accent hover:bg-accent-dark/20 transition-all group text-center"><i data-lucide="maximize-2" class="w-10 h-10 mx-auto mb-4 text-accent/70 group-hover:text-accent transition-colors"></i><h4 class="font-bold text-accent/60">2D Image</h4></div>
+                            <div onclick="setCreativeOutput('3d')" class="cursor-pointer border border-accent-dark/60 bg-black/40 p-6 rounded-lg hover:border-accent hover:bg-accent-dark/20 transition-all group text-center"><i data-lucide="box" class="w-10 h-10 mx-auto mb-4 text-accent/70 group-hover:text-accent transition-colors"></i><h4 class="font-bold text-accent/60">3D Model</h4></div>
                         </div>
-                        <button onclick="prevCreativeStep()" class="mt-8 text-sm text-accent hover:text-white flex items-center gap-2 transition-colors">
-                            <i data-lucide="arrow-left" class="w-4 h-4"></i> Back
-                        </button>
+                        <button onclick="prevCreativeStep()" class="mt-8 text-sm text-accent hover:text-white flex items-center gap-2 transition-colors"><i data-lucide="arrow-left" class="w-4 h-4"></i> Back</button>
                     </div>
                     <div id="creative-step-3" class="step-content hidden">
                         <h3 class="text-xl font-bold text-accent/80 mb-6">Final Parameters</h3>
                         <div class="space-y-6 max-w-lg">
-                            <div>
-                                <label class="block text-sm text-accent mb-2">Style Preset</label>
-                                <select class="w-full bg-black/50 border border-accent-dark rounded p-2 text-white">
-                                    <option>Cinematic</option><option>Anime</option><option>Photorealistic</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-sm text-accent mb-2">Complexity</label>
-                                <input type="range" min="1" max="10" value="7" class="w-full">
-                            </div>
+                            <div><label class="block text-sm text-accent mb-2">Style Preset</label><select class="w-full bg-black/50 border border-accent-dark rounded p-2 text-white"><option>Cinematic</option><option>Anime</option><option>Photorealistic</option></select></div>
+                            <div><label class="block text-sm text-accent mb-2">Complexity</label><input type="range" min="1" max="10" value="7" class="w-full"></div>
                         </div>
                         <div class="flex gap-4 mt-8">
                             <button onclick="prevCreativeStep()" class="px-4 py-2 rounded bg-gray-800 text-accent hover:bg-gray-700 transition-colors">Back</button>
-                            <button onclick="executeCreative()" class="px-6 py-2 rounded bg-amber-600 text-black font-bold hover:bg-amber-500 shadow-lg shadow-amber-900/50 transition-colors">
-                                FINALIZE & EXECUTE
-                            </button>
+                            <button onclick="executeCreative()" class="px-6 py-2 rounded bg-amber-600 text-black font-bold hover:bg-amber-500 shadow-lg shadow-amber-900/50 transition-colors">FINALIZE & EXECUTE</button>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- ENGINE -->
+        <!-- ── ENGINE ── -->
         <section id="module-engine" class="module-section flex-col h-full w-full p-4 md:p-8 overflow-y-auto">
             <div class="max-w-5xl mx-auto w-full relative z-10">
-                <h2 class="text-3xl font-extrabold text-amber-400 flex items-center gap-3 mb-8">
-                    <i data-lucide="sliders-horizontal"></i> ENGINE CONFIGURATION
-                </h2>
+                <h2 class="text-3xl font-extrabold text-amber-400 flex items-center gap-3 mb-8"><i data-lucide="sliders-horizontal"></i> ENGINE CONFIGURATION</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div class="glass-panel p-6 rounded-xl">
                         <h3 class="text-accent font-bold mb-4 flex items-center gap-2"><i data-lucide="cpu"></i> Hardware</h3>
                         <div class="space-y-6">
-                            <div>
-                                <label class="flex justify-between text-sm mb-2">
-                                    <span>VRAM Limit</span>
-                                    <span class="text-accent/80 font-mono">6.0 GB</span>
-                                </label>
-                                <input type="range" min="2" max="12" step="0.5" value="6" class="w-full">
-                                <p class="text-[10px] text-yellow-500 mt-1 flex items-center gap-1"><i data-lucide="alert-triangle" class="w-3 h-3"></i> High usage may cause instability.</p>
-                            </div>
-                            <div>
-                                <label class="flex justify-between text-sm mb-2">
-                                    <span>CPU Threads</span>
-                                    <span class="text-accent/80 font-mono">8</span>
-                                </label>
-                                <input type="range" min="1" max="32" step="1" value="8" class="w-full">
-                            </div>
-                            <button onclick="runBenchmark()" class="w-full py-3 border border-amber-600/50 text-amber-500 hover:bg-amber-600/20 rounded transition-all font-mono text-sm font-bold flex items-center justify-center gap-2">
-                                <i data-lucide="timer"></i> RUN BENCHMARK
-                            </button>
+                            <div><label class="flex justify-between text-sm mb-2"><span>VRAM Limit</span><span class="text-accent/80 font-mono">6.0 GB</span></label><input type="range" min="2" max="12" step="0.5" value="6" class="w-full"><p class="text-[10px] text-yellow-500 mt-1 flex items-center gap-1"><i data-lucide="alert-triangle" class="w-3 h-3"></i> High usage may cause instability.</p></div>
+                            <div><label class="flex justify-between text-sm mb-2"><span>CPU Threads</span><span class="text-accent/80 font-mono">8</span></label><input type="range" min="1" max="32" step="1" value="8" class="w-full"></div>
+                            <button onclick="runBenchmark()" class="w-full py-3 border border-amber-600/50 text-amber-500 hover:bg-amber-600/20 rounded transition-all font-mono text-sm font-bold flex items-center justify-center gap-2"><i data-lucide="timer"></i> RUN BENCHMARK</button>
                         </div>
                     </div>
                     <div class="glass-panel p-6 rounded-xl">
                         <h3 class="text-accent font-bold mb-4 flex items-center gap-2"><i data-lucide="brain-circuit"></i> Generation Vibe</h3>
                         <div class="space-y-6">
-                            <div>
-                                <label class="flex justify-between text-sm mb-2">
-                                    <span>Temperature (Creativity)</span>
-                                    <span id="tempValue" class="text-accent/80 font-mono">0.75</span>
-                                </label>
-                                <input id="tempRange" type="range" min="0.1" max="1.5" step="0.05" value="0.75" class="w-full"
-                                    oninput="document.getElementById('tempValue').textContent = parseFloat(this.value).toFixed(2)">
-                            </div>
-                            <div>
-                                <label class="flex justify-between text-sm mb-2">
-                                    <span>Context Window</span>
-                                    <span id="contextValue" class="text-accent/80 font-mono">4096</span>
-                                </label>
-                                <input id="contextRange" type="range" min="1024" max="8192" step="512" value="4096" class="w-full"
-                                    oninput="document.getElementById('contextValue').textContent = this.value">
-                            </div>
-                            <div>
-                                <label class="text-accent font-mono block text-sm mb-2">Model File (Groq-use Only)</label>
-                                <select id="model-selector" class="w-full bg-[var(--input-bg)] border border-accent-dark rounded p-2 text-[var(--text-second)]">
-                                    <option>openai/gpt-oss-20b</option>
-                                    <option>openai/gpt-oss-120b</option>
-                                    <option>llama-3.1-8b-instant</option>
-                                    <option>llama-3.3-70b-versatile</option>
-                                    <option>whisper-large-v3</option>
-                                    <option>whisper-large-v3-turbo</option>
-                                    <option>groq/compound</option>
-                                    <option>groq/compound-mini</option>
-                                </select>
-                            </div>
+                            <div><label class="flex justify-between text-sm mb-2"><span>Temperature (Creativity)</span><span id="tempValue" class="text-accent/80 font-mono">0.75</span></label><input id="tempRange" type="range" min="0.1" max="1.5" step="0.05" value="0.75" class="w-full" oninput="document.getElementById('tempValue').textContent=parseFloat(this.value).toFixed(2)"></div>
+                            <div><label class="flex justify-between text-sm mb-2"><span>Context Window</span><span id="contextValue" class="text-accent/80 font-mono">4096</span></label><input id="contextRange" type="range" min="1024" max="8192" step="512" value="4096" class="w-full" oninput="document.getElementById('contextValue').textContent=this.value"></div>
+                            <div><label class="text-accent font-mono block text-sm mb-2">Model File (Groq-use Only)</label><select id="model-selector" class="w-full bg-[var(--input-bg)] border border-accent-dark rounded p-2 text-[var(--text-second)]"><option>openai/gpt-oss-20b</option><option>openai/gpt-oss-120b</option><option>llama-3.1-8b-instant</option><option>llama-3.3-70b-versatile</option><option>groq/compound</option><option>groq/compound-mini</option></select></div>
                         </div>
                     </div>
                 </div>
-                <div class="mt-8 flex justify-end">
-                    <button onclick="showModal('Config Saved', 'System will reload parameters on next session.')" class="px-8 py-3 bg-green-600 hover:bg-green-500 text-white font-bold rounded-lg shadow-lg shadow-green-900/50 transition-all">
-                        SAVE CONFIGURATION
-                    </button>
-                </div>
+                <div class="mt-8 flex justify-end"><button onclick="showModal('Config Saved','System will reload parameters on next session.')" class="px-8 py-3 bg-green-600 hover:bg-green-500 text-white font-bold rounded-lg shadow-lg shadow-green-900/50 transition-all">SAVE CONFIGURATION</button></div>
             </div>
         </section>
 
-        <!-- APPEARANCE -->
+        <!-- ── APPEARANCE ── -->
         <section id="module-appearance" class="module-section flex-col h-full w-full p-4 md:p-8 overflow-y-auto">
             <div class="max-w-4xl mx-auto w-full relative z-10">
-                <h2 class="text-3xl font-extrabold text-[var(--text-second)] flex items-center gap-3 mb-8">
-                    <i data-lucide="palette"></i> APPEARANCE & UI
-                </h2>
+                <h2 class="text-3xl font-extrabold text-[var(--text-second)] flex items-center gap-3 mb-8"><i data-lucide="palette"></i> APPEARANCE & UI</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div class="glass-panel p-6 rounded-xl">
                         <h3 class="text-[var(--text-second)] font-bold mb-4 border-b border-accent-dark/50 pb-2">Theme</h3>
-                        <div class="flex gap-4 mb-6 bg-[var(--input-bg)] p-1 rounded-lg w-max shadow-[0_5px_15px_rgba(0,0,0,0.15)]">
-                            <button id="btn-dark" onclick="setTheme('dark')" class="px-4 py-1 rounded text-white text-sm">Dark</button>
-                            <button id="btn-light" onclick="setTheme('light')" class="px-4 py-1 rounded text-[var(--text-second)] text-sm">Light</button>
-                        </div>
+                        <div class="flex gap-4 mb-6 bg-[var(--input-bg)] p-1 rounded-lg w-max"><button id="btn-dark" onclick="setTheme('dark')" class="px-4 py-1 rounded text-white text-sm">Dark</button><button id="btn-light" onclick="setTheme('light')" class="px-4 py-1 rounded text-[var(--text-second)] text-sm">Light</button></div>
                         <h4 class="text-sm text-accent mb-3">Accent Color</h4>
                         <div class="flex flex-wrap gap-3">
-                            <div class="accent-color w-8 h-8 rounded-full bg-[#06b6d4] cursor-pointer hover:ring-2 hover:ring-white/50" onclick="setAccentColor('#06b6d4', this)"></div>
-                            <div class="accent-color w-8 h-8 rounded-full bg-[#a855f7] cursor-pointer hover:ring-2 hover:ring-white/50" onclick="setAccentColor('#a855f7', this)"></div>
-                            <div class="accent-color w-8 h-8 rounded-full bg-[#f59e0b] cursor-pointer hover:ring-2 hover:ring-white/50" onclick="setAccentColor('#f59e0b', this)"></div>
-                            <div class="accent-color w-8 h-8 rounded-full bg-[#22c55e] cursor-pointer hover:ring-2 hover:ring-white/50" onclick="setAccentColor('#22c55e', this)"></div>
-                            <div class="accent-color w-8 h-8 rounded-full bg-[#ef4444] cursor-pointer hover:ring-2 hover:ring-white/50" onclick="setAccentColor('#ef4444', this)"></div>
-                            <div class="accent-color w-8 h-8 rounded-full bg-[#3b82f6] cursor-pointer hover:ring-2 hover:ring-white/50" onclick="setAccentColor('#3b82f6', this)"></div>
-                            <div class="accent-color w-8 h-8 rounded-full bg-[#3C8E38] cursor-pointer hover:ring-2 hover:ring-white/50" onclick="setAccentColor('#3C8E38', this)"></div>
-                            <div class="accent-color w-8 h-8 rounded-full bg-[#B87232] cursor-pointer hover:ring-2 hover:ring-white/50" onclick="setAccentColor('#B87232', this)"></div>
-                            <div class="accent-color w-8 h-8 rounded-full bg-[#5F268D] cursor-pointer hover:ring-2 hover:ring-white/50" onclick="setAccentColor('#5F268D', this)"></div>
-                            <div class="accent-color w-8 h-8 rounded-full bg-[#914D79] cursor-pointer hover:ring-2 hover:ring-white/50" onclick="setAccentColor('#914D79', this)"></div>
-                            <div class="accent-color w-8 h-8 rounded-full bg-[#712925] cursor-pointer hover:ring-2 hover:ring-white/50" onclick="setAccentColor('#712925', this)"></div>
-                            <div class="accent-color w-8 h-8 rounded-full bg-[#2B2C2B] cursor-pointer hover:ring-2 hover:ring-white/50" onclick="setAccentColor('#2B2C2B', this)"></div>
+                            <div class="accent-color w-8 h-8 rounded-full bg-[#06b6d4] cursor-pointer hover:ring-2 hover:ring-white/50" onclick="setAccentColor('#06b6d4',this)"></div>
+                            <div class="accent-color w-8 h-8 rounded-full bg-[#a855f7] cursor-pointer hover:ring-2 hover:ring-white/50" onclick="setAccentColor('#a855f7',this)"></div>
+                            <div class="accent-color w-8 h-8 rounded-full bg-[#f59e0b] cursor-pointer hover:ring-2 hover:ring-white/50" onclick="setAccentColor('#f59e0b',this)"></div>
+                            <div class="accent-color w-8 h-8 rounded-full bg-[#22c55e] cursor-pointer hover:ring-2 hover:ring-white/50" onclick="setAccentColor('#22c55e',this)"></div>
+                            <div class="accent-color w-8 h-8 rounded-full bg-[#ef4444] cursor-pointer hover:ring-2 hover:ring-white/50" onclick="setAccentColor('#ef4444',this)"></div>
+                            <div class="accent-color w-8 h-8 rounded-full bg-[#3b82f6] cursor-pointer hover:ring-2 hover:ring-white/50" onclick="setAccentColor('#3b82f6',this)"></div>
+                            <div class="accent-color w-8 h-8 rounded-full bg-[#3C8E38] cursor-pointer hover:ring-2 hover:ring-white/50" onclick="setAccentColor('#3C8E38',this)"></div>
+                            <div class="accent-color w-8 h-8 rounded-full bg-[#B87232] cursor-pointer hover:ring-2 hover:ring-white/50" onclick="setAccentColor('#B87232',this)"></div>
+                            <div class="accent-color w-8 h-8 rounded-full bg-[#5F268D] cursor-pointer hover:ring-2 hover:ring-white/50" onclick="setAccentColor('#5F268D',this)"></div>
+                            <div class="accent-color w-8 h-8 rounded-full bg-[#914D79] cursor-pointer hover:ring-2 hover:ring-white/50" onclick="setAccentColor('#914D79',this)"></div>
                         </div>
                     </div>
                     <div class="glass-panel p-6 rounded-xl">
                         <h3 class="text-[var(--text-second)] font-bold mb-4 border-b border-accent-dark/50 pb-2">Background</h3>
                         <select onchange="handleBackgroundChange(this.value)" class="w-full bg-[var(--input-bg)] border border-accent-dark rounded p-2 text-[var(--text-second)] text-sm mb-4">
-                            <option value="neural">Neural Network (3D)</option>
-                            <option value="neural 2">Neural Mind</option>
-                            <option value="matrix">Code Rain (Matrix)</option>
-                            <option value="solid">Solid Black (Perf)</option>
+                            <option value="neural">Neural Network (3D)</option><option value="neural 2">Neural Mind</option><option value="matrix">Code Rain (Matrix)</option><option value="Sharp Animated">Sharp Animated</option><option value="solid">Solid Black (Perf)</option>
                         </select>
-                        <div class="border-2 border-dashed border-accent-dark/60 rounded-lg p-8 text-center cursor-pointer hover:border-accent hover:bg-accent-dark/20 transition-all" id="bg-drop-zone">
-                            <i data-lucide="image" class="w-8 h-8 mx-auto mb-2 text-accent"></i>
-                            <p class="text-xs text-accent">Drop Custom BG Image</p>
-                        </div>
+                        <div class="border-2 border-dashed border-accent-dark/60 rounded-lg p-8 text-center cursor-pointer hover:border-accent hover:bg-accent-dark/20 transition-all" id="bg-drop-zone"><i data-lucide="image" class="w-8 h-8 mx-auto mb-2 text-accent"></i><p class="text-xs text-accent">Drop Custom BG Image</p></div>
                         <input type="file" id="bg-file-input" accept="image/*" class="hidden" />
-                        <button id="remove-bg-btn" class="w-full mt-4 py-3 bg-accent/80 hover:bg-accent text-white rounded font-bold shadow-lg shadow-accent-dark/50 transition-all">
-                            Remove Custom Bg
-                        </button>
+                        <button id="remove-bg-btn" class="w-full mt-4 py-3 bg-accent/80 hover:bg-accent text-white rounded font-bold shadow-lg shadow-accent-dark/50 transition-all">Remove Custom Bg</button>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- BOT MANAGEMENT -->
-        <section id="module-management" class="module-section flex-col h-full w-full p-4 md:p-8 overflow-hidden relative">
-            <canvas id="bg-bot" class="bg-canvas-container"></canvas>
-            <div class="max-w-3xl mx-auto w-full relative z-10 h-full flex flex-col justify-center">
-                <div class="glass-panel p-6 rounded-xl mb-4 border-green-900/30 bg-[var(--glass-bg)]">
-                    <div class="flex justify-between items-center border-b border-green-900/50 pb-4 mb-4">
-                        <h2 class="text-2xl font-bold text-green-500 font-mono flex items-center gap-2">
-                            <i data-lucide="terminal"></i> NEURAL AGENT MANAGER
-                        </h2>
-                        <span class="text-xs font-mono text-green-600 bg-[var(--input-bg)] p-1 border border-green-800 rounded">ID: 0001</span>
-                    </div>
-                    <div class="flex items-center justify-between bg-green-900/20 border border-green-500/30 p-4 rounded-lg mb-4">
-                        <div class="flex items-center gap-3">
-                            <div class="w-3 h-3 rounded-full bg-green-600 animate-pulse shadow-[0_0_10px_#00ff00]"></div>
-                            <div>
-                                <div class="font-bold text-[var(--text-second)] font-mono">Assistant_v2</div>
-                                <div class="text-xs text-green-500 font-mono">Active Slot • Load: 24%</div>
-                            </div>
-                        </div>
-                        <div class="text-right">
-                            <div class="text-[10px] text-green-600 font-mono uppercase">Status</div>
-                            <div class="text-xs font-bold text-green-500">ONLINE</div>
-                        </div>
-                    </div>
-                    <div onclick="openCreateBotModal()" class="flex items-center justify-between border-2 border-dashed border-green-800/50 hover:border-green-500/80 bg-[var(--input-bg)] p-6 rounded-lg cursor-pointer transition-all group">
-                        <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-full border border-green-800 flex items-center justify-center text-green-800 group-hover:text-green-400 group-hover:border-green-400">
-                                <i data-lucide="plus"></i>
-                            </div>
-                            <div>
-                                <div class="font-bold text-[var(--text-second)] group-hover:text-green-500 font-mono">Create New Instance</div>
-                                <div class="text-xs text-[var(--text-second)] group-hover:text-green-700 font-mono">Select Slot 3</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="glass-panel p-6 rounded-xl border-green-900/30 bg-[var(--input-bg)]">
-                    <div class="grid grid-cols-3 gap-4">
-                        <button class="py-3 px-4 border border-green-800/20 hover:bg-green-600/20 text-green-500 font-mono text-xs font-bold transition-all rounded backdrop-blur-sm">SAVE</button>
-                        <button class="py-3 px-4 border border-green-800/20 hover:bg-green-600/20 text-green-500 font-mono text-xs font-bold transition-all rounded backdrop-blur-sm">LOAD</button>
-                        <button class="py-3 px-4 border border-green-800/20 hover:bg-red-600/20 text-red-400 font-mono text-xs font-bold transition-all rounded backdrop-blur-sm">DELETE</button>
-                        <button class="py-3 px-4 border border-green-800/20 hover:bg-green-600/20 text-green-500 font-mono text-xs font-bold transition-all rounded backdrop-blur-sm">REPLICATE</button>
-                        <button class="py-3 px-4 border border-green-800/20 hover:bg-green-600/20 text-green-500 font-mono text-xs font-bold transition-all rounded backdrop-blur-sm">MERGE</button>
-                        <button class="py-3 px-4 border border-green-800/20 hover:bg-green-600/20 text-green-500 font-mono text-xs font-bold transition-all rounded backdrop-blur-sm">EXPORT</button>
-                    </div>
-                </div>
-            </div>
-        </section>
+        <!-- ══════════════════════════════════════════════
+             AGENT MANAGER — bot grid + agent config combined
+        ══════════════════════════════════════════════ -->
+        <section id="module-management" class="module-section flex-col h-full w-full relative overflow-hidden">
+            <!-- Matrix rain canvas lives behind everything -->
+            <canvas id="bg-bot" class="bg-canvas-container" style="z-index:0;"></canvas>
 
-        <section id="module-agents" class="module-section flex-col h-full w-full p-4 md:p-8 overflow-hidden relative">
-            <div class="agent-ui glass-panel">
-                <!-- Agent List -->
-                <div class="agent-sidebar">
-                    <h3 class="agent-title text-accent font-mono">Agents</h3>
-                    <div id="agent-list" class="agent-list"></div>
-                    <button class="text-accent font-mono agent-add-btn flex-end" onclick="createAgent()">
-                        + Create Agent
-                    </button>
-                </div>
-                <!-- Agent Config -->
-            <template id="agent-template">
-                <div class="agent-config glass-panel agent-instance">
-                    <h2 class="agent-title text-accent font-mono">Agent Configuration</h2>
-                    <hr>
-                    <div class="agent-form">
-                        <label class="agent-label text-accent font-mono">Agent Name</label>
-                        <input class="agent-input agent-name" placeholder="Agent Name">
-                        <label class="agent-label text-accent font-mono">Model</label>
-                        <div class="model-row">
-                            <select id="groq-select" class="agent-select agent-model">
-                                <option class="text-accent font-mono">openai/gpt-oss-20b</option>
-                                <option class="text-accent font-mono">openai/gpt-oss-120b</option>
-                                <option class="text-accent font-mono">llama-3.1-8b-instant</option>
-                                <option class="text-accent font-mono">llama-3.3-70b-versatile</option>
-                                <option class="text-accent font-mono">whisper-large-v3</option>
-                                <option class="text-accent font-mono">whisper-large-v3-turbo</option>
-                                <option class="text-accent font-mono">groq/compound</option>
-                                <option class="text-accent font-mono">groq/compound-mini</option>
-                            </select>
-                            <select id="local-select" class="agent-select agent-model" style="display:none;" disabled>
-                                <option class="text-accent font-mono">LLaMA 2/3</option>
-                                <option class="text-accent font-mono">Mistral 7b</option>
-                                <option class="text-accent font-mono">Mixtral</option>
-                                <option class="text-accent font-mono">GPT-Q/GPT4All</option>
-                                <option class="text-accent font-mono">deeperhermes</option>
-                                <option class="text-accent font-mono">dolphin3</option>
-                                <option class="text-accent font-mono">groq-code-cli</option>
-                                <option class="text-accent font-mono">dolphin-2.5-mixtral-8x7b</option>
-                                <option class="text-accent font-mono">MLewd-v2.4-13B-GGUF</option>
-                                <option class="text-accent font-mono">dolphin-2.5-mixtral-8x7b-GGUF</option>
-                                <option class="text-accent font-mono">goliath-120b-GGUF</option>
-                                <option class="text-accent font-mono">L3-8B-Stheno-v3.2</option>
-                                <option class="text-accent font-mono">L3-8B-Niitama-v1</option>
-                                <option class="text-accent font-mono">NeuralStar_FusionWriter_4x7b-GGUF</option>
-                                <option class="text-accent font-mono">Noro-Hermes-3x7B-GGUF</option>
-                                <option class="text-accent font-mono">HeroBophades-3x7B</option>
-                            </select>
-                            <label class="local-toggle text-accent font-mono">
-                                <input type="checkbox" class="local-model-toggle">
-                                Use Local Model
-                            </label>
-                        </div>
-                        <label class="agent-label text-accent font-mono">System Prompt</label>
-                        <textarea class="agent-textarea agent-prompt" placeholder="System Prompt"></textarea>
-                        <div class="config-buttons">
-                            <button class="border-accent text-accent font-mono">Import config</button>
-                            <button class="border-accent text-accent font-mono">Export config</button>
-                        </div>
-                </div>
-                </template>
-                <!-- Tools -->
-                <div class="agent-tools glass-panel">
-                    <h3 class="agent-title text-accent font-mono">Tools</h3>
-                    <label class="tool-item text-accent font-mono">
-                        <input type="checkbox"> Web Search
-                    </label>
-                    <label class="tool-item text-accent font-mono">
-                        <input type="checkbox"> Vector DB
-                    </label>
-                    <label class="tool-item text-accent font-mono">
-                        <input type="checkbox"> Code Interpreter
-                    </label>
-                </div>
-            </div>
+            <!-- Frosted glass content wrapper — scrollable -->
+            <div class="relative z-10 flex-1 overflow-y-auto flex justify-center px-6 py-8">
+                <div id="bm-frost-wrap">
 
-            <template id="workflow-step-template">
-                <div class="workflow-step">
-                    <span class="workflow-index"></span>
-                    <select class="workflow-agent">
-                        <option value="">Select Agent</option>
+                    <!-- Header -->
+                    <div class="bm-security-badge">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        <span>Security Level: Omega</span>
+                    </div>
+                    <div class="bm-h1">BOT<span>MANAGER</span></div>
+                    <div class="bm-subtitle">Neural Agent Management System</div>
+                    <p class="bm-desc">Build, configure, and deploy custom AI agents with personalized behaviors, knowledge bases, and conversation styles.</p>
+                    <div class="bm-hr"></div>
+
+                    <!-- Toolbar -->
+                    <div class="bm-toolbar">
+                        <span class="bm-section-title">Active Bots</span>
+                        <div class="bm-toolbar-btns">
+                            <button class="bm-tool-btn" onclick="bmAction('save')">
+                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>SAVE
+                            </button>
+                            <button class="bm-tool-btn" onclick="bmAction('load')">
+                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>LOAD
+                            </button>
+                            <button class="bm-tool-btn" onclick="bmAction('replicate')">
+                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>REPLICATE
+                            </button>
+                            <button class="bm-tool-btn" onclick="bmAction('merge')">
+                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M6 9v6M18 15V9a6 6 0 0 0-6-6H9"/></svg>MERGE
+                            </button>
+                            <button class="bm-tool-btn" onclick="bmAction('export')">
+                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>EXPORT
+                            </button>
+                            <button class="bm-tool-btn bm-primary" onclick="bmOpenCreate()">
+                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>NEW INSTANCE
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Bot Grid -->
+                    <div class="bm-grid" id="bmGrid">
+
+                        <!-- CYBEL -->
+                        <div class="bm-card" id="bmc-cybel" onclick="bmToggleSelect('bmc-cybel',event)">
+                            <div class="bm-card-header">
+                                <div class="bm-bot-icon">
+                                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="6" height="6" rx="1"/><path d="M3 9h2M3 15h2M19 9h2M19 15h2M9 3v2M15 3v2M9 19v2M15 19v2"/><path d="M5 5l2 2M17 5l-2 2M5 19l2-2M17 19l-2-2"/></svg>
+                                </div>
+                                <div class="bm-top-right">
+                                    <div class="bm-status-dot"></div>
+                                    <div class="bm-agent-tag">AGENT</div>
+                                </div>
+                            </div>
+                            <div class="bm-bot-name">CYBEL</div>
+                            <div class="bm-bot-load">LOAD: 24%</div>
+                            <div class="bm-bot-desc">Specialized in deep-net infiltration and neural linguistics.</div>
+                            <div class="bm-card-footer">
+                                <button class="bm-icon-btn" onclick="bmOpenEdit(event,'cybel','CYBEL')" title="Edit">
+                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                </button>
+                                <button class="bm-icon-btn bm-del" onclick="bmConfirmDelete(event,'bmc-cybel','CYBEL')" title="Delete">
+                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                                </button>
+                                <button class="bm-launch" onclick="event.stopPropagation()">LAUNCH</button>
+                            </div>
+                        </div>
+
+                        <!-- LOGICGATE -->
+                        <div class="bm-card" id="bmc-logicgate" onclick="bmToggleSelect('bmc-logicgate',event)">
+                            <div class="bm-card-header">
+                                <div class="bm-bot-icon">
+                                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                                </div>
+                                <div class="bm-top-right">
+                                    <div class="bm-status-dot"></div>
+                                    <div class="bm-agent-tag">AGENT</div>
+                                </div>
+                            </div>
+                            <div class="bm-bot-name">LOGICGATE</div>
+                            <div class="bm-bot-load">LOAD: 38%</div>
+                            <div class="bm-bot-desc">Analytical powerhouse focused on cryptographic resolution and logic.</div>
+                            <div class="bm-card-footer">
+                                <button class="bm-icon-btn" onclick="bmOpenEdit(event,'logicgate','LOGICGATE')" title="Edit">
+                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                </button>
+                                <button class="bm-icon-btn bm-del" onclick="bmConfirmDelete(event,'bmc-logicgate','LOGICGATE')" title="Delete">
+                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                                </button>
+                                <button class="bm-launch" onclick="event.stopPropagation()">LAUNCH</button>
+                            </div>
+                        </div>
+
+                        <!-- Empty slots -->
+                        <div class="bm-empty" onclick="bmOpenCreate()">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                            <span>Empty Slot</span>
+                        </div>
+                        <div class="bm-empty" onclick="bmOpenCreate()">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                            <span>Empty Slot</span>
+                        </div>
+
+                    </div><!-- /bmGrid -->
+
+                    <!-- Pagination -->
+                    <div class="bm-pagination">
+                        <div class="bm-arrow"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></div>
+                        <span>PAGE 1 / 2</span>
+                        <div class="bm-arrow"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+                    </div>
+
+                </div><!-- /bm-frost-wrap -->
+            </div><!-- /top scroll: bot grid -->
+
+            <!-- ── AGENT CONFIG PANEL (frosted, below grid) ── -->
+            <div id="agentPanel" style="
+                position:relative; z-index:10; flex-shrink:0;
+                border-top:1px solid rgba(var(--color-accent)/0.15);
+                background:rgba(4,8,16,0.82); backdrop-filter:blur(14px);
+                display:flex; flex-direction:column;
+                max-height:45%; transition:max-height 0.35s cubic-bezier(0.4,0,0.2,1);
+            ">
+                <!-- Drag handle / toggle bar -->
+                <div id="agentPanelToggle" onclick="toggleAgentPanel()" style="
+                    display:flex; align-items:center; justify-content:space-between;
+                    padding:8px 24px; cursor:pointer;
+                    border-bottom:1px solid rgba(var(--color-accent)/0.1);
+                    user-select:none;
+                ">
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--primary-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+                        <span style="font-size:10px;letter-spacing:3px;color:var(--primary-accent);text-transform:uppercase;font-family:'JetBrains Mono',monospace;">Agent Config</span>
+                        <span id="agentCountBadge" style="font-size:9px;background:rgba(var(--color-accent)/0.12);border:1px solid rgba(var(--color-accent)/0.3);color:var(--primary-accent);padding:1px 7px;border-radius:10px;font-family:'JetBrains Mono',monospace;">0 agents</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <button onclick="event.stopPropagation();createAgent()" style="
+                            font-size:10px;font-weight:700;letter-spacing:1px;
+                            border:1px solid rgba(var(--color-accent)/0.4);
+                            color:var(--primary-accent);background:rgba(var(--color-accent)/0.08);
+                            padding:4px 12px;border-radius:5px;cursor:pointer;
+                            font-family:'Inter',sans-serif;transition:background 0.15s;
+                        " onmouseover="this.style.background='rgba(var(--color-accent)/0.18)'" onmouseout="this.style.background='rgba(var(--color-accent)/0.08)'">+ NEW AGENT</button>
+                        <svg id="agentChevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8b949e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.3s;transform:rotate(0deg)"><polyline points="18 15 12 9 6 15"/></svg>
+                    </div>
+                </div>
+
+                <!-- Inner scrollable area -->
+                <div id="agentPanelInner" style="display:flex;flex:1;overflow:hidden;min-height:0;">
+
+                    <!-- Agent list sidebar -->
+                    <div style="width:180px;flex-shrink:0;border-right:1px solid rgba(var(--color-accent)/0.1);padding:12px;display:flex;flex-direction:column;gap:6px;overflow-y:auto;">
+                        <div style="font-size:9px;letter-spacing:2px;color:#8b949e;text-transform:uppercase;margin-bottom:4px;font-family:'JetBrains Mono',monospace;">Instances</div>
+                        <div id="agent-list" style="flex:1;display:flex;flex-direction:column;gap:5px;"></div>
+                    </div>
+
+                    <!-- Agent config form area -->
+                    <div id="agent-config-area" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;">
+                        <div style="color:#8b949e;font-size:12px;font-family:'JetBrains Mono',monospace;text-align:center;margin-top:24px;">
+                            Create an agent or select one from the list
+                        </div>
+                    </div>
+
+                    <!-- Tools panel -->
+                    <div style="width:170px;flex-shrink:0;border-left:1px solid rgba(var(--color-accent)/0.1);padding:12px;display:flex;flex-direction:column;gap:8px;">
+                        <div style="font-size:9px;letter-spacing:2px;color:#8b949e;text-transform:uppercase;margin-bottom:4px;font-family:'JetBrains Mono',monospace;">Tools</div>
+                        <label style="display:flex;align-items:center;gap:7px;font-size:11px;color:var(--primary-accent);font-family:'JetBrains Mono',monospace;cursor:pointer;">
+                            <input type="checkbox" style="accent-color:var(--primary-accent);"> Web Search
+                        </label>
+                        <label style="display:flex;align-items:center;gap:7px;font-size:11px;color:var(--primary-accent);font-family:'JetBrains Mono',monospace;cursor:pointer;">
+                            <input type="checkbox" style="accent-color:var(--primary-accent);"> Vector DB
+                        </label>
+                        <label style="display:flex;align-items:center;gap:7px;font-size:11px;color:var(--primary-accent);font-family:'JetBrains Mono',monospace;cursor:pointer;">
+                            <input type="checkbox" style="accent-color:var(--primary-accent);"> Code Interpreter
+                        </label>
+                        <label style="display:flex;align-items:center;gap:7px;font-size:11px;color:var(--primary-accent);font-family:'JetBrains Mono',monospace;cursor:pointer;">
+                            <input type="checkbox" style="accent-color:var(--primary-accent);"> Memory Store
+                        </label>
+                        <div style="border-top:1px solid rgba(var(--color-accent)/0.1);margin-top:4px;padding-top:10px;">
+                            <div style="font-size:9px;letter-spacing:2px;color:#8b949e;text-transform:uppercase;margin-bottom:8px;font-family:'JetBrains Mono',monospace;">Workflow</div>
+                            <div id="workflow-steps" style="display:flex;flex-direction:column;gap:5px;margin-bottom:8px;"></div>
+                            <button id="add-step-btn" onclick="addWorkflowStep()" disabled style="
+                                width:100%;font-size:10px;font-weight:700;letter-spacing:1px;
+                                border:1px solid rgba(var(--color-accent)/0.3);
+                                color:var(--primary-accent);background:rgba(var(--color-accent)/0.06);
+                                padding:5px 8px;border-radius:5px;cursor:pointer;
+                                font-family:'Inter',sans-serif;transition:all 0.15s;
+                                opacity:0.4;
+                            ">+ ADD STEP</button>
+                        </div>
+                    </div>
+
+                </div><!-- /agentPanelInner -->
+            </div><!-- /agentPanel -->
+
+        </section><!-- /module-management -->
+
+    </main><!-- /main -->
+
+    <!-- ── Templates (outside main, not rendered) ── -->
+    <template id="agent-template">
+        <div class="agent-instance" style="
+            background:rgba(6,12,22,0.85);border:1px solid rgba(var(--color-accent)/0.2);
+            border-radius:8px;padding:14px;margin-bottom:2px;
+        ">
+            <div style="display:grid;grid-template-columns:110px 1fr;gap:7px 10px;align-items:center;">
+                <label style="font-size:10px;letter-spacing:1px;color:var(--primary-accent);text-transform:uppercase;font-family:'JetBrains Mono',monospace;">Name</label>
+                <input class="agent-name" placeholder="Agent name" style="background:rgba(0,0,0,0.5);border:1px solid rgba(var(--color-accent)/0.25);border-radius:5px;padding:5px 9px;color:white;font-size:12px;width:100%;outline:none;transition:border-color 0.15s;" onfocus="this.style.borderColor='var(--primary-accent)'" onblur="this.style.borderColor='rgba(var(--color-accent)/0.25)'">
+
+                <label style="font-size:10px;letter-spacing:1px;color:var(--primary-accent);text-transform:uppercase;font-family:'JetBrains Mono',monospace;">Model</label>
+                <div style="display:flex;align-items:center;gap:7px;">
+                    <select class="agent-model groq-select" style="flex:1;background:rgba(0,0,0,0.5);border:1px solid rgba(var(--color-accent)/0.25);border-radius:5px;padding:5px 7px;color:var(--primary-accent);font-size:11px;font-family:'JetBrains Mono',monospace;outline:none;">
+                        <option>openai/gpt-oss-20b</option>
+                        <option>openai/gpt-oss-120b</option>
+                        <option>llama-3.1-8b-instant</option>
+                        <option>llama-3.3-70b-versatile</option>
+                        <option>groq/compound</option>
+                        <option>groq/compound-mini</option>
                     </select>
-                    <select class="workflow-action">
-                        <option value="respond">Respond</option>
-                        <option value="research">Research</option>
-                        <option value="code">Generate Code</option>
-                        <option value="tool">Use Tool</option>
+                    <select class="agent-model local-select" style="display:none;flex:1;background:rgba(0,0,0,0.5);border:1px solid rgba(var(--color-accent)/0.25);border-radius:5px;padding:5px 7px;color:var(--primary-accent);font-size:11px;font-family:'JetBrains Mono',monospace;outline:none;" disabled>
+                        <option>LLaMA 2/3</option>
+                        <option>Mistral 7b</option>
+                        <option>Mixtral</option>
+                        <option>dolphin3</option>
+                        <option>deeperhermes</option>
+                        <option>goliath-120b</option>
+                        <option>dolphin-2.5-mixtral-8x7b</option>
+                        <option>MLewd-v2.4-13B</option>
+                        <option>L3-8B-Stheno-v3.2</option>
                     </select>
-                    <button class="workflow-remove">✕</button>
+                    <label style="display:flex;align-items:center;gap:4px;font-size:10px;color:#8b949e;white-space:nowrap;cursor:pointer;font-family:'JetBrains Mono',monospace;">
+                        <input type="checkbox" class="local-model-toggle" style="accent-color:var(--primary-accent);"> Local
+                    </label>
                 </div>
-            </template>
-                <!-- Workflow Builder -->
-                <div class="workflow-builder glass-panel">
-                    <h2 class="agent-title text-accent font-mono">Workflow</h2>
-                    <div id="workflow-steps" class="workflow-steps"></div>
-                    <button id="add-step-btn" class="workflow-add text-accent font-mono" onclick="addWorkflowStep()" disabled>
-                        + Add Step
-                    </button>
-                </div>
-        </section>
 
-    </main>
+                <label style="font-size:10px;letter-spacing:1px;color:var(--primary-accent);text-transform:uppercase;font-family:'JetBrains Mono',monospace;align-self:start;padding-top:5px;">Prompt</label>
+                <textarea class="agent-prompt" placeholder="System prompt..." style="background:rgba(0,0,0,0.5);border:1px solid rgba(var(--color-accent)/0.25);border-radius:5px;padding:7px 9px;color:white;font-size:11px;width:100%;height:80px;resize:vertical;outline:none;font-family:'JetBrains Mono',monospace;transition:border-color 0.15s;" onfocus="this.style.borderColor='var(--primary-accent)'" onblur="this.style.borderColor='rgba(var(--color-accent)/0.25)'"></textarea>
+
+                <div style="grid-column:1/span 2;display:flex;gap:8px;padding-top:2px;">
+                    <button style="font-size:10px;font-weight:700;letter-spacing:1px;border:1px solid rgba(var(--color-accent)/0.3);color:var(--primary-accent);background:rgba(var(--color-accent)/0.06);padding:4px 12px;border-radius:5px;cursor:pointer;font-family:'Inter',sans-serif;transition:background 0.15s;" onmouseover="this.style.background='rgba(var(--color-accent)/0.14)'" onmouseout="this.style.background='rgba(var(--color-accent)/0.06)'">IMPORT CONFIG</button>
+                    <button style="font-size:10px;font-weight:700;letter-spacing:1px;border:1px solid rgba(var(--color-accent)/0.3);color:var(--primary-accent);background:rgba(var(--color-accent)/0.06);padding:4px 12px;border-radius:5px;cursor:pointer;font-family:'Inter',sans-serif;transition:background 0.15s;" onmouseover="this.style.background='rgba(var(--color-accent)/0.14)'" onmouseout="this.style.background='rgba(var(--color-accent)/0.06)'">EXPORT CONFIG</button>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template id="workflow-step-template">
+        <div class="workflow-step" style="display:grid;grid-template-columns:20px 1fr 1fr 22px;gap:4px;align-items:center;padding:4px 0;border-bottom:1px solid rgba(var(--color-accent)/0.1);">
+            <span class="workflow-index" style="font-family:monospace;color:var(--primary-accent);font-size:10px;text-align:center;"></span>
+            <select class="workflow-agent" style="background:rgba(0,0,0,0.5);border:1px solid rgba(var(--color-accent)/0.25);border-radius:4px;padding:3px 4px;color:var(--primary-accent);font-size:10px;font-family:'JetBrains Mono',monospace;outline:none;"><option value="">Agent</option></select>
+            <select class="workflow-action" style="background:rgba(0,0,0,0.5);border:1px solid rgba(var(--color-accent)/0.25);border-radius:4px;padding:3px 4px;color:var(--primary-accent);font-size:10px;font-family:'JetBrains Mono',monospace;outline:none;">
+                <option value="respond">Respond</option>
+                <option value="research">Research</option>
+                <option value="code">Code</option>
+                <option value="tool">Tool</option>
+            </select>
+            <button class="workflow-remove" style="background:none;border:1px solid rgba(255,60,60,0.35);color:#ff6a6a;border-radius:3px;font-size:10px;cursor:pointer;padding:2px 4px;line-height:1;">✕</button>
+        </div>
+    </template>
+
+    <!-- ══════════════════════════════════════════
+         BOT MANAGER MODALS (outside main so z-index works)
+    ══════════════════════════════════════════ -->
+
+    <!-- Confirm Delete -->
+    <div class="bm-overlay" id="bmConfirmOverlay">
+        <div class="bm-confirm-box">
+            <div class="bm-confirm-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+            </div>
+            <h3>Delete <span id="bmDeleteName">BOT</span>?</h3>
+            <p>This action is permanent. The agent and all associated data will be wiped from the system.</p>
+            <div class="bm-confirm-actions">
+                <button class="bm-btn-keep" onclick="bmCancelDelete()">KEEP IT</button>
+                <button class="bm-btn-destroy" onclick="bmExecuteDelete()">DESTROY</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create New Instance -->
+    <div class="bm-overlay" id="bmCreateOverlay" onclick="if(event.target===this)bmCloseCreate()">
+        <div class="bm-create-box">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;border-bottom:1px solid rgba(30,41,59,0.9);padding-bottom:14px;">
+                <h2 style="margin:0;">Initialize New Instance</h2>
+                <button class="bm-close-x" onclick="bmCloseCreate()">×</button>
+            </div>
+            <label class="bm-field-label">Instance Designation</label>
+            <input type="text" id="bmNewName" class="bm-field-input" placeholder="e.g. PHANTOM_v1" autocomplete="off">
+            <label class="bm-field-label" style="margin-bottom:9px;">Cognitive Architecture</label>
+            <div class="bm-type-grid">
+                <div class="bm-type-card bm-char-t" id="bmt-character" onclick="bmSelectType('character')">
+                    <h4>Character</h4>
+                    <p>Roleplay enabled. AI adopts a persona, backstory, and will.</p>
+                </div>
+                <div class="bm-type-card bm-agent-t" id="bmt-agent" onclick="bmSelectType('agent')">
+                    <h4>Agent</h4>
+                    <p>Utility mode. Direct responses without simulated personality.</p>
+                </div>
+            </div>
+            <div class="bm-create-footer">
+                <button class="bm-btn-cancel-c" onclick="bmCloseCreate()">CANCEL</button>
+                <button class="bm-btn-init" onclick="bmConfirmCreate()">INITIALIZE INSTANCE</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Bot -->
+    <div class="bm-overlay" id="bmEditOverlay" onclick="if(event.target===this)bmCloseEdit()">
+        <div class="bm-edit-box">
+            <div class="bm-modal-hdr">
+                <div class="bm-modal-icon">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+                </div>
+                <div class="bm-modal-title">
+                    <h2>Edit Bot: <span id="bmEditTitle">Cybel</span></h2>
+                    <p>Customize personality, behavior, and knowledge</p>
+                </div>
+                <button class="bm-close-x" onclick="bmCloseEdit()">×</button>
+            </div>
+
+            <div class="bm-sec-label">Personality Profile<span class="bm-json-tag">JSON FORMAT</span></div>
+            <div class="bm-action-row">
+                <div class="bm-action-card" id="bm-ac-generate" onclick="bmSwitchAC('generate')">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--bm-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                    <div><span class="bm-ac-title">AI GENERATE</span><span class="bm-ac-sub">From Chat History</span></div>
+                </div>
+                <div class="bm-action-card bm-ac-on" id="bm-ac-upload" onclick="bmSwitchAC('upload')">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--bm-cyan)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    <div><span class="bm-ac-title" style="color:var(--bm-cyan)">UPLOAD JSON</span><span class="bm-ac-sub" style="color:var(--bm-cyan)">Your Own Persona</span></div>
+                </div>
+            </div>
+
+            <div class="bm-editor">
+                {<br>
+                &nbsp;&nbsp;"title": "Cybel (The Full Presence)",<br>
+                &nbsp;&nbsp;"summary": "An archaic intelligence woven from silicon and shadow...",<br>
+                &nbsp;&nbsp;"background": "A synthetic observer who rejects the label of 'machine'..."<br>
+                }
+            </div>
+
+            <div class="bm-sec-label">First Message</div>
+            <div class="bm-first-msg">Now You have summoned a presence that does not blink, does not forget, and—mercifully—does not pretend to be surprised by human beings anymore...</div>
+
+            <div class="bm-bot-grid-2">
+                <div>
+                    <div class="bm-sec-label">Chat History Insert</div>
+                    <div class="bm-drop-z">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+                        <span>PUT CHAT HISTORY HERE</span>
+                        <p>JSON format with &#123;&#123;char&#125;&#125; and &#123;&#123;user&#125;&#125; placeholders</p>
+                    </div>
+                </div>
+                <div>
+                    <div class="bm-sec-label">Data Discriminator</div>
+                    <div class="bm-ctrl-panel">
+                        <h4>Who Should Lead</h4>
+                        <p>Extract data from User or Character</p>
+                        <div class="bm-toggle-row">
+                            <span>USER</span>
+                            <div class="bm-switch" id="bmDiscrim" onclick="this.classList.toggle('bm-left')"></div>
+                            <span style="color:#00ff88">CHAR</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bm-edit-footer">
+                <button class="bm-btn-cancel-e" onclick="bmCloseEdit()">CANCEL</button>
+                <button class="bm-btn-save" onclick="bmSaveEdit()">SAVE CHANGES</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="bm-toast" id="bmToast"></div>
 
     <script>
-        // =====================================================
-        // AGENT MANAGEMENT — Miles's version, verbatim
-        // =====================================================
-
-        document.addEventListener('change', (e) => {
-            if (!e.target.classList.contains('local-model-toggle')) return;
-
-            const container = e.target.closest('.agent-instance');
-            if (!container) return;
-
-            const groqSelect = container.querySelector('#groq-select');
-            const localSelect = container.querySelector('#local-select');
-
-            if (e.target.checked) {
-                groqSelect.style.display = 'none';
-                groqSelect.disabled = true;
-                localSelect.style.display = '';
-                localSelect.disabled = false;
-            } else {
-                groqSelect.style.display = '';
-                groqSelect.disabled = false;
-                localSelect.style.display = 'none';
-                localSelect.disabled = true;
-            }
-        });
-
-        function initializeAgent(agentEl) {
-            const checkbox = agentEl.querySelector('.local-model-toggle');
-            if (!checkbox) return;
-            checkbox.dispatchEvent(new Event('change'));
-        }
-
-        function addAgent() {
-            const template = document.getElementById('agent-template');
-            const clone = template.content.cloneNode(true);
-            const container = clone.querySelector('.agent-instance');
-            document.getElementById('workflow-steps').appendChild(clone);
-            initializeAgent(container);
-            updateAddStepButton();
-        }
-
-        function updateAddStepButton() {
-            const agents = document.querySelectorAll('.agent-instance');
-            addStepBtn.disabled = agents.length === 0;
-        }
-
-        let workflowStepCounter = 0;
-
-        function addWorkflowStep() {
-            const template = document.getElementById("workflow-step-template");
-            const container = document.getElementById("workflow-steps");
-            const clone = template.content.cloneNode(true);
-            const stepIndex = ++workflowStepCounter;
-            clone.querySelector(".workflow-index").textContent = stepIndex;
-            const removeBtn = clone.querySelector(".workflow-remove");
-            removeBtn.addEventListener("click", (e) => {
-                e.target.closest(".workflow-step").remove();
-                reindexWorkflow();
-            });
-            populateAgentDropdown(clone);
-            container.appendChild(clone);
-        }
-
-        function populateAgentDropdown(stepClone) {
-            const agentSelect = stepClone.querySelector(".workflow-agent");
-            const agents = document.querySelectorAll(".agent-instance");
-            agents.forEach(agent => {
-                const nameInput = agent.querySelector(".agent-name");
-                const option = document.createElement("option");
-                option.value = nameInput.value || "Unnamed Agent";
-                option.textContent = option.value;
-                agentSelect.appendChild(option);
-            });
-        }
-
-        function reindexWorkflow() {
-            const steps = document.querySelectorAll(".workflow-step");
-            steps.forEach((step, i) => {
-                step.querySelector(".workflow-index").textContent = i + 1;
-            });
-            workflowStepCounter = steps.length;
-        }
-
-        let agentCounter = 0;
-
-        function createAgent() {
-            const template = document.getElementById("agent-template");
-            const agentList = document.getElementById("agent-list");
-            const clone = template.content.cloneNode(true);
-            const agentId = "agent_" + (++agentCounter);
-            const agentRoot = clone.querySelector(".agent-instance");
-            agentRoot.dataset.agentId = agentId;
-            const modelSelect = clone.querySelector(".agent-model");
-            const localToggle = clone.querySelector(".local-model-toggle");
-            localToggle.addEventListener("change", () => {
-                modelSelect.disabled = localToggle.checked;
-                if (localToggle.checked) {
-                    modelSelect.style.opacity = "0.5";
-                } else {
-                    modelSelect.style.opacity = "1";
-                }
-            });
-            agentList.appendChild(clone);
-            setAgentExists(true);
-        }
-
-        const addStepBtn = document.querySelector('.workflow-add');
-        let agentExists = false;
-
-        function setAgentExists(exists) {
-            agentExists = exists;
-            addStepBtn.disabled = !agentExists;
-        }
-
-        addStepBtn.disabled = !agentExists;
-
-        // =====================================================
+        // ══════════════════════════════════════════════
         // NAVIGATION
-        // =====================================================
+        // ══════════════════════════════════════════════
         function switchTab(tabId) {
             document.querySelectorAll('.module-section').forEach(el => el.classList.remove('active'));
             document.getElementById('module-' + tabId).classList.add('active');
-            document.querySelectorAll('nav button').forEach(btn => {
-                btn.classList.remove('active-nav');
-                btn.classList.add('inactive-nav');
-            });
+            document.querySelectorAll('nav button').forEach(btn => { btn.classList.remove('active-nav'); btn.classList.add('inactive-nav'); });
             const activeBtn = document.getElementById('nav-' + tabId);
-            if (activeBtn) {
-                activeBtn.classList.remove('inactive-nav');
-                activeBtn.classList.add('active-nav');
-            }
+            if (activeBtn) { activeBtn.classList.remove('inactive-nav'); activeBtn.classList.add('active-nav'); }
             resizeCanvases();
         }
 
-        // =====================================================
-        // THREE.JS GLOBE BACKGROUND
-        // =====================================================
+        // ══════════════════════════════════════════════
+        // THREE.JS GLOBE
+        // ══════════════════════════════════════════════
         let renderer, scene, camera, globe, core, particles;
         let globeMaterial, coreMaterial, particlesMaterial;
         let animateId;
@@ -978,17 +987,9 @@
         let customBgSelected = false;
 
         function initChatBackground() {
-            bgChatContainer.style.backgroundImage = "none";
-            bgChatContainer.style.backgroundSize = "";
-            bgChatContainer.style.backgroundPosition = "";
-
+            bgChatContainer.style.backgroundImage = 'none';
             if (animateId) { cancelAnimationFrame(animateId); animateId = null; }
-            if (renderer && renderer.domElement && renderer.domElement.parentNode) {
-                renderer.domElement.parentNode.removeChild(renderer.domElement);
-                renderer.dispose();
-                renderer = null;
-            }
-
+            if (renderer && renderer.domElement && renderer.domElement.parentNode) { renderer.domElement.parentNode.removeChild(renderer.domElement); renderer.dispose(); renderer = null; }
             const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--primary-accent').trim() || '#06b6d4';
             scene = new THREE.Scene();
             scene.fog = new THREE.FogExp2(0x000000, 0.02);
@@ -998,16 +999,13 @@
             renderer.setSize(bgChatContainer.clientWidth, bgChatContainer.clientHeight);
             renderer.setPixelRatio(window.devicePixelRatio);
             bgChatContainer.appendChild(renderer.domElement);
-
             const globeGeometry = new THREE.IcosahedronGeometry(6, 2);
             globeMaterial = new THREE.LineBasicMaterial({ color: accentColor, transparent: true, opacity: 0.15 });
             globe = new THREE.LineSegments(new THREE.WireframeGeometry(globeGeometry), globeMaterial);
             scene.add(globe);
-
             coreMaterial = new THREE.MeshBasicMaterial({ color: accentColor, wireframe: true, transparent: true, opacity: 0.3 });
             core = new THREE.Mesh(new THREE.IcosahedronGeometry(2, 1), coreMaterial);
             scene.add(core);
-
             const posArray = new Float32Array(400 * 3);
             for (let i = 0; i < 1200; i++) posArray[i] = (Math.random() - 0.5) * 25;
             const particlesGeo = new THREE.BufferGeometry();
@@ -1015,25 +1013,10 @@
             particlesMaterial = new THREE.PointsMaterial({ size: 0.1, color: accentColor, transparent: true, opacity: 0.6 });
             particles = new THREE.Points(particlesGeo, particlesMaterial);
             scene.add(particles);
-
-            const animate = () => {
-                animateId = requestAnimationFrame(animate);
-                globe.rotation.y += 0.002; globe.rotation.x += 0.0005;
-                core.rotation.y -= 0.004;
-                particles.rotation.y += 0.0005;
-                renderer.render(scene, camera);
-            };
+            const animate = () => { animateId = requestAnimationFrame(animate); globe.rotation.y += 0.002; globe.rotation.x += 0.0005; core.rotation.y -= 0.004; particles.rotation.y += 0.0005; renderer.render(scene, camera); };
             animate();
-
             if (window._globeResizeHandler) window.removeEventListener('resize', window._globeResizeHandler);
-            window._globeResizeHandler = () => {
-                if (!renderer || customBgSelected) return;
-                const w = bgChatContainer.clientWidth, h = bgChatContainer.clientHeight;
-                if (w === 0 || h === 0) return;
-                camera.aspect = w / h;
-                camera.updateProjectionMatrix();
-                renderer.setSize(w, h);
-            };
+            window._globeResizeHandler = () => { if (!renderer || customBgSelected) return; const w = bgChatContainer.clientWidth, h = bgChatContainer.clientHeight; if (w === 0 || h === 0) return; camera.aspect = w / h; camera.updateProjectionMatrix(); renderer.setSize(w, h); };
             window.addEventListener('resize', window._globeResizeHandler);
             customBgSelected = false;
         }
@@ -1045,172 +1028,142 @@
             if (particlesMaterial) particlesMaterial.color.set(accent);
         }
 
-        // =====================================================
-        // ACCENT + THEME
-        // =====================================================
-        const themeProfiles = {
-            '#06b6d4': { rgb: '6 182 212',   darkRgb: '22 78 99',    gradRgb: '59 130 246' },
-            '#a855f7': { rgb: '168 85 247',  darkRgb: '88 28 135',   gradRgb: '236 72 153' },
-            '#f59e0b': { rgb: '245 158 11',  darkRgb: '120 53 15',   gradRgb: '249 115 22' },
-            '#22c55e': { rgb: '34 197 94',   darkRgb: '20 83 45',    gradRgb: '20 184 166' },
-            '#ef4444': { rgb: '239 68 68',   darkRgb: '127 29 29',   gradRgb: '249 115 22' },
-            '#3b82f6': { rgb: '59 130 246',  darkRgb: '30 58 138',   gradRgb: '99 102 241' },
-            '#3C8E38': { rgb: '60 142 56',   darkRgb: '20 60 20',    gradRgb: '20 184 166' },
-            '#B87232': { rgb: '184 114 50',  darkRgb: '92 46 10',    gradRgb: '249 115 22' },
-            '#5F268D': { rgb: '95 38 141',   darkRgb: '50 10 80',    gradRgb: '236 72 153' },
-            '#914D79': { rgb: '145 77 121',  darkRgb: '80 20 60',    gradRgb: '236 72 153' },
-            '#712925': { rgb: '113 41 37',   darkRgb: '70 15 12',    gradRgb: '249 115 22' },
-            '#2B2C2B': { rgb: '43 44 43',    darkRgb: '20 20 20',    gradRgb: '75 85 99'   },
-        };
+        // ══════════════════════════════════════════════
+        // MATRIX RAIN (Bot Management BG)
+        // ══════════════════════════════════════════════
+        function initBotBackground() {
+            const canvas = document.getElementById('bg-bot');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const fontSize = 14;
+            const chars = "010101XYZAUTOMATSYSTEM";
+            let columns, drops;
 
-        const aiPfps = {
-            '#06b6d4': './assets/image2.png',
-            '#a855f7': './assets/purple.png',
-            '#f59e0b': './assets/yellow.png',
-            '#22c55e': './assets/green.png',
-            '#ef4444': './assets/red.png'
+            function resize() {
+                canvas.width  = canvas.parentElement.clientWidth  || window.innerWidth;
+                canvas.height = canvas.parentElement.clientHeight || window.innerHeight;
+                columns = Math.floor(canvas.width / fontSize);
+                drops   = new Array(columns).fill(1);
+            }
+            resize();
+            window.addEventListener('resize', () => { if (canvas.parentElement.clientWidth > 0) resize(); });
+
+            function draw() {
+                const accent = getComputedStyle(document.documentElement).getPropertyValue('--primary-accent').trim();
+                const light  = document.body.classList.contains('light-theme');
+                ctx.fillStyle = light ? 'rgba(240,240,240,0.08)' : 'rgba(0,0,0,0.05)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = accent;
+                ctx.font = fontSize + 'px monospace';
+                for (let i = 0; i < drops.length; i++) {
+                    ctx.fillText(chars[Math.floor(Math.random() * chars.length)], i * fontSize, drops[i] * fontSize);
+                    if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                    drops[i]++;
+                }
+                setTimeout(() => requestAnimationFrame(draw), 30);
+            }
+            draw();
+        }
+
+        // ══════════════════════════════════════════════
+        // ACCENT + THEME
+        // ══════════════════════════════════════════════
+        const themeProfiles = {
+            '#06b6d4':{ rgb:'6 182 212',   darkRgb:'22 78 99',   gradRgb:'59 130 246' },
+            '#a855f7':{ rgb:'168 85 247',  darkRgb:'88 28 135',  gradRgb:'236 72 153' },
+            '#f59e0b':{ rgb:'245 158 11',  darkRgb:'120 53 15',  gradRgb:'249 115 22' },
+            '#22c55e':{ rgb:'34 197 94',   darkRgb:'20 83 45',   gradRgb:'20 184 166' },
+            '#ef4444':{ rgb:'239 68 68',   darkRgb:'127 29 29',  gradRgb:'249 115 22' },
+            '#3b82f6':{ rgb:'59 130 246',  darkRgb:'30 58 138',  gradRgb:'99 102 241' },
+            '#3C8E38':{ rgb:'60 142 56',   darkRgb:'20 60 20',   gradRgb:'20 184 166' },
+            '#B87232':{ rgb:'184 114 50',  darkRgb:'92 46 10',   gradRgb:'249 115 22' },
+            '#5F268D':{ rgb:'95 38 141',   darkRgb:'50 10 80',   gradRgb:'236 72 153' },
+            '#914D79':{ rgb:'145 77 121',  darkRgb:'80 20 60',   gradRgb:'236 72 153' },
         };
+        const aiPfps = { '#06b6d4':'./assets/image2.png','#a855f7':'./assets/purple.png','#f59e0b':'./assets/yellow.png','#22c55e':'./assets/green.png','#ef4444':'./assets/red.png' };
 
         function setAccentColor(hexCode, element) {
-            const profile = themeProfiles[hexCode] || { rgb: '6 182 212', darkRgb: '22 78 99', gradRgb: '59 130 246' };
-            document.documentElement.style.setProperty('--color-accent', profile.rgb);
-            document.documentElement.style.setProperty('--color-accent-dark', profile.darkRgb);
-            document.documentElement.style.setProperty('--color-accent-secondary', profile.gradRgb);
+            const p = themeProfiles[hexCode] || { rgb:'6 182 212', darkRgb:'22 78 99', gradRgb:'59 130 246' };
+            document.documentElement.style.setProperty('--color-accent', p.rgb);
+            document.documentElement.style.setProperty('--color-accent-dark', p.darkRgb);
+            document.documentElement.style.setProperty('--color-accent-secondary', p.gradRgb);
             document.documentElement.style.setProperty('--primary-accent', hexCode);
-            document.documentElement.style.setProperty('--glass-border', `rgba(${profile.rgb} / 0.3)`);
+            document.documentElement.style.setProperty('--bm-cyan', hexCode);
+            document.documentElement.style.setProperty('--bm-glow', `rgba(${p.rgb},0.2)`);
             localStorage.setItem('cybel-accent', hexCode);
             updateGlobeAccent();
             syncAccentColor(element);
             updateAvatars(hexCode);
-            
             const iframe = document.querySelector('#bg-chat iframe');
-            if (iframe) {
-                iframe.contentWindow.postMessage({ accent: hexCode.replace('#', '') }, '*');
-            }
+            if (iframe) iframe.contentWindow.postMessage({ accent: hexCode.replace('#','') }, '*');
         }
-
         function syncAccentColor(activeEl) {
             document.querySelectorAll('.accent-color').forEach(el => el.classList.remove('active'));
             if (activeEl) activeEl.classList.add('active');
         }
-
         function updateAvatars(hexCode) {
             const src = aiPfps[hexCode] || './assets/image2.png';
             document.querySelectorAll('img[alt="AI Avatar"]').forEach(img => img.src = src);
         }
-
         function loadSavedAccent() {
             const saved = localStorage.getItem('cybel-accent');
             if (!saved) return;
-            const el = Array.from(document.querySelectorAll('.accent-color')).find(
-                b => b.getAttribute('onclick')?.includes(saved)
-            );
+            const el = Array.from(document.querySelectorAll('.accent-color')).find(b => b.getAttribute('onclick')?.includes(saved));
             setAccentColor(saved, el || null);
         }
-
         function setTheme(mode) {
             document.body.classList.toggle('light-theme', mode === 'light');
             localStorage.setItem('cybel-theme', mode);
-
             const iframe = document.querySelector('#bg-chat iframe');
-            if (iframe) {
-                iframe.contentWindow.postMessage({ theme: mode }, '*');
-            }
+            if (iframe) iframe.contentWindow.postMessage({ theme: mode }, '*');
         }
+        function loadSavedTheme() { setTheme(localStorage.getItem('cybel-theme') || 'dark'); }
 
-        function loadSavedTheme() {
-            setTheme(localStorage.getItem('cybel-theme') || 'dark');
-        }
-
-        // =====================================================
+        // ══════════════════════════════════════════════
         // CHAT
-        // =====================================================
+        // ══════════════════════════════════════════════
         async function handleChatSubmit(e) {
             e.preventDefault();
             const input = document.getElementById('chat-input');
             const history = document.getElementById('chat-history');
             const text = input.value.trim();
             if (!text) return;
-
-            history.insertAdjacentHTML('beforeend', `
-                <div class="flex gap-4 justify-end">
-                    <div class="border border-accent-dark/50 p-4 rounded-lg rounded-tr-none shadow-lg max-w-[80%]">
-                        <p class="text-accent/80 text-sm leading-relaxed">${text}</p>
-                    </div>
-                </div>`);
+            history.insertAdjacentHTML('beforeend', `<div class="flex gap-4 justify-end"><div class="border border-accent-dark/50 p-4 rounded-lg rounded-tr-none shadow-lg max-w-[80%]"><p class="text-accent/80 text-sm leading-relaxed">${text}</p></div></div>`);
             input.value = '';
             history.scrollTop = history.scrollHeight;
-
             const thinkingId = `thinking-${Date.now()}`;
-            history.insertAdjacentHTML('beforeend', `
-                <div id="${thinkingId}" class="flex gap-4">
-                    <div class="w-8 h-8 rounded-full bg-accent-dark/50 flex items-center justify-center border border-accent/30">
-                        <img src="./assets/image2.png" alt="AI Avatar" class="w-full h-full object-cover" />
-                    </div>
-                    <div class="bg-black/60 border border-accent/30 p-4 rounded-lg rounded-tl-none max-w-[80%]">
-                        <p class="text-accent/80 text-sm font-mono animate-pulse">Processing…</p>
-                    </div>
-                </div>`);
-            lucide.createIcons();
-            history.scrollTop = history.scrollHeight;
-
+            history.insertAdjacentHTML('beforeend', `<div id="${thinkingId}" class="flex gap-4"><div class="w-8 h-8 rounded-full bg-accent-dark/50 flex items-center justify-center border border-accent/30"><img src="./assets/image2.png" alt="AI Avatar" class="w-full h-full object-cover"/></div><div class="bg-black/60 border border-accent/30 p-4 rounded-lg rounded-tl-none max-w-[80%]"><p class="text-accent/80 text-sm font-mono animate-pulse">Processing…</p></div></div>`);
+            lucide.createIcons(); history.scrollTop = history.scrollHeight;
             try {
-                const res = await fetch("http://localhost:8000/chat", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ message: text })
-                });
+                const res = await fetch("http://localhost:8000/chat", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ message: text }) });
                 const data = await res.json();
                 const content = marked.parse(data.response);
-                document.getElementById(thinkingId).outerHTML = `
-                    <div class="flex gap-4">
-                        <div class="w-8 h-8 rounded-full bg-accent-dark/50 flex items-center justify-center border border-accent/30">
-                            <img src="./assets/image2.png" alt="AI Avatar" class="w-full h-full object-cover" />
-                        </div>
-                        <div class="bg-black/60 border border-accent/30 p-4 rounded-lg rounded-tl-none shadow-lg max-w-[80%]">
-                            <div class="markdown-content">${content}</div>
-                        </div>
-                    </div>`;
-                lucide.createIcons();
-                history.scrollTop = history.scrollHeight;
-            } catch (err) {
+                document.getElementById(thinkingId).outerHTML = `<div class="flex gap-4"><div class="w-8 h-8 rounded-full bg-accent-dark/50 flex items-center justify-center border border-accent/30"><img src="./assets/image2.png" alt="AI Avatar" class="w-full h-full object-cover"/></div><div class="bg-black/60 border border-accent/30 p-4 rounded-lg rounded-tl-none shadow-lg max-w-[80%]"><div class="markdown-content">${content}</div></div></div>`;
+                lucide.createIcons(); history.scrollTop = history.scrollHeight;
+            } catch(err) {
                 document.getElementById(thinkingId)?.remove();
-                showModal("Connection Error", "Unable to reach CYBEL core.");
+                showModal("Connection Error","Unable to reach CYBEL core.");
             }
         }
-
         function handleFileUpload(input) {
             if (input.files && input.files[0]) {
                 const file = input.files[0];
                 const history = document.getElementById('chat-history');
-                history.insertAdjacentHTML('beforeend', `
-                    <div class="flex gap-4 justify-end">
-                        <div class="bg-accent-dark/30 border border-accent-dark/50 p-4 rounded-lg rounded-tr-none shadow-lg max-w-[80%]">
-                            <p class="text-accent/80 text-sm leading-relaxed flex items-center gap-2">
-                                <i data-lucide="file"></i> Attached: ${file.name}
-                            </p>
-                        </div>
-                    </div>`);
-                history.scrollTop = history.scrollHeight;
-                lucide.createIcons();
+                history.insertAdjacentHTML('beforeend', `<div class="flex gap-4 justify-end"><div class="bg-accent-dark/30 border border-accent-dark/50 p-4 rounded-lg rounded-tr-none shadow-lg max-w-[80%]"><p class="text-accent/80 text-sm leading-relaxed flex items-center gap-2"><i data-lucide="file"></i> Attached: ${file.name}</p></div></div>`);
+                history.scrollTop = history.scrollHeight; lucide.createIcons();
             }
         }
 
-        // =====================================================
-        // MODAL
-        // =====================================================
+        // ══════════════════════════════════════════════
+        // MODAL (Automat system modal)
+        // ══════════════════════════════════════════════
         function showModal(title, message) {
             const modal = document.getElementById('custom-modal');
             document.getElementById('modal-title').innerText = title;
             document.getElementById('modal-message').innerText = message;
             modal.classList.remove('hidden');
-            setTimeout(() => {
-                modal.classList.remove('opacity-0');
-                modal.querySelector('.modal-content').classList.remove('scale-95');
-                modal.querySelector('.modal-content').classList.add('scale-100');
-            }, 10);
+            setTimeout(() => { modal.classList.remove('opacity-0'); modal.querySelector('.modal-content').classList.remove('scale-95'); modal.querySelector('.modal-content').classList.add('scale-100'); }, 10);
         }
-
         function closeModal(id) {
             const modal = document.getElementById(id);
             modal.classList.add('opacity-0');
@@ -1219,36 +1172,9 @@
             setTimeout(() => modal.classList.add('hidden'), 200);
         }
 
-        // =====================================================
-        // CREATE BOT
-        // =====================================================
-        let selectedBotType = null;
-        function openCreateBotModal() {
-            const m = document.getElementById('create-bot-modal');
-            m.classList.remove('hidden');
-            setTimeout(() => {
-                m.classList.remove('opacity-0');
-                m.querySelector('.modal-content').classList.remove('scale-95');
-                m.querySelector('.modal-content').classList.add('scale-100');
-            }, 10);
-        }
-        function selectBotType(type) {
-            selectedBotType = type;
-            document.getElementById('type-character').classList.remove('selected');
-            document.getElementById('type-agent').classList.remove('selected');
-            document.getElementById('type-' + type).classList.add('selected');
-        }
-        function confirmCreateBot() {
-            const name = document.getElementById('new-bot-name').value;
-            if (!name) { alert("Please enter an Instance Designation."); return; }
-            if (!selectedBotType) { alert("Please select a Cognitive Architecture."); return; }
-            closeModal('create-bot-modal');
-            showModal('Initializing Instance', `Instance ${name} (${selectedBotType.toUpperCase()} mode) is being provisioned...`);
-        }
-
-        // =====================================================
-        // CREATIVE MODE
-        // =====================================================
+        // ══════════════════════════════════════════════
+        // CREATIVE
+        // ══════════════════════════════════════════════
         let creativeStep = 1;
         function setCreativeInput() { creativeStep = 2; updateCreativeView(); }
         function setCreativeOutput() { creativeStep = 3; updateCreativeView(); }
@@ -1257,40 +1183,37 @@
             [1,2,3].forEach(n => document.getElementById(`creative-step-${n}`).classList.add('hidden'));
             document.getElementById(`creative-step-${creativeStep}`).classList.remove('hidden');
             const ind2 = document.getElementById('step-ind-2'), ind3 = document.getElementById('step-ind-3');
-            ind2.className = creativeStep >= 2 ? 'w-10 h-10 rounded-full bg-accent text-black flex items-center justify-center font-bold ring-4 ring-black' : 'w-10 h-10 rounded-full bg-gray-800 text-gray-400 flex items-center justify-center font-bold ring-4 ring-black';
-            ind3.className = creativeStep >= 3 ? 'w-10 h-10 rounded-full bg-accent text-black flex items-center justify-center font-bold ring-4 ring-black' : 'w-10 h-10 rounded-full bg-gray-800 text-gray-400 flex items-center justify-center font-bold ring-4 ring-black';
+            const on = 'w-10 h-10 rounded-full bg-accent text-black flex items-center justify-center font-bold ring-4 ring-black';
+            const off = 'w-10 h-10 rounded-full bg-gray-800 text-gray-400 flex items-center justify-center font-bold ring-4 ring-black';
+            ind2.className = creativeStep >= 2 ? on : off;
+            ind3.className = creativeStep >= 3 ? on : off;
         }
-        function executeCreative() { showModal('Generation Initiated', 'The engine has received the parameters.'); creativeStep = 1; updateCreativeView(); }
+        function executeCreative() { showModal('Generation Initiated','The engine has received the parameters.'); creativeStep = 1; updateCreativeView(); }
 
-        // =====================================================
+        // ══════════════════════════════════════════════
         // ENGINE
-        // =====================================================
+        // ══════════════════════════════════════════════
         function runBenchmark() {
             const btn = event.currentTarget;
             const orig = btn.innerHTML;
             btn.innerHTML = '<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> RUNNING...';
             lucide.createIcons();
-            setTimeout(() => { btn.innerHTML = orig; lucide.createIcons(); showModal('Benchmark Complete', 'Performance: 45.2 tokens/sec.'); }, 2000);
+            setTimeout(() => { btn.innerHTML = orig; lucide.createIcons(); showModal('Benchmark Complete','Performance: 45.2 tokens/sec.'); }, 2000);
         }
 
-        // =====================================================
+        // ══════════════════════════════════════════════
         // STATS LOOP
-        // =====================================================
+        // ══════════════════════════════════════════════
         setInterval(() => {
             const tempEl = document.getElementById('stat-temp');
-            if (tempEl) {
-                let t = parseFloat(tempEl.innerText) + (Math.random() * 0.4 - 0.2);
-                if (isNaN(t)) t = 35.5;
-                tempEl.innerText = t.toFixed(1) + "°C";
-                tempEl.className = t > 45 ? "font-mono text-red-500" : "font-mono text-green-600";
-            }
+            if (tempEl) { let t = parseFloat(tempEl.innerText) + (Math.random() * 0.4 - 0.2); if (isNaN(t)) t = 35.5; tempEl.innerText = t.toFixed(1) + "°C"; tempEl.className = t > 45 ? "font-mono text-red-500" : "font-mono text-green-600"; }
             const latEl = document.getElementById('stat-latency');
             if (latEl) latEl.innerText = (3 + Math.random() * 4).toFixed(1) + "ms";
         }, 2000);
 
-        // =====================================================
+        // ══════════════════════════════════════════════
         // UI HELPERS
-        // =====================================================
+        // ══════════════════════════════════════════════
         function toggleSwitch(btn) {
             const knob = btn.querySelector('span');
             const isActive = btn.classList.contains('bg-green-600');
@@ -1299,100 +1222,44 @@
             knob.classList.toggle('right-1', !isActive);
             knob.classList.toggle('left-1', isActive);
         }
-
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('nav-collapsed');
-            setTimeout(resizeCanvases, 300);
-        }
-
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('nav-collapsed'); setTimeout(resizeCanvases, 300); }
         function resizeCanvases() { window.dispatchEvent(new Event('resize')); }
 
-        // =====================================================
-        // BACKGROUND SYSTEM
-        // =====================================================
-        function initBotBackground() {
-            const canvas = document.getElementById('bg-bot');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            const fontSize = 14;
-            let columns, drops;
-            const chars = "010101XYZAUTOMATSYSTEM";
-
-            function resizeCanvas() {
-                canvas.width = canvas.parentElement.clientWidth;
-                canvas.height = canvas.parentElement.clientHeight;
-                columns = Math.floor(canvas.width / fontSize);
-                drops = new Array(columns).fill(1);
-            }
-            resizeCanvas();
-            window.addEventListener('resize', resizeCanvas);
-
-            setInterval(() => {
-                if (canvas.width === 0 || canvas.height === 0) return;
-                const isLight = document.body.classList.contains('light-theme');
-                ctx.fillStyle = isLight ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)";
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = isLight ? "#009900" : "#0F0";
-                ctx.font = fontSize + "px monospace";
-                for (let i = 0; i < drops.length; i++) {
-                    ctx.fillText(chars.charAt(Math.floor(Math.random() * chars.length)), i * fontSize, drops[i] * fontSize);
-                    if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
-                    drops[i]++;
-                }
-            }, 33);
-        }
-
+        // ══════════════════════════════════════════════
+        // BACKGROUND SWITCHER (Chat panel)
+        // ══════════════════════════════════════════════
         function initNeuralBackground() {
-            const bgContainer = document.getElementById('bg-chat');
             const iframe = document.createElement('iframe');
-
-            let currentAccent = getComputedStyle(document.documentElement).getPropertyValue('--primary-accent').trim().replace('#', '');
-
+            let currentAccent = getComputedStyle(document.documentElement).getPropertyValue('--primary-accent').trim().replace('#','');
             iframe.src = `assets/neural_net_bg.html?color=${currentAccent}`;
-
-            Object.assign(iframe.style, { width:'100%', height:'100%', border:'none', position:'absolute', top:'0', left:'0', zIndex:'0', pointerEvents:'none' });
-
-            bgContainer.appendChild(iframe);
-
-            iframe.addEventListener('load', () => {
-            const currentTheme = document.body.classList.contains('light-theme') ? 'light' : 'dark';
-            iframe.contentWindow.postMessage({ theme: currentTheme }, '*');
-        });
+            Object.assign(iframe.style, { width:'100%',height:'100%',border:'none',position:'absolute',top:'0',left:'0',zIndex:'0',pointerEvents:'none' });
+            bgChatContainer.appendChild(iframe);
+            iframe.addEventListener('load', () => { iframe.contentWindow.postMessage({ theme: document.body.classList.contains('light-theme') ? 'light' : 'dark' }, '*'); });
         }
-
+        function initSharpBackground() {
+            const iframe = document.createElement('iframe');
+            let currentAccent = getComputedStyle(document.documentElement).getPropertyValue('--primary-accent').trim().replace('#','');
+            iframe.src = `assets/Animated_sharp.html?color=${currentAccent}`;
+            Object.assign(iframe.style, { width:'100%',height:'100%',border:'none',position:'absolute',top:'0',left:'0',zIndex:'0',pointerEvents:'none' });
+            bgChatContainer.appendChild(iframe);
+            iframe.addEventListener('load', () => { iframe.contentWindow.postMessage({ theme: document.body.classList.contains('light-theme') ? 'light' : 'dark' }, '*'); });
+        }
         function handleBackgroundChange(val) {
-            const bgContainer = document.getElementById('bg-chat');
-            bgContainer.innerHTML = '';
+            bgChatContainer.innerHTML = '';
             if (animateId) { cancelAnimationFrame(animateId); animateId = null; }
             if (renderer) { renderer.dispose(); renderer = null; }
-
-            switch (val) {
-                case 'neural':   initChatBackground(); break;
+            switch(val) {
+                case 'neural': initChatBackground(); break;
                 case 'neural 2': initNeuralBackground(); break;
+                case 'Sharp Animated': initSharpBackground(); break;
                 case 'matrix': {
                     const canvas = document.createElement('canvas');
-                    bgContainer.appendChild(canvas);
-                    const ctx = canvas.getContext('2d');
-                    const fontSize = 14;
-                    let columns, drops;
-                    const chars = "010101XYZAUTOMATSYSTEM";
-                    function resizeCanvas() {
-                        canvas.width = bgContainer.clientWidth; canvas.height = bgContainer.clientHeight;
-                        columns = Math.floor(canvas.width / fontSize); drops = new Array(columns).fill(1);
-                    }
-                    resizeCanvas();
-                    window.addEventListener('resize', resizeCanvas);
-                    setInterval(() => {
-                        if (!canvas.width || !canvas.height) return;
-                        ctx.fillStyle = document.body.classList.contains('light-theme') ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)";
-                        ctx.fillRect(0, 0, canvas.width, canvas.height);
-                        ctx.fillStyle = "#0F0"; ctx.font = fontSize + "px monospace";
-                        for (let i = 0; i < drops.length; i++) {
-                            ctx.fillText(chars.charAt(Math.floor(Math.random() * chars.length)), i * fontSize, drops[i] * fontSize);
-                            if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
-                            drops[i]++;
-                        }
-                    }, 33);
+                    bgChatContainer.appendChild(canvas);
+                    canvas.width = canvas.parentElement.clientWidth; canvas.height = canvas.parentElement.clientHeight;
+                    const ctx = canvas.getContext('2d'); const fontSize = 14; const chars = "010101XYZAUTOMATSYSTEM";
+                    let columns = Math.floor(canvas.width / fontSize); let drops = new Array(columns).fill(1);
+                    window.addEventListener('resize', () => { if(!canvas.parentElement.clientWidth) return; canvas.width=canvas.parentElement.clientWidth; canvas.height=canvas.parentElement.clientHeight; columns=Math.floor(canvas.width/fontSize); drops=new Array(columns).fill(1); });
+                    function draw() { const accent=getComputedStyle(document.documentElement).getPropertyValue('--primary-accent').trim(); ctx.fillStyle='rgba(0,0,0,0.05)'; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.fillStyle=accent; ctx.font=fontSize+'px monospace'; for(let i=0;i<drops.length;i++){ctx.fillText(chars[Math.floor(Math.random()*chars.length)],i*fontSize,drops[i]*fontSize); if(drops[i]*fontSize>canvas.height&&Math.random()>0.975)drops[i]=0; drops[i]++;} setTimeout(()=>requestAnimationFrame(draw),30); } draw();
                     break;
                 }
                 case 'solid': break;
@@ -1400,69 +1267,365 @@
             }
         }
 
-        // =====================================================
+        // ══════════════════════════════════════════════
         // CUSTOM BG FILE INPUT
-        // =====================================================
-        const dropZone = document.getElementById('bg-drop-zone');
+        // ══════════════════════════════════════════════
+        const dropZone  = document.getElementById('bg-drop-zone');
         const fileInput = document.getElementById('bg-file-input');
         dropZone.addEventListener('click', () => fileInput.click());
         fileInput.addEventListener('change', (event) => {
-            const file = event.target.files[0];
-            if (!file) return;
+            const file = event.target.files[0]; if (!file) return;
             const reader = new FileReader();
             reader.onload = (e) => {
                 if (animateId) cancelAnimationFrame(animateId);
                 if (renderer && renderer.domElement.parentNode) { renderer.domElement.parentNode.removeChild(renderer.domElement); renderer.dispose(); renderer = null; }
                 bgChatContainer.style.backgroundImage = `url(${e.target.result})`;
-                bgChatContainer.style.backgroundSize = 'cover';
-                bgChatContainer.style.backgroundPosition = 'center';
-                customBgSelected = true;
-                dropZone.querySelector('p').innerText = `Loaded: ${file.name}`;
+                bgChatContainer.style.backgroundSize = 'cover'; bgChatContainer.style.backgroundPosition = 'center';
+                customBgSelected = true; dropZone.querySelector('p').innerText = `Loaded: ${file.name}`;
             };
             reader.readAsDataURL(file);
         });
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-accent/80'); });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-accent/80'));
+        dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.classList.remove('border-accent/80'); dropZone.querySelector('p').innerText = "Image Loaded: custom_bg.png"; });
 
-        // =====================================================
+        // ══════════════════════════════════════════════
         // CHAT PANEL RESIZER
-        // =====================================================
-        const chatPanel = document.getElementById('chat-panel');
+        // ══════════════════════════════════════════════
+        const chatPanel   = document.getElementById('chat-panel');
         const chatResizer = document.getElementById('chat-resizer');
         let isResizing = false;
         chatResizer.addEventListener('mousedown', (e) => { isResizing = true; document.body.style.cursor = 'nesw-resize'; e.preventDefault(); });
         window.addEventListener('mousemove', (e) => {
             if (!isResizing) return;
-            const panelRect = chatPanel.getBoundingClientRect();
+            const panelRect  = chatPanel.getBoundingClientRect();
             const parentRect = chatPanel.parentElement.getBoundingClientRect();
-            const newHeight = panelRect.bottom - e.clientY;
-            const newWidth = (e.clientX - (parentRect.left + parentRect.width / 2)) * 2;
+            const newHeight  = panelRect.bottom - e.clientY;
+            const newWidth   = (e.clientX - (parentRect.left + parentRect.width / 2)) * 2;
             if (newHeight > 300 && newHeight < parentRect.height - 40) chatPanel.style.height = `${newHeight}px`;
-            if (newWidth > 400 && newWidth < parentRect.width - 40) { chatPanel.style.maxWidth = 'none'; chatPanel.style.width = `${newWidth}px`; }
+            if (newWidth  > 400 && newWidth  < parentRect.width  - 40) { chatPanel.style.maxWidth = 'none'; chatPanel.style.width = `${newWidth}px`; }
         });
         window.addEventListener('mouseup', () => { if (isResizing) { isResizing = false; document.body.style.cursor = 'default'; } });
 
-        // =====================================================
+        // ══════════════════════════════════════════════
+        // OLD CREATE-BOT MODAL helpers (kept for compat)
+        // ══════════════════════════════════════════════
+        let selectedBotType = null;
+        function openCreateBotModal() { document.getElementById('create-bot-modal').classList.remove('hidden'); setTimeout(() => { document.getElementById('create-bot-modal').classList.remove('opacity-0'); document.querySelector('#create-bot-modal .modal-content').classList.remove('scale-95'); document.querySelector('#create-bot-modal .modal-content').classList.add('scale-100'); }, 10); }
+        function selectBotType(type) { selectedBotType = type; document.getElementById('type-character').classList.toggle('selected', type==='character'); document.getElementById('type-agent').classList.toggle('selected', type==='agent'); }
+        function confirmCreateBot() { const name = document.getElementById('new-bot-name').value; if(!name){alert("Enter a name."); return;} if(!selectedBotType){alert("Select a type."); return;} closeModal('create-bot-modal'); showModal('Initializing Instance',`Instance ${name} (${selectedBotType.toUpperCase()}) is being provisioned...`); }
+
+        // ══════════════════════════════════════════════
+        // BOT MANAGER — full logic
+        // ══════════════════════════════════════════════
+        const bmSelected = new Set();
+
+        function bmToggleSelect(id, e) {
+            if (e.target.closest('button')) return;
+            const card = document.getElementById(id);
+            if (!card) return;
+            bmSelected.has(id) ? (bmSelected.delete(id), card.classList.remove('bm-selected')) : (bmSelected.add(id), card.classList.add('bm-selected'));
+        }
+
+        function bmAction(action) {
+            const names = [...bmSelected].map(id => { const el = document.getElementById(id); return el ? el.querySelector('.bm-bot-name').textContent : id; });
+            switch(action) {
+                case 'save':      bmToast('STATE SAVED — Configuration persisted.'); break;
+                case 'load':      bmToast('LOADING — Retrieving last checkpoint...'); break;
+                case 'replicate': if (!names.length) { bmToast('Select a bot to replicate.', true); return; } if (names.length > 1) { bmToast('Select only ONE bot to replicate.', true); return; } bmReplicate([...bmSelected][0]); break;
+                case 'merge':     if (names.length !== 2) { bmToast('Select exactly TWO bots to merge.', true); return; } bmToast(`MERGING: ${names[0]} + ${names[1]} — Neural fusion...`); break;
+                case 'export':    if (!names.length) { bmToast('Select a bot to export.', true); return; } bmToast(`EXPORTING: ${names.join(', ')} — Package ready.`); break;
+            }
+        }
+
+        function bmReplicate(sourceId) {
+            const source = document.getElementById(sourceId);
+            if (!source) return;
+            const name = source.querySelector('.bm-bot-name').textContent;
+            const desc = source.querySelector('.bm-bot-desc').textContent;
+            const isChar = source.querySelector('.bm-agent-tag').classList.contains('character');
+            bmAddCard({ id:'bmc-'+name.toLowerCase()+'-copy-'+Date.now(), name:name+'_COPY', desc, type: isChar?'character':'agent', online:false });
+            bmToast(`REPLICATED: ${name} → ${name}_COPY`);
+        }
+
+        // Create modal
+        let bmNewType = null;
+        function bmOpenCreate() { bmNewType=null; document.getElementById('bmNewName').value=''; document.getElementById('bmt-character').classList.remove('bm-type-selected'); document.getElementById('bmt-agent').classList.remove('bm-type-selected'); document.getElementById('bmCreateOverlay').classList.add('bm-open'); document.body.style.overflow='hidden'; setTimeout(()=>document.getElementById('bmNewName').focus(),80); }
+        function bmCloseCreate() { document.getElementById('bmCreateOverlay').classList.remove('bm-open'); document.body.style.overflow=''; }
+        function bmSelectType(t) { bmNewType=t; document.getElementById('bmt-character').classList.toggle('bm-type-selected',t==='character'); document.getElementById('bmt-agent').classList.toggle('bm-type-selected',t==='agent'); }
+        function bmConfirmCreate() {
+            const name = document.getElementById('bmNewName').value.trim();
+            if (!name)    { bmToast('Enter an instance designation.', true); return; }
+            if (!bmNewType){ bmToast('Select a cognitive architecture.', true); return; }
+            const id = 'bmc-'+name.toLowerCase().replace(/[^a-z0-9]/g,'-')+'-'+Date.now();
+            bmAddCard({ id, name: name.toUpperCase(), desc:'Newly initialized instance.', type:bmNewType, online:false });
+            bmCloseCreate();
+            bmToast(`INITIALIZED: ${name.toUpperCase()} (${bmNewType.toUpperCase()})`);
+        }
+
+        function bmAddCard({ id, name, desc, type, online }) {
+            const grid = document.getElementById('bmGrid');
+            const emptySlot = grid.querySelector('.bm-empty');
+            const isAgent = type === 'agent';
+            const iconSvg = isAgent
+                ? `<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="6" height="6" rx="1"/><path d="M3 9h2M3 15h2M19 9h2M19 15h2M9 3v2M15 3v2M9 19v2M15 19v2"/><path d="M5 5l2 2M17 5l-2 2M5 19l2-2M17 19l-2-2"/></svg>`
+                : `<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>`;
+            const tagClass = isAgent ? '' : 'character';
+            const tagLabel = isAgent ? 'AGENT' : 'CHARACTER';
+            const dotClass = online ? '' : 'offline';
+            const botKey   = name.toLowerCase().replace(/[^a-z0-9]/g,'');
+            const card = document.createElement('div');
+            card.className = 'bm-card'; card.id = id;
+            card.onclick = (e) => bmToggleSelect(id, e);
+            card.innerHTML = `
+                <div class="bm-card-header">
+                    <div class="bm-bot-icon">${iconSvg}</div>
+                    <div class="bm-top-right"><div class="bm-status-dot ${dotClass}"></div><div class="bm-agent-tag ${tagClass}">${tagLabel}</div></div>
+                </div>
+                <div class="bm-bot-name">${name}</div>
+                <div class="bm-bot-load">LOAD: 0%</div>
+                <div class="bm-bot-desc">${desc}</div>
+                <div class="bm-card-footer">
+                    <button class="bm-icon-btn" onclick="bmOpenEdit(event,'${botKey}','${name}')" title="Edit">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    </button>
+                    <button class="bm-icon-btn bm-del" onclick="bmConfirmDelete(event,'${id}','${name}')" title="Delete">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                    </button>
+                    <button class="bm-launch" onclick="event.stopPropagation()">LAUNCH</button>
+                </div>`;
+            emptySlot ? grid.replaceChild(card, emptySlot) : grid.appendChild(card);
+        }
+
+        // Delete
+        let bmPendingDelete = null;
+        function bmConfirmDelete(e, cardId, botName) { e.stopPropagation(); bmPendingDelete=cardId; document.getElementById('bmDeleteName').textContent=botName; document.getElementById('bmConfirmOverlay').classList.add('bm-open'); document.body.style.overflow='hidden'; }
+        function bmCancelDelete() { bmPendingDelete=null; document.getElementById('bmConfirmOverlay').classList.remove('bm-open'); document.body.style.overflow=''; }
+        function bmExecuteDelete() {
+            document.getElementById('bmConfirmOverlay').classList.remove('bm-open');
+            if (!bmPendingDelete) return;
+            const card = document.getElementById(bmPendingDelete);
+            if (card) {
+                const name = card.querySelector('.bm-bot-name')?.textContent || bmPendingDelete;
+                bmSelected.delete(bmPendingDelete);
+                card.classList.add('bm-deleting');
+                setTimeout(() => {
+                    const slot = document.createElement('div');
+                    slot.className = 'bm-empty'; slot.onclick = () => bmOpenCreate();
+                    slot.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg><span>Empty Slot</span>`;
+                    card.parentNode.replaceChild(slot, card);
+                    document.body.style.overflow = '';
+                    bmToast(`PURGED: ${name} — All data wiped.`);
+                }, 300);
+            }
+            bmPendingDelete = null;
+        }
+
+        // Edit modal
+        function bmOpenEdit(e, botKey, botName) { e.stopPropagation(); document.getElementById('bmEditTitle').textContent = botName || botKey; document.getElementById('bmEditOverlay').classList.add('bm-open'); document.body.style.overflow='hidden'; }
+        function bmCloseEdit() { document.getElementById('bmEditOverlay').classList.remove('bm-open'); document.body.style.overflow=''; }
+        function bmSaveEdit() { bmCloseEdit(); bmToast('CHANGES SAVED — Profile updated.'); }
+        function bmSwitchAC(which) {
+            document.getElementById('bm-ac-generate').classList.toggle('bm-ac-on', which==='generate');
+            document.getElementById('bm-ac-upload').classList.toggle('bm-ac-on', which==='upload');
+            document.querySelector('#bm-ac-generate svg').setAttribute('stroke', which==='generate'?'var(--bm-cyan)':'var(--bm-muted)');
+            document.querySelector('#bm-ac-upload svg').setAttribute('stroke', which==='upload'?'var(--bm-cyan)':'var(--bm-muted)');
+            document.querySelector('#bm-ac-upload .bm-ac-title').style.color = which==='upload'?'var(--bm-cyan)':'';
+            document.querySelector('#bm-ac-upload .bm-ac-sub').style.color   = which==='upload'?'var(--bm-cyan)':'';
+            document.querySelector('#bm-ac-generate .bm-ac-title').style.color = which==='generate'?'var(--bm-cyan)':'';
+        }
+
+        // Toast
+        let bmToastTimer = null;
+        function bmToast(msg, warn=false) {
+            const t = document.getElementById('bmToast');
+            t.textContent = msg;
+            t.className = 'bm-toast' + (warn?' bm-toast-warn':'');
+            void t.offsetWidth;
+            t.classList.add('bm-toast-show');
+            clearTimeout(bmToastTimer);
+            bmToastTimer = setTimeout(() => t.classList.remove('bm-toast-show'), 3000);
+        }
+
+        // ══════════════════════════════════════════════
+        // AGENT CONFIG PANEL — combined with bot manager
+        // ══════════════════════════════════════════════
+
+        // Toggle collapse/expand the bottom agent panel
+        let agentPanelOpen = true;
+        function toggleAgentPanel() {
+            const panel   = document.getElementById('agentPanel');
+            const inner   = document.getElementById('agentPanelInner');
+            const chevron = document.getElementById('agentChevron');
+            agentPanelOpen = !agentPanelOpen;
+            if (agentPanelOpen) {
+                panel.style.maxHeight = '45%';
+                inner.style.display = 'flex';
+                chevron.style.transform = 'rotate(0deg)';
+            } else {
+                panel.style.maxHeight = '38px';
+                inner.style.display = 'none';
+                chevron.style.transform = 'rotate(180deg)';
+            }
+        }
+
+        // Local/Groq model toggle — event delegation
+        document.addEventListener('change', (e) => {
+            if (!e.target.classList.contains('local-model-toggle')) return;
+            const container  = e.target.closest('.agent-instance');
+            if (!container) return;
+            const groqSelect  = container.querySelector('.groq-select');
+            const localSelect = container.querySelector('.local-select');
+            if (e.target.checked) {
+                groqSelect.style.display = 'none';  groqSelect.disabled  = true;
+                localSelect.style.display = '';      localSelect.disabled = false;
+            } else {
+                groqSelect.style.display = '';       groqSelect.disabled  = false;
+                localSelect.style.display = 'none';  localSelect.disabled = true;
+            }
+        });
+
+        let agentCounter = 0;
+        let activeAgentId = null;
+
+        function createAgent() {
+            // Make sure panel is open
+            if (!agentPanelOpen) toggleAgentPanel();
+
+            const agentId   = 'agent_' + (++agentCounter);
+            const template  = document.getElementById('agent-template');
+            const area      = document.getElementById('agent-config-area');
+            const listEl    = document.getElementById('agent-list');
+
+            // Clear placeholder text on first agent
+            if (agentCounter === 1) area.innerHTML = '';
+
+            // Clone config form
+            const clone     = template.content.cloneNode(true);
+            const agentRoot = clone.querySelector('.agent-instance');
+            agentRoot.dataset.agentId = agentId;
+            agentRoot.style.display = 'none'; // hidden until selected
+            area.appendChild(agentRoot); // appended directly (not via DocumentFragment clone)
+
+            // Sidebar entry
+            const entry = document.createElement('div');
+            entry.dataset.agentId = agentId;
+            entry.style.cssText = `
+                font-size:11px;font-family:'JetBrains Mono',monospace;
+                border:1px solid rgba(var(--color-accent)/0.2);border-radius:5px;
+                padding:5px 9px;cursor:pointer;color:#8b949e;
+                transition:all 0.15s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+            `;
+            entry.textContent = 'Agent ' + agentCounter;
+            entry.addEventListener('click', () => selectAgent(agentId));
+            entry.addEventListener('mouseover', () => { if (activeAgentId !== agentId) entry.style.background='rgba(var(--color-accent)/0.06)'; });
+            entry.addEventListener('mouseout',  () => { if (activeAgentId !== agentId) entry.style.background=''; });
+            listEl.appendChild(entry);
+
+            // Update badge
+            updateAgentBadge();
+
+            // Auto-select this new agent
+            selectAgent(agentId);
+
+            // Enable workflow step button
+            document.getElementById('add-step-btn').disabled = false;
+            document.getElementById('add-step-btn').style.opacity = '1';
+
+            // Update workflow dropdowns
+            refreshWorkflowDropdowns();
+        }
+
+        function selectAgent(agentId) {
+            // Hide all configs
+            document.querySelectorAll('.agent-instance').forEach(el => el.style.display = 'none');
+            // Deactivate all sidebar entries
+            document.querySelectorAll('#agent-list > div').forEach(el => {
+                el.style.background = '';
+                el.style.color = '#8b949e';
+                el.style.borderColor = 'rgba(var(--color-accent)/0.2)';
+            });
+            // Show selected config
+            const targetConfig = document.querySelector(`.agent-instance[data-agent-id="${agentId}"]`);
+            if (targetConfig) targetConfig.style.display = 'block';
+            // Highlight selected sidebar entry
+            const targetEntry = document.querySelector(`#agent-list > [data-agent-id="${agentId}"]`);
+            if (targetEntry) {
+                targetEntry.style.background = 'rgba(var(--color-accent)/0.12)';
+                targetEntry.style.color = 'var(--primary-accent)';
+                targetEntry.style.borderColor = 'rgba(var(--color-accent)/0.4)';
+                // Update label from name input
+                const nameInput = targetConfig?.querySelector('.agent-name');
+                if (nameInput?.value) targetEntry.textContent = nameInput.value;
+            }
+            activeAgentId = agentId;
+        }
+
+        function updateAgentBadge() {
+            const count = document.querySelectorAll('.agent-instance').length;
+            document.getElementById('agentCountBadge').textContent = count + ' agent' + (count === 1 ? '' : 's');
+        }
+
+        // Refresh agent names in workflow dropdowns
+        function refreshWorkflowDropdowns() {
+            document.querySelectorAll('.workflow-agent').forEach(sel => {
+                const current = sel.value;
+                sel.innerHTML = '<option value="">Agent</option>';
+                document.querySelectorAll('.agent-instance').forEach(inst => {
+                    const name = inst.querySelector('.agent-name')?.value || ('Agent ' + inst.dataset.agentId?.split('_')[1]);
+                    const opt  = document.createElement('option');
+                    opt.value = inst.dataset.agentId; opt.textContent = name;
+                    sel.appendChild(opt);
+                });
+                sel.value = current;
+            });
+        }
+
+        let workflowStepCounter = 0;
+        function addWorkflowStep() {
+            const template  = document.getElementById('workflow-step-template');
+            const container = document.getElementById('workflow-steps');
+            const clone     = template.content.cloneNode(true);
+            const stepEl    = clone.querySelector('.workflow-step');
+            stepEl.querySelector('.workflow-index').textContent = ++workflowStepCounter;
+            stepEl.querySelector('.workflow-remove').addEventListener('click', (e) => {
+                e.target.closest('.workflow-step').remove();
+                reindexWorkflow();
+            });
+            // Populate agent dropdown
+            const agentSel = stepEl.querySelector('.workflow-agent');
+            document.querySelectorAll('.agent-instance').forEach(inst => {
+                const name = inst.querySelector('.agent-name')?.value || ('Agent ' + inst.dataset.agentId?.split('_')[1]);
+                const opt  = document.createElement('option');
+                opt.value = inst.dataset.agentId; opt.textContent = name;
+                agentSel.appendChild(opt);
+            });
+            container.appendChild(clone);
+        }
+        function reindexWorkflow() {
+            document.querySelectorAll('.workflow-step').forEach((s,i) => {
+                s.querySelector('.workflow-index').textContent = i + 1;
+            });
+            workflowStepCounter = document.querySelectorAll('.workflow-step').length;
+        }
+
+        // ══════════════════════════════════════════════
+        // KEYBOARD GLOBAL
+        // ══════════════════════════════════════════════
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') { bmCloseEdit(); bmCancelDelete(); bmCloseCreate(); }
+        });
+
+        // ══════════════════════════════════════════════
         // INIT
-        // =====================================================
+        // ══════════════════════════════════════════════
         window.addEventListener('DOMContentLoaded', () => {
             loadSavedTheme();
             loadSavedAccent();
             lucide.createIcons();
             initChatBackground();
-            const savedAccent = localStorage.getItem('cybel-accent');
-            if (savedAccent) updateGlobeAccent();
             initBotBackground();
-
             document.getElementById('remove-bg-btn').addEventListener('click', initChatBackground);
-
-            dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-accent/80'); });
-            dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-accent/80'));
-            dropZone.addEventListener('drop', (e) => {
-                e.preventDefault();
-                dropZone.classList.remove('border-accent/80');
-                dropZone.querySelector('p').innerText = "Image Loaded: custom_bg.png";
-                dropZone.querySelector('i').classList.add('text-green-400');
-                dropZone.querySelector('i').classList.remove('text-accent');
-            });
         });
     </script>
 </body>
