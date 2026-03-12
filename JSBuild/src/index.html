@@ -226,6 +226,42 @@
                             <option class="text-amber-400" value="grok">  Grok</option>
                             <option class="text-amber-400" value="verso"> Verso</option>
                         </select>
+                        <div id="local-option-panel">
+                            <div>
+                                <p class="text-xs text-amber-400 mt-2">API Token (HuggingFace or ModelScope)</p>
+                                <input id="api-token-input" placeholder="Enter your token" class="w-full text-xs">
+                            </div>
+                            <div class="flex items-center gap-4 mt-2 text-xs text-amber-400">
+                                <label class="flex items-center gap-1">
+                                    <input type="checkbox" id="source-hf" checked>
+                                    HuggingFace
+                                </label>
+
+                                <label class="flex items-center gap-1">
+                                    <input type="checkbox" id="source-ms">
+                                    ModelScope
+                                </label>
+                            </div>
+                            <div>
+                                <button id="login-token" class="w-full mt-2 py-2 bg-amber-600/20 hover:bg-blue-600/40 text-amber-500 border border-amber-600/50 rounded text-xs font-bold transition-colors">
+                                    Save Token
+                                </button>
+                                <button id="hf-login" class="w-full mt-2 py-2 bg-amber-600/20 hover:bg-blue-600/40 text-amber-500 border border-amber-600/50 rounded text-xs font-bold transition-colors">Get HF Token</button>
+                                <button id="ms-login" class="w-full mt-2 py-2 bg-amber-600/20 hover:bg-green-600/40 text-amber-500 border border-amber-600/50 rounded text-xs font-bold transition-colors">Get MS Token</button>
+                            </div>
+                        </div>
+                        <div id="verso-option-panel">
+                            <div>
+                                <p class="text-xs text-amber-400 mt-2">API Token (High Noon)</p>
+                                <input id="api-token-input" placeholder="Enter your token" class="w-full text-xs">
+                            </div>
+                            <div>
+                                <button id="login-token" class="w-full mt-2 py-2 bg-amber-600/20 hover:bg-blue-600/40 text-amber-500 border border-amber-600/50 rounded text-xs font-bold transition-colors">
+                                    Save Token
+                                </button>
+                                <button id="hn-login" class="w-full mt-2 py-2 bg-amber-600/20 hover:bg-blue-600/40 text-amber-500 border border-amber-600/50 rounded text-xs font-bold transition-colors">Get High Noon Key</button>
+                            </div>
+                        </div>
                     </div>
                 <div id="groq-panels">
                     <div class="glass-panel p-6 rounded-xl" id="groq-key-panel">
@@ -256,30 +292,30 @@
                     <div class="glass-panel p-6 rounded-xl" id="local-model-panel">
                         <h3 class="text-accent font-mono">Local Model</h3>
                         <select id="local-model-selector" class="w-full">
-                            <option class="font-mono">LLaMA 2</option>
-                            <option class="font-mono">LLaMA 3</option>
-                            <option class="font-mono">grok-2-GGUF</option>
-                            <option class="font-mono">Mistral 7b</option>
-                            <option class="font-mono">Mixtral</option>
-                            <option class="font-mono">GPT-Q/GPT4All</option>
-                            <option class="font-mono">deeperhermes</option>
-                            <option class="font-mono">dolphin3</option>
-                            <option class="font-mono">groq-code-cli</option> 
-                            <option class="font-mono">dolphin-2.5-mixtral-8x7b</option> 
-                            <option class="font-mono">MLewd-v2.4-13B-GGUF</option>
-                            <option class="font-mono">dolphin-2.5-mixtral-8x7b-GGUF</option>
-                            <option class="font-mono">goliath-120b-GGUF</option> 
-                            <option class="font-mono">L3-8B-Stheno-v3.2</option>
-                            <option class="font-mono">L3-8B-Niitama-v1</option> 
-                            <option class="font-mono">NeuralStar_FusionWriter_4x7b-GGUF</option> 
-                            <option class="font-mono">Noro-Hermes-3x7B-GGUF</option> 
-                            <option class="font-mono">HeroBophades-3x7B</option>
+                            <option class="font-mono">meta-llama/Llama-2-7b-chat-hf</option>
+                            <option class="font-mono">meta-llama/Llama-3.2-1B</option>
+                            <option class="font-mono">unsloth/grok-2-GGUF</option>
+                            <option class="font-mono">mistralai/Mistral-7B-v0.3</option>
+                            <option class="font-mono">mistralai/Mixtral-8x7B-v0.1</option>
+                            <option class="font-mono">nomic-ai/gpt4all-j</option>
+                            <option class="font-mono">mradermacher/DeeperHermes3_R1_D_L3_8b-GGUF</option>
+                            <option class="font-mono">dphn/Dolphin3.0-Llama3.1-8B-GGUF</option>
+                            <option class="font-mono">Groq/LiveCodeBench-CodeGeneration</option> 
+                            <option class="font-mono">dphn/dolphin-2.5-mixtral-8x7b</option> 
+                            <option class="font-mono">TheBloke/MLewd-v2.4-13B-GGUF</option>
+                            <option class="font-mono">TheBloke/dolphin-2.5-mixtral-8x7b-GGUF</option>
+                            <option class="font-mono">TheBloke/goliath-120b-GGUF</option> 
+                            <option class="font-mono">Lewdiculous/L3-8B-Stheno-v3.2-GGUF-IQ-Imatrix</option>
+                            <option class="font-mono">Lewdiculous/L3.1-8B-Niitama-v1.1-GGUF-IQ-Imatrix</option> 
+                            <option class="font-mono">mradermacher/NeuralStar_FusionWriter_4x7b-i1-GGUF</option> 
+                            <option class="font-mono">mradermacher/Noro-Hermes-3x7B-GGUF</option> 
+                            <option class="font-mono">mradermacher/HeroBophades-3x7B-GGUF</option>
                         </select>
                         </br>
                         <div>
                             <div>
                                 <p class="text-xs text-amber-400 mt-2"> Download specific Model </p>
-                                <input type="text" id="model-search-input" placeholder="Enter Model Name" class="w-48" />
+                                <input  type="text" id="model-search-input" placeholder="Enter Model Name" class="w-48" />
                                 <button id="model_confirmation" class="w-full mt-2 py-2 bg-amber-600/20 hover:bg-red-600/40 text-amber-500 border border-amber-600/50 rounded text-xs font-bold transition-colors">Download Model</button>
                             </div>
                         </div>
@@ -293,10 +329,6 @@
                                 <input type="checkbox" id="source-ms">
                                 ModelScope
                             </label>
-                        </div>
-                        <div>
-                            <button id="hf-login" class="w-full mt-2 py-2 bg-amber-600/20 hover:bg-blue-600/40 text-amber-500 border border-amber-600/50 rounded text-xs font-bold transition-colors">Login HuggingFace</button>
-                            <button id="ms-login" class="w-full mt-2 py-2 bg-amber-600/20 hover:bg-green-600/40 text-amber-500 border border-amber-600/50 rounded text-xs font-bold transition-colors">Login ModelScope</button>
                         </div>
                         <p class="text-xs text-amber-400 mt-2">
                             Models will be loaded locally when selected.
@@ -327,20 +359,17 @@
                 </div>
                 <div id="verso-panels">
                 <div class="glass-panel p-6 rounded-xl" id="verso-key-panel">
-                    <h3 class="text-accent font-mono">Verso Key</h3>
-                    <input type="text" id="verso-key-input" placeholder="Enter High-Noon Key" class="w-48" />
-                    </br>
-                        <div>
+                    <div>
                         <label class="text-accent font-mono block text-sm mb-2">Verso-use Models</label>
-                        <select id="model-selector" class="w-full text-accent border border-accent rounded p-2 bg-black-500 text-sm">
-                            <option>Granite4:tiny-h</option>
-                            <option>qwen3.5:4b</option>
-                            <option>qwen3.5:9b</option>
-                            <option>High Noon (KEY REQUIRED)</option>
+                        <select id="vs-model-selector" class="w-full text-accent border border-accent rounded p-2 bg-black-500 text-sm">
+                            <option>PolyoxyDev/granite4-obsidian-tiny-h</option>
+                            <option>jbaptistedaniel/search-ai-qwen3.5-4B-V2-q4</option>
+                            <option>kwangsuklee/Qwen3.5-9B-Claude-4.6-Opus-Reasoning-Distilled-GGUF</option>
+                            <option>High Noon</option>
                         </select>
                         </div>
                             <button id="verso-key-confirm" class="w-full mt-2 py-2 bg-amber-600/20 hover:bg-blue-600/40 text-amber-500 border border-amber-600/50 rounded text-xs font-bold transition-colors">Confirm</button>
-                        </div>
+                    </div>
                     <!-- other Groq-specific panels -->
                 </div>
                 </div>
@@ -854,7 +883,7 @@
         </button>
     </div>
     <div class="glass-panel">
-        <button id="start-pipeline-btn" class="workflow-add text-accent font-mono" onclick="" >
+        <button id="start-pipeline-btn" class="workflow-add text-accent font-mono" onclick="executeWorkflow()" >
             Execute Worflow
         </button>
     </div>

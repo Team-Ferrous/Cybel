@@ -1,21 +1,40 @@
 // renderer.js
-import { HF_Login, MS_Login, hub } from './model_switcher.js';
+import { hub } from './model_switcher.js';
 
-async function sendMessage() {
-    const input = document.getElementById("chatInput").value;
-    try {
-        const response = await window.api.sendMessage(input);
-        if (response === "IMAGE_DONE") {
-            console.log("Image generated!");
-            return;
-        }
+async function sendMessage(userInput, sessionId="default") {
+    if (!embeddingIndex) embeddingIndex = await initialize();
 
-        console.log("Bot:", response);
-        // Update UI here
-    } catch (err) {
-        console.error("Error:", err);
+    const convoPath = path.join(CONVO_DIR, sessionId + ".json");
+    let history = [];
+    if (fs.existsSync(convoPath)) {
+        history = JSON.parse(fs.readFileSync(convoPath, "utf-8"));
     }
+
+    // Append user message
+    history.push({ role: "user", content: userInput, timestamp: Date.now() });
+
+    // Retrieve context
+    const embeddingVector = await embedText(userInput);
+    let retrievedDocs = [];
+    if (embeddingIndex && embeddingIndex.ntotal() > 0) {
+        const results = embeddingIndex.search([embeddingVector], 10);
+        retrievedDocs = results.labels.map(i => docs[i]).filter(Boolean);
+    }
+
+    const context = retrievedDocs.map(d => d?.content || "").join("\n");
+    const convoContext = history.map(m => `${m.role}:\n${m.content}`).join("\n");
+
+    const fullPrompt = `${context ? "Context:\n" + context + "\n\n" : ""}${convoContext}\n\nRespond naturally and helpfully.`;
+
+    const response = await generateResponse(fullPrompt);
+
+    // Append assistant response
+    history.push({ role: "assistant", content: response, timestamp: Date.now() });
+    fs.writeFileSync(convoPath, JSON.stringify(history, null, 2), "utf-8");
+
+    return response;
 }
+
 
 document.querySelectorAll("input[type='range']").forEach(slider => {
 slider.addEventListener("input", (e) => {
@@ -202,14 +221,17 @@ document.addEventListener("DOMContentLoaded", () => {
     // Call this on app startup
     initLocalSelector();
 
-
     const input  = document.getElementById("groq-key-input");
     const button = document.getElementById("groq-key-confirm");
     const modeSelector = document.getElementById("modeSelector");
-    const groqPanels = document.getElementById("groq-panels");
+
+    const groqPanels      = document.getElementById("groq-panels");
+    const localOptsPanels = document.getElementById("local-option-panel");
+
     const localPanels = document.getElementById("local-panels");
     const grokPanels = document.getElementById("grok-panels");
     const versoPanels = document.getElementById("verso-panels");
+    const versoOptsPanels = document.getElementById("verso-option-panel");
 
     const hf = document.getElementById("source-hf");
     const ms = document.getElementById("source-ms");
@@ -220,28 +242,47 @@ document.addEventListener("DOMContentLoaded", () => {
         if (ms.checked) hf.checked = false;
     });
 
+    const vsModeSelector = document.getElementById("vs-model-selector");
+    vsModeSelector.addEventListener("change", (e) => {
+        const vs = e.target.value;
+        if (versoOptsPanels && vs.includes("High Noon")) {
+            versoOptsPanels.style.display = "block";
+        } else {
+            versoOptsPanels.style.display = "none";
+        }
+    });
+
+
     modeSelector.addEventListener("change", (e) => {
         const mode = e.target.value;
         if (mode === "groq") {
-            if (groqPanels)  groqPanels.style.display   = "block";
+            if (groqPanels)  groqPanels.style.display        = "block";
+            if (localOptsPanels) localOptsPanels.style.display   = "none";
             if (localPanels) localPanels.style.display  = "none";
             if (grokPanels)  grokPanels.style.display   = "none";
             if (versoPanels) versoPanels.style.display  = "none";
+            if(versoOptsPanels) versoOptsPanels.style.display = "none"
         }
         if(mode === "grok"){
             if (groqPanels)  groqPanels.style.display  = "none";
+            if (localOptsPanels) localOptsPanels.style.display   = "none";
             if (localPanels) localPanels.style.display = "none";
             if (grokPanels)  grokPanels.style.display  = "block";
             if (versoPanels) versoPanels.style.display  = "none";
+            if(versoOptsPanels) versoOptsPanels.style.display = "none"
+
         }
         if (mode === "local") {
             if (groqPanels)  groqPanels.style.display  = "none";
+            if (localOptsPanels) localOptsPanels.style.display   = "block";
             if (localPanels) localPanels.style.display = "block";
             if (grokPanels)  grokPanels.style.display  = "none";
             if (versoPanels) versoPanels.style.display  = "none";
+            if(versoOptsPanels) versoOptsPanels.style.display = "none"
         }
         if (mode === "verso") {
             if (groqPanels)  groqPanels.style.display  = "none";
+            if (localOptsPanels) localOptsPanels.style.display   = "none";
             if (localPanels) localPanels.style.display = "none";
             if (grokPanels)  grokPanels.style.display  = "none";
             if (versoPanels) versoPanels.style.display  = "block";
@@ -390,6 +431,27 @@ function populateAgentDropdown(stepClone){
     });
 }
 
+function getAgentByName(name) {
+
+    const agents = window.agents || [];
+
+    return agents.find(a => a.name === name);
+}
+
+async function runAgent(agent, input) {
+    const prompt = `
+    ${agent.systemPrompt || ""}
+
+    User Input:
+    ${input}
+
+    Respond as the agent.
+    `;
+
+    const response = await generateResponse(prompt, agent.model);
+    return response;
+}
+
 // Add this in a <script> block or your JS file
 async function executeWorkflow() {
 const agentList = document.querySelectorAll('.agent-instance');
@@ -397,8 +459,8 @@ const agentsMap = {}; // Map agent names -> instance IDs
 
 // 1️⃣ Create / spawn all agents
 for (const agentEl of agentList) {
-const name = agentEl.querySelector('.agent-name').value;
-const model = agentEl.querySelector('.agent-model').value;
+const name   = agentEl.querySelector('.agent-name').value;
+const model  = agentEl.querySelector('.agent-model').value;
 const prompt = agentEl.querySelector('.agent-prompt').value;
 
 if (!name || !model) {
@@ -584,44 +646,44 @@ sel.appendChild(option);
 }
 
 function createAgent() {
-const template = document.getElementById("agent-template");
-const agentList = document.getElementById("agent-list");
-const clone = template.content.cloneNode(true);
-const agentId = "agent_" + (++agentCounter);
-const agentRoot = clone.querySelector(".agent-instance");
-agentRoot.dataset.agentId = agentId;
-const modelSelect = clone.querySelector(".agent-model");
-const localToggle = clone.querySelector(".local-model-toggle");
-localToggle.addEventListener("change", () => {
-modelSelect.disabled = localToggle.checked;
-if(localToggle.checked){
-    modelSelect.style.opacity = "0.5";
-} else {
-    modelSelect.style.opacity = "1";
-}
-});
-
-agentList.appendChild(clone);
-setAgentExists(true); // enable + Step once agent exists
-
-const agentConfig = {
-id: agentId,
-provider: localToggle.checked ? "local" : modelSelect.value,
-tools: [], // later: read from Tools checkboxes
-mode: "active",
-embeddingDim: 1536, // default or configurable
-secretKey: null // optional for provider API key
-};
-
-// Spawn the instance in your InstanceEngine
-engine.spawn(agentConfig)
-.then(result => {
-    if (!result.success) {
-        alert("Agent creation failed: " + result.error);
+    const template = document.getElementById("agent-template");
+    const agentList = document.getElementById("agent-list");
+    const clone = template.content.cloneNode(true);
+    const agentId = "agent_" + (++agentCounter);
+    const agentRoot = clone.querySelector(".agent-instance");
+    agentRoot.dataset.agentId = agentId;
+    const modelSelect = clone.querySelector(".agent-model");
+    const localToggle = clone.querySelector(".local-model-toggle");
+    localToggle.addEventListener("change", () => {
+    modelSelect.disabled = localToggle.checked;
+    if(localToggle.checked){
+        modelSelect.style.opacity = "0.5";
     } else {
-        console.log("Agent instance created:", result.instance);
+        modelSelect.style.opacity = "1";
     }
-});
+    });
+
+    agentList.appendChild(clone);
+    setAgentExists(true); // enable + Step once agent exists
+
+    const agentConfig = {
+    id: agentId,
+    provider: localToggle.checked ? "local" : modelSelect.value,
+    tools: [], // later: read from Tools checkboxes
+    mode: "active",
+    embeddingDim: 1536, // default or configurable
+    secretKey: null // optional for provider API key
+    };
+
+    // Spawn the instance in your InstanceEngine
+    engine.spawn(agentConfig)
+    .then(result => {
+        if (!result.success) {
+            alert("Agent creation failed: " + result.error);
+        } else {
+            console.log("Agent instance created:", result.instance);
+        }
+    });
 }
 
 const addStepBtn = document.querySelector('.workflow-add');
@@ -1536,6 +1598,10 @@ window.addEventListener('DOMContentLoaded', () => {
     lucide.createIcons();
         // Mode selector
     const modeSelector = document.getElementById("modeSelector");
+    document.getElementById('hf-login').addEventListener('click', () => hub.loginHuggingFace());
+    document.getElementById('ms-login').addEventListener('click', () => hub.loginModelScope());
+    document.getElementById('login-token').addEventListener('click', () => hub.login);
+
     if (modeSelector) {
     modeSelector.addEventListener("change", (e) => {
         window.api.setMode(e.target.value);
@@ -1774,12 +1840,75 @@ window.addEventListener('DOMContentLoaded', () => {
         };
         reader.readAsDataURL(file);
     });
-            
+          
+    
+    async function executeWorkflow() {
+
+        console.log("⚙️ Starting workflow...");
+
+        const steps = document.querySelectorAll(".workflow-step");
+
+        if (steps.length === 0) {
+            console.warn("No workflow steps defined.");
+            return;
+        }
+
+        let previousOutput = "";
+
+        for (let i = 0; i < steps.length; i++) {
+
+            const step = steps[i];
+
+            const agentName = step.querySelector(".workflow-agent").value;
+            const action = step.querySelector(".workflow-action").value;
+
+            console.log(`Running Step ${i + 1}:`, agentName, action);
+
+            if (!agentName) {
+                console.warn("Step skipped: no agent selected");
+                continue;
+            }
+
+            const agent = getAgentByName(agentName);
+
+            if (!agent) {
+                console.warn("Agent not found:", agentName);
+                continue;
+            }
+
+            let result = "";
+
+            switch (action) {
+
+                case "respond":
+                    result = await runAgent(agent, previousOutput);
+                    break;
+
+                case "research":
+                    result = await runResearchTool(previousOutput);
+                    break;
+
+                case "code":
+                    result = await runAgent(agent, "Write code for: " + previousOutput);
+                    break;
+
+                case "tool":
+                    result = await runAgentTool(agent, previousOutput);
+                    break;
+
+            }
+
+            previousOutput = result;
+
+            console.log(`Step ${i + 1} output:`, result);
+        }
+
+        console.log("✅ Workflow finished.");
+    }
+
 // =====================================================
 // CUSTOM BG FILE INPUT
 // =====================================================
-//const dropZone = document.getElementById('bg-drop-zone');
-//const fileInput = document.getElementById('bg-file-input');
 dropZone.addEventListener('click', () => fileInput.click());
 fileInput.addEventListener('change', (event) => {
     const file = event.target.files[0];
@@ -1808,10 +1937,55 @@ dropZone.addEventListener('drop', (e) => {
 });
 
 document.getElementById('remove-bg-btn').addEventListener('click', (() => {bgChatContainer.style.backgroundImage = null; dropZone.querySelector('p').innerText = `Ready for Upload`;}));
-document.getElementById("hf-login").addEventListener("click", HF_Login);
-document.getElementById("ms-login").addEventListener("click", MS_Login);
-document.getElementById('hf-login').addEventListener('click', () => hub.loginHuggingFace());
-document.getElementById('ms-login').addEventListener('click', () => hub.loginModelScope());
+const downloadButton = document.getElementById("model_confirmation")
+const modelInput     = document.getElementById("model-search-input")
+const hfCheckbox = document.getElementById("source-hf")
+const msCheckbox = document.getElementById("source-ms")
+const modelDropdown  = document.getElementById("local-model-selector")
 
+downloadButton.addEventListener("click", async () => {
+    const dropdownName = modelDropdown?.value
+    const modelName = modelInput.length > 0 ? modelInput : dropdownName
+    if (!modelName) {
+        alert("Enter a model name or choose one from the dropdown")
+        return
+    }
+
+    const sources = {
+        huggingface: hfCheckbox.checked,
+        modelscope:  msCheckbox.checked
+    }
+
+    try {
+        if (sources.huggingface) {
+            downloadButton.disabled = true
+            downloadButton.innerText = "Downloading..."
+            let useOllama  = document.getElementById("modeSelector") === "Verso"
+            await hub.downloadModel(modelName, {
+                huggingface: hfCheckbox.checked,
+                modelscope:  msCheckbox.checked,
+                ollama:     useOllama
+            })
+
+            downloadButton.disabled = false
+            downloadButton.innerText = "Downloaded Model"
+        }
+
+        if (sources.modelscope) {
+            downloadButton.disabled = true
+            downloadButton.innerText = "Downloading..."
+            await hub.downloadFromModelScope(modelName)
+            downloadButton.disabled = false
+            downloadButton.innerText = "Downloaded Model"
+        }
+    } catch (err) {
+        console.error("Model download failed:", err)
+    }
+})
+
+window.createAgent      = createAgent;
+window.addWorkflowStep  = addWorkflowStep;
+window.executeWorkflow  = executeWorkflow;
+window.closeModal       = closeModal;
 window.switchTab        = switchTab;
 window.handleChatSubmit = handleChatSubmit;

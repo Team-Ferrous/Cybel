@@ -2,13 +2,13 @@
 import fs                from "fs";
 import path              from "path";
 import crypto            from "crypto";
-import app               from "electron";
+import { dialog }        from 'electron';
 import dotenv            from "dotenv";
 
 import OpenAI            from "openai";
 import { pipeline      } from "@xenova/transformers";
 import { findGenerator } from './model_switcher.js'
-import { embeddingDim, embeddingIndex } from "./embeddings.js";
+import { embeddingDim, embeddingIndex, embedText } from "./embeddings.js";
 
 import { dirname }       from 'node:path';
 import { createRequire } from 'node:module';
@@ -17,12 +17,13 @@ import { fileURLToPath } from 'node:url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = dirname(__filename);
 const require    = createRequire(import.meta.url);
-const { IndexFlatL2, Index }  = require(path.resolve(__dirname, './node_modules/faiss-node/build/Release/faiss-node'));
+const { IndexFlatL2 }  = require(path.resolve(__dirname, './node_modules/faiss-node/build/Release/faiss-node'));
 
 dotenv.config({ path: path.join(__dirname, ".env") });
 
 // main.js
 import Store from 'electron-store';
+import { error } from "node:console";
 const store = new Store();
 
 let CONFIG = {
@@ -43,19 +44,22 @@ const DOCUMENT_DIR = path.join(__dirname, "documents");
 
 let embedder;
 let generator;
+let embeddingIndex;
+let docs       = []
+let embeddings = [];
 
 // ---------------------------
 // Paths
 // ---------------------------
-const inputDir  = path.join(__dirname, "Input_JSON");
-const logsDir   = path.join(__dirname, "Logs");
-const indexPath = path.join(__dirname, "vector.index");
-const metaPath  = path.join(__dirname, "vector_docs.json");
-const hashPath  = path.join(__dirname, "doc_hash.txt");
+const inputDir   = path.join(__dirname, "Input_JSON");
+const logsDir    = path.join(__dirname, "Logs");
+const indexPath  = path.join(__dirname, "vector.index");
+const metaPath   = path.join(__dirname, "vector_docs.json");
+const hashPath   = path.join(__dirname, "doc_hash.txt");
+
 
 if (!fs.existsSync(inputDir)) fs.mkdirSync(inputDir, { recursive: true });
 if (!fs.existsSync(logsDir)) fs.mkdirSync(logsDir, { recursive: true });
-const index = new IndexFlatL2(embeddingDim);
 
 //----------------------------
 // Utility & Engine Functions
@@ -103,7 +107,7 @@ async function saveDocument(doc) {
 
 async function loadDocument(doc) {
   try {
-        const result = await dialog.showSaveDialog({
+        const result = await dialog.showOpenDialog({
             title: "Import Document",
             defaultPath: doc.title + ".txt",
             filters: [
@@ -115,9 +119,8 @@ async function loadDocument(doc) {
             return { success: false, canceled: true };
         }
 
-        const importPath = result.filePath;
-        const filePath   = path.join(DOCUMENT_DIR, doc.title + ".json");
-        const data       = await fs.readFile(filePath, "utf-8");
+        const importPath = result.filePaths[0];
+        const data       = await fs.readFile(importPath , "utf-8");
         return { success: true, path: importPath, document: JSON.parse(data) };
     } catch (err) {
         return { success: false, error: err.message };
@@ -126,7 +129,7 @@ async function loadDocument(doc) {
 
 async function deleteDocument(doc) {
   try {
-    const result = await dialog.showSaveDialog({
+    const result = await dialog.showMessageBox({
             title: "Select Document to Delete",
             defaultPath: doc.title + ".txt",
             filters: [
@@ -139,8 +142,7 @@ async function deleteDocument(doc) {
         }
 
         const importPath = result.filePath;
-        const filePath   = path.join(DOCUMENT_DIR, doc.title + ".json");
-        await fs.unlink(filePath);
+        await fs.unlink(importPath);
         return { success: true, path: importPath };
     } catch (err) {
         return { success: false, error: err.message };
@@ -152,7 +154,7 @@ async function replicateDocument(doc) {
     const sourcePath = path.join(DOCUMENT_DIR, doc.title + ".json");
     const targetPath = path.join(DOCUMENT_DIR, doc.newTitle + ".json");
 
-    const result = await dialog.showSaveDialog({
+    const result = await dialog.showOpenDialog({
             title: "Import Document",
             defaultPath: doc.title + ".txt",
             filters: [
@@ -224,6 +226,7 @@ async function updateCharacter(doc) {
     return { success: false, error: err.message };
   }
 }
+
 // ---------------------------
 // Hash Helper
 // ---------------------------
@@ -242,33 +245,31 @@ function computeDocumentsHash() {
 async function loadModels() {
     try {
         console.log("Loading embedding model...");
-        embedder = await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2");
+        embedder = await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2", { token: hfToken });
         console.log("Embedding model loaded!");
 
         if (CONFIG.generationMode === "groq") {
             console.log("Loading Groq (requested) model...");
-            generator = await pipeline("text-generation", "Xenova/phi-2");
+            generator = await pipeline("text-generation", "Xenova/phi-2", { token: hfToken });
             console.log("Generator model loaded!");
         }
         if (CONFIG.generationMode === "grok") {
             console.log("Loading Grok model...");
-            generator = await pipeline("text-generation", "Xenova/phi-2");
+            generator = await pipeline("text-generation", "Xenova/phi-2", { token: hfToken });
             console.log("Generator model loaded!");
         }
         if (CONFIG.generationMode === "local") {
             console.log("Loading local text-generation model...");
-            generator = await pipeline("text-generation", "Xenova/phi-2");
+            generator = await pipeline("text-generation", "Xenova/phi-2", { token: hfToken });
             console.log("Generator model loaded!");
         }
         if (CONFIG.generationMode === "verso") {
             console.log("Loading Verso model...");
-            generator = await pipeline("text-generation", "Xenova/phi-2");
+            generator = await pipeline("text-generation", "Xenova/phi-2", { token: hfToken });
             console.log("Generator model loaded!");
         }
     } catch (err) {
-        console.error("❌ Failed to load models:", err);
-        alert("❌ Failed to load models:", err.message); // optional: show an Electron dialog or exit gracefully
-        // dialog.showErrorBox("Model Load Error", err.message);
+        console.error("❌ Failed to load models:", err.message); // optional: show an Electron dialog or exit gracefully
     }
 }
 
@@ -292,9 +293,9 @@ function getAllDocsFromInputJSON(inputFolder) {
 }
 
 async function initialize() {
+    try{
     await loadModels(); // load embedder & generator
 
-    let embeddingIndex;
     const currentHash = computeDocumentsHash();
     const hasCache = fs.existsSync(indexPath) &&
                      fs.existsSync(metaPath) &&
@@ -306,20 +307,24 @@ async function initialize() {
 
         if (savedHash === currentHash) {
             // Load cached embeddings
-            const cachedEmbeddings = JSON.parse(fs.readFileSync(indexPath, "utf-8")); //IndexFlatL2.read(indexPath);
+            const cachedEmbeddings = JSON.parse(fs.readFileSync(indexPath, "utf-8")); 
             embeddingIndex = new IndexFlatL2({ dims: embeddingDim });
+            if (embeddings.length === 0) {
+                console.warn("No embeddings generated. Index will be empty.");
+            }
             await embeddingIndex.add(cachedEmbeddings) //.add(cachedEmbeddings);
-            console.log(`⚡ Loaded cached FAISS index, ntotal: ${embeddingIndex.ntotal()}`);
+            embeddings.push(new Float32Array(emb.data));
+            console.log("⚡ Loaded cached FAISS index,Index size:", embeddingIndex?.ntotal?.());
         } else {
             // Rebuild index from existing docs
-            embeddingIndex = new Index({ type: 'HNSW', dims: embeddingDim });
-            const embeddings = [];
+            embeddingIndex = new IndexFlatL2({ dims: embeddingDim });
             for (const doc of docs) {
                 const emb = await embedder(doc.content, { pooling: "mean", normalize: true });
                 embeddings.push(Array.from(emb.data));
             }
             await embeddingIndex.add(embeddings);
-            console.log(`⚡ Rebuilt FAISS index, ntotal: ${embeddingIndex.ntotal()}`);
+            
+            console.log(`⚡ Rebuilt FAISS index, ntotal: ${embeddingIndex?.ntotal?.()}`);
         }
     } else {
         // No cache: build from scratch
@@ -327,8 +332,9 @@ async function initialize() {
             const inputFolder = path.join(__dirname, "Input_JSON");
             docs = getAllDocsFromInputJSON(inputFolder);
             console.log(`⚡ Loaded ${docs.length} documents from Input_JSON`);
-            embeddingIndex = new Index({ type: 'HNSW', dims: embeddingDim });
-            const embeddings = [];
+            embeddingIndex = new IndexFlatL2({ dims: embeddingDim });
+            //await Promise.all(docs.map(embedDoc))
+
             for (const doc of docs) {
                 // Skip anything that isn’t an object or missing content
                 if (doc && typeof doc.content === "string" && doc.content.trim() !== "") {
@@ -342,43 +348,41 @@ async function initialize() {
             console.log(`⚡ Built new FAISS index, ntotal: ${embeddingIndex.ntotal()}`);
         }catch (err) {
             console.error("FAISS search failed:", err);
-            return [];
+            return;
         }
     }
 
     // Save for next time
-    const embeddingsArray = await embeddingIndex.getAllVectors(); // pseudo-method
-    fs.writeFileSync(metaPath, JSON.stringify(docs), "utf-8");
-    fs.writeFileSync(indexPath, JSON.stringify(embeddingsArray), "utf-8");
-    fs.writeFileSync(hashPath, currentHash, "utf-8");
-
+    fs.writeFileSync(metaPath,  JSON.stringify(docs), "utf-8");
+    fs.writeFileSync(indexPath, JSON.stringify(embeddings), "utf-8");
+    fs.writeFileSync(hashPath,  currentHash, "utf-8");
+    console.log("FAISS index ready. Size:", embeddingIndex.ntotal());
     return embeddingIndex;
+    } catch {
+        throw new error("INITIALIZATION FAILED!!")
+    }
 }
 // ---------------------------
 // Retrieval
 // ---------------------------
-async function retrieveTopK(queryVector, k = 5) {
-    if (!embeddingIndex || embeddingIndex.ntotal === 0) return [];
-
-    // queryVector must be a 1D array: [0.1, 0.2, ..., 0.384]
+function retrieveTopK(queryVector, k = 5) {
+    if (!embeddingIndex || embeddingIndex.ntotal() === 0) return [];
     try {
-        const results = await embeddingIndex.search(queryVector, k);
-
+        const results = embeddingIndex.search([queryVector], k);
         if (!results?.labels) return [];
-
-        // map labels to docs
         return results.labels.map(i => docs[i]).filter(Boolean);
     } catch (err) {
         console.error("FAISS search failed:", err);
         return [];
     }
 }
+
 // ---------------------------
 // Generation
 // ---------------------------
 async function generateLocal(prompt) {
     if(generator == null){
-        loadModels();
+        await loadModels();
     }
     const result = await generator(prompt, { max_new_tokens: 200, temperature: 0.7 });
 
@@ -391,7 +395,7 @@ async function generateLocal(prompt) {
 
 async function generateVerso(prompt) {
     if(generator == null){
-        loadModels();
+        await loadModels();
     }
     const result = await generator(prompt, { max_new_tokens: 200, temperature: 0.7 });
 
@@ -442,16 +446,16 @@ async function generateGrok(model, query) {
     }
 }
 
-async function generateResponse(prompt) {
+async function generateResponse(model="grok-4-1-fast-reasoning", prompt) {
     switch (CONFIG.generationMode) {
         case "groq":
             return await generateGroq(prompt);
         case "grok":
-            return await generateLocal(prompt);
+            return await generateGrok(model, prompt);
         case "local":
             return await generateLocal(prompt);
         case "verso":
-            return await generateLocal(prompt);
+            return await generateVerso(prompt);
         default:
             return await generateGroq(prompt);
     }
@@ -473,91 +477,40 @@ function detectIntent(prompt) {
     return "text";
 }
 
-async function sendMessage(userInput) {
-    try {
-        console.log("STEP 1: received message");
-        const intent = detectIntent(userInput);
-        console.log("Intent:", intent);
-        const generator = findGenerator(intent);
+async function sendMessage(userInput, sessionId="default") {
+    if (!embeddingIndex) embeddingIndex = await initialize();
 
-        // GENERATOR PIPELINE
-        if (generator) {
-
-            console.log("Routing to generator:", generator.type);
-
-            if (generator.type === "image")
-                return await runImageModel(generator.model, userInput);
-
-            if (generator.type === "3d")
-                return await run3DModel(generator.model, userInput);
-
-            if (generator.type === "voice")
-                return await runTTS(generator.model, userInput);
-
-            if (generator.type === "video")
-                return await runVideoModel(generator.model, userInput);
-        }
-
-        // TEXT PIPELINE (RAG + LLM)
-        console.log("STEP 2: retrieving context");
-        const retrieved = await retrieveTopK(userInput, 10);
-        console.log("STEP 3: retrieved docs:", retrieved.length);
-        const context = retrieved
-            .map(d => d?.content || d?.Entry || "")
-            .filter(Boolean)
-            .join("\n");
-
-        console.log("STEP 4: building prompt");
-        const fullPrompt = context
-            ? `Context:\n${context}\n\nUser:\n${userInput}\n\nRespond naturally and helpfully.`
-            : `User:\n${userInput}\n\nRespond naturally and helpfully.`;
-
-        console.log("STEP 5: generating response");
-        const response = await generateResponse(fullPrompt);
-        console.log("STEP 6: done");
-        return response;
-    } catch (err) {
-        console.error("Error generating response:", err);
-        return null;
+    const convoPath = path.join(CONVO_DIR, sessionId + ".json");
+    let history = [];
+    if (fs.existsSync(convoPath)) {
+        history = JSON.parse(fs.readFileSync(convoPath, "utf-8"));
     }
+
+    // Append user message
+    history.push({ role: "user", content: userInput, timestamp: Date.now() });
+
+    // Retrieve context
+    const embeddingVector = await embedText(userInput);
+    let retrievedDocs = [];
+    if (embeddingIndex && embeddingIndex.ntotal() > 0) {
+        const results = embeddingIndex.search([embeddingVector], 10);
+        retrievedDocs = results.labels.map(i => docs[i]).filter(Boolean);
+    }
+
+    const context = retrievedDocs.map(d => d?.content || "").join("\n");
+    const convoContext = history.map(m => `${m.role}:\n${m.content}`).join("\n");
+
+    const fullPrompt = `${context ? "Context:\n" + context + "\n\n" : ""}${convoContext}\n\nRespond naturally and helpfully.`;
+
+    const response = await generateResponse(fullPrompt);
+
+    // Append assistant response
+    history.push({ role: "assistant", content: response, timestamp: Date.now() });
+    fs.writeFileSync(convoPath, JSON.stringify(history, null, 2), "utf-8");
+
+    return response;
 }
 
-/*async function sendMessage(userInput) {
-    try {
-        console.log("STEP 1: received message");
-
-        if (userInput.toLowerCase().includes("image")) {
-            return "IMAGE_DONE";
-        }
-        console.log("STEP 2: retrieving context");
-        const retrieved = await retrieveTopK(userInput, 10);
-
-        console.log("STEP 3: retrieved docs:", retrieved.length);
-
-        const context = retrieved
-            .map(d => d?.content || "")
-            .filter(Boolean)
-            .join("\n");
-
-        console.log("STEP 4: building prompt");
-
-        const fullPrompt = context
-            ? `Context:\n${context}\n\nUser:\n${userInput}\n\nRespond naturally and helpfully.`
-            : `User:\n${userInput}\n\nRespond naturally and helpfully.`;
-
-        console.log("STEP 5: generating response");
-
-        const response = await generateResponse(fullPrompt);
-
-        console.log("STEP 6: done");
-
-        return response;
-
-    } catch (err) {
-        console.error("Error generating response:", err);
-        return null;
-    }
-}*/
 
 // Allow dynamic updates from frontend
 function setConfig(newConfig) {
