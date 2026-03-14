@@ -1,0 +1,124 @@
+---
+title: "Chat"
+description: "Learn how to use the chat API"
+icon: "comment"
+---
+
+The chat component enables dynamic, conversational interactions with OpenAI. This endpoint allows you to send messages and receive AI-generated responses in a natural dialogue format.
+
+## Parameters
+
+- **`source`** _str_: The source of the conversation. This parameter is optional.
+- **`table`** _Optional[str]_: The name of the table to query. Optional for PostgreSQL and ClickHouse sources.
+
+## Returns
+
+Returns a Dictionary containing:
+
+- `type`: Always "chat"
+- `id`: Unique component identifier
+- `state`: Dictionary containing:
+  - `messages`: List of conversation messages
+- `config`: Dictionary containing:
+  - `source`: The source of the conversation (optional)
+  - `data`: Pandas DataFrame converted to records format (optional)
+
+## Backend Implementation Details
+
+Implemented in `services/openai.js`
+
+### Authentication
+
+- Secure API key handling via environment variables (`VITE_OPENAI_API_KEY`)
+- Error handling for authentication issues
+
+### Message Processing
+
+- Manages conversation history and context
+- Optimizes message format for API
+
+### Error Handling
+
+- Graceful fallbacks for API disruptions
+- User-friendly error messages
+
+### API Integration
+
+- OpenAI chat completions integration
+- GPT-3.5-turbo implementation
+- Conversation threading support
+
+## Basic Usage
+
+Here's a basic example of using the chat component:
+
+### CSV
+
+```python
+from preswald import chat
+
+# Display the chat widget. Make sure source is defined in preswald.toml
+chat(source="iris_csv")
+```
+
+### PostgreSQL Source
+
+For PostgreSQL sources, `table_name` is required:
+
+```python
+from preswald import chat
+
+# Read specific table from PostgreSQL
+earthquakes_df = chat('eq_pg', 'earthquake_events')
+```
+
+### ClickHouse Source
+
+Similarly for ClickHouse sources, `table_name` is required:
+
+```python
+from preswald import chat
+
+# Read specific table from ClickHouse
+events_df = chat('eq_clickhouse', 'events')
+```
+
+### Interactive Source
+
+The chat component can be used with the selectbox component to allow the datasource to be changed interactively:
+
+```python
+from preswald import chat, selectbox
+import tomllib
+
+# Get all data sources
+with open("preswald.toml", "rb") as f:
+    config = tomllib.load(f)
+
+source_list = []
+for source_path in config["data"]:
+    source_list.append(source_path)
+ 
+# Create a selectbox for choosing a column to visualize
+source_choice = selectbox(
+    label="Choose a dataset as chat source",
+    options=source_list,
+)
+
+# Create an AI chat window using the selected source!
+chat(source_choice)
+```
+
+<Frame>
+<img
+  className="block dark:hidden"
+  src="/images/chat_source_change.gif"
+  alt="Hero Light"
+/>
+</Frame>
+
+## Key Features
+
+- **Natural Conversation**: Engage in fluid, context-aware dialogues with Claude
+- **Data Integration**: Seamlessly incorporate your csv data sources into conversations
+- **State Management**: Automatic handling of conversation history and context

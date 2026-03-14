@@ -1,0 +1,53 @@
+---
+title: preswald export
+icon: "code"
+description: Build your app into a static site
+---
+
+The `export` command builds your Preswald app into a static site that can be run locally or shared with others.
+
+## Usage
+
+```bash
+preswald export
+```
+
+## What it does
+
+The export command creates a `dist/` directory containing all the files needed to run your app as a static site. This includes:
+
+- Bundled Python code (via Pyodide)
+- Application data and DuckDB queries
+- UI components and assets
+- All necessary dependencies
+
+## Features
+
+- **Offline Support**: The exported app works offline in any modern browser
+- **Complete Bundle**: Includes all Python code, data, and DuckDB queries
+- **State Preservation**: Maintains app UI, logic, and reactive state
+- **Easy Sharing**: Can be shared as a file folder or embedded in hosting platforms
+
+## Output
+
+The command generates a `dist/` directory with the following structure:
+
+```
+dist/
+├── index.html
+├── assets/
+    └── data/
+```
+
+## Use Cases
+
+- Deploying to static hosting platforms
+- Sharing your app with others
+- Running the app locally without a development server
+- Creating a standalone version of your application
+
+## Notes
+
+- The exported app maintains all functionality of the development version
+- No server-side components are required to run the exported app
+- All data processing happens client-side using Pyodide

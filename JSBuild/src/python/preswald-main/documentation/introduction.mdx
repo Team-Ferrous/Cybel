@@ -1,0 +1,59 @@
+---
+title: "Introduction"
+icon: "lightbulb"
+description: "Turn Python scripts into shareable, interactive data apps."
+---
+
+<img
+  className="block dark:hidden"
+  src="/images/banner.gif"
+  alt="Hero Light"
+/>
+
+Preswald is a static-site generator for building interactive data apps in Python. It packages compute, data access, and UI into self-contained data apps that run locally in the browser. Built on a WASM runtime with Pyodide and DuckDB, Preswald enables portable, file-based apps that are fast, reactive, and shareable.
+
+You can think of Preswald as a lightweight alternative to heavier web app platforms. It provides built-in UI components and reactive state tracking, so you can use it to build dashboards, reports, prototypes, workflows, and notebooks that are reactive, portable, and secure by default.
+
+Preswald now includes a fully automatic reactive runtime. This means you can write ordinary Python code, and Preswald will detect dependencies, track state, and trigger only the minimal set of updates needed when your data changes. No need to explicitly define which parts of your script are reactive, it's inferred automatically.
+
+## **Key Features**
+
+- Code-based development – Write apps in Python, not in notebooks or JS frameworks
+- File-first approach – One command creates a fully-packaged `.html` app
+- Built for computation – Use Pyodide + DuckDB directly in-browser
+- Composable UI – Use prebuilt components like tables, charts, forms
+- Reactive engine – Automatically tracks dependencies in your code and re-executes only what's necessary, enabling fast, precise updates
+- Local execution – No server. Runs offline, even with large data
+- AI-ready – Apps are fully inspectable and modifiable by agents
+- High-performance GPU charts – Render real-time, interactive charts using fastplotlib, with offscreen GPU acceleration and WebSocket-based streaming to the browser
+
+## Setting Up
+
+Get started with Preswald in just a few steps. Set up your environment and start building powerful, interactive data applications right away.
+
+<CardGroup cols={2}>
+  <Card
+    title="Install the SDK"
+    icon="cloud-arrow-down"
+    href="https://pypi.org/project/preswald/"
+  >
+    Run preswald locally and get everything you need to start building.
+  </Card>
+  <Card
+    title="Check out our Blog"
+    icon="book"
+    href="https://preswald.com/blog"
+  >
+    Read about how Preswald and the larger data ecosystem is evolving.
+  </Card>
+  <Card title="Book a Demo" icon="calendar" href="https://cal.com/structured">
+    Book a personalized demo to explore how Preswald can help your team.
+  </Card>
+  <Card
+    title="Explore the Codebase"
+    icon="code"
+    href="https://github.com/StructuredLabs/preswald"
+  >
+    Explore the GitHub repo to dig into the source code or contribute.
+  </Card>
+</CardGroup>
