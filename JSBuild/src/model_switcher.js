@@ -12,8 +12,14 @@ const activeStack = {
     generators: [
         { type: "image", model: "newbie"  },
         { type: "3d",    model: "sparc3d" }
-    ] //capped at 2 at a time in addition to the LLM, more models can be orchestrated)
-      // Replacing the initial two
+    ],
+    perception: [
+        { type: "ocr",    model: "paddleocr" },
+        { type: "vision", model: "llava" },
+        { type: "embed",  model: "clip" }
+    ]
+    // capped at 2 extensions per a model space at a time in addition to the LLM
+    // more models can be orchestrated, replacing the initial two.
 };
 
 let modelRegistry = {

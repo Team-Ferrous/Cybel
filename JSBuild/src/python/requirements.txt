@@ -1,5 +1,6 @@
 #Comm API/Chennel
 flask
+./agentic-file-search
 #SPARC3D_SDF Requirements
 kaolin 
 #NewBie AI Reqs
@@ -7,4 +8,12 @@ diffusers
 transformers 
 accelerate 
 safetensors 
+
+#TPU and QPU Adapters
+#pygad
+#thrml
+#oqtopus
+
+#MAYBE???
 #torch #ugh....
+#jax

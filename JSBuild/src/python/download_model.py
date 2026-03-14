@@ -30,7 +30,8 @@ def download_model():
         if "ms" in sources:
             hub.msToken = ms_token
             hub.download_modelscope_model(model_name)
-
+            
+        #Verso uses Ollama and thus doesn't need its own source function
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})

@@ -77,4 +77,10 @@ echo "🔨 Rebuilding @faiss-node/native..."
 cd $NODE_FAISS_DIR
 rm -rf build
 npm rebuild --build-from-source
-echo "🎉 FAISS Node module is ready!"
+echo "🎉 FAISS Node module is ready! Installing npm modules"
+npm install
+
+if $PIP_INSTALLED then
+    cd ../python
+    pip install -r "requirements".txt
+fi
