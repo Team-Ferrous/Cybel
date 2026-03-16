@@ -141,8 +141,8 @@ ipcMain.handle("engine:save_document", async (event, doc) => {
   return await saveDocument(doc);
 });
 
-ipcMain.handle("engine:load_document", async (event, doc) => {
-  return await loadDocument(doc);
+ipcMain.handle("engine:load_document", async () => {
+  return await loadDocument();
 });
 
 ipcMain.handle("engine:delete_document", async (event, doc) => {

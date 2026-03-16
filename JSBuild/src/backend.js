@@ -214,26 +214,59 @@ async function ingestSheets(id, rows) {
     fs.writeFileSync(indexPath, JSON.stringify(embeddings), "utf-8");
 }
 
+function chunkText(text, chunkSize = 500, overlap = 50) {
+    const words = text.split(/\s+/); // split by whitespace
+    const chunks = [];
+
+    for (let i = 0; i < words.length; i += chunkSize - overlap) {
+        const chunk = words.slice(i, i + chunkSize).join(" ");
+        chunks.push(chunk);
+    }
+
+    return chunks;
+}
+
 async function ensureDocumentDir() {
   await fs.mkdir(DOCUMENT_DIR, { recursive: true });
 }
 
 async function saveDocument(doc) {
   try {
+
     await ensureDocumentDir();
-    const filePath = path.join(DOCUMENT_DIR, doc.title + ".json");
-    await fs.promises.writeFile(filePath, JSON.stringify(doc, null, 2), "utf-8");
+
+    const result = await dialog.showSaveDialog({
+      title: "Save Document",
+      defaultPath: doc.title + ".json",
+      filters: [
+        { name: "JSON Files", extensions: ["json"] }
+      ]
+    });
+
+    if (result.canceled) {
+      return { success: false, canceled: true };
+    }
+
+    const filePath = result.filePath;
+
+    await fs.promises.writeFile(
+      filePath,
+      JSON.stringify(doc, null, 2),
+      "utf-8"
+    );
+
     return { success: true, path: filePath };
+
   } catch (err) {
+    console.error("Save error:", err);
     return { success: false, error: err.message };
   }
 }
-
-async function loadDocument(doc) {
+async function loadDocument() {
   try {
         const result = await dialog.showOpenDialog({
             title: "Import Document",
-            defaultPath: doc.title + ".txt",
+            defaultPath: "default.txt",
             filters: [
             { name: "Text, JSON, PDF Files", extensions: ["txt", "json", "pdf"] }
             ]
@@ -253,7 +286,7 @@ async function loadDocument(doc) {
             for (const doc of chunks) {
                 // Skip anything that isn’t an object or missing content
                 if (doc && typeof doc.content === "string" && doc.content.trim() !== "") {
-                    const emb = await embedder(doc, { pooling: "mean", normalize: true });
+                    const emb = await embedder(doc.content, { pooling: "mean", normalize: true });
                     embeddings.push(Array.from(emb.data));
                 } else {
                     console.warn("⚠️ Skipping doc with invalid content:", doc);

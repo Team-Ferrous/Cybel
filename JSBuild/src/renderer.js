@@ -105,13 +105,18 @@ function initModelSelects() {
     // -------------------------------
     
     document.querySelector("#saveBtn").addEventListener("click", async () => {
-        const files = await window.api.saveDocument();
+        const files = await window.api.saveDocument(selectedSlot);
         console.log(files);
     });
 
+    document.querySelector("#loadBtn").addEventListener("click", async () => {
+        const files = await window.api.loadDocument();
+        return files;
+    });
+
     document.querySelector("#mergeBtn").addEventListener("click", async () => {
-        resA  = await window.api.loadDocument("DocA");
-        resB  = await window.api.loadDocument("DocB");
+        resA  = await window.api.loadDocument();
+        resB  = await window.api.loadDocument();
         if (!confirm("Terminate this agent instance?")) return;
         const files = await window.api.mergeDocument({baseTitle: resA, mergeTitle: resB, outputTitle: (resA.name + "_output")});
         console.log(files);

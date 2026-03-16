@@ -8,7 +8,7 @@ contextBridge.exposeInMainWorld("api", {
     setContextWindowKey:  (key)  => ipcRenderer.invoke("chat:setContextWindowKey",  key),
     updateEngine:         (key)  => ipcRenderer.invoke("engine:update",             key),
     saveDocument:         (doc)  => ipcRenderer.invoke("engine:save_document",      doc),
-    loadDocument:         (doc)  => ipcRenderer.invoke("engine:load_document",      doc),
+    loadDocument:         ()  => ipcRenderer.invoke("engine:load_document"),
     deleteDocument:       (doc)  => ipcRenderer.invoke("engine:delete_document",    doc),
     replicateDocument:    (doc)  => ipcRenderer.invoke("engine:replicate_document", doc),
     mergeDocument:        (doc)  => ipcRenderer.invoke("engine:merge_document",     doc),
