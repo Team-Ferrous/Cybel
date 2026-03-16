@@ -1,0 +1,179 @@
+{
+  "schema_version": "1.0",
+  "artifact": "anvil_aes_visual_directives",
+  "profile": "v1",
+  "generated_on": "2026-03-03",
+  "owner": "Anvil",
+  "upstream_context": {
+    "aes_baseline_file": "standards/AES_SOURCE_BASELINES.md",
+    "intent": "Pin and operationalize externally referenced standards into deterministic local-model rules"
+  },
+  "directives": [
+    {
+      "directive_id": "AV1-001",
+      "title": "Normative Keyword Discipline",
+      "rationale": "AES rules depend on unambiguous requirement language. Treat MUST/SHALL as merge-blocking unless waiver metadata is present.",
+      "enforcement_targets": [
+        "prompt_generation",
+        "policy_parser",
+        "review_gate"
+      ],
+      "implementation_patterns": [
+        "Classify statements into MUST|SHOULD|MAY before execution planning.",
+        "Reject downgrading MUST to SHOULD during summarization.",
+        "Require waiver tuple: rationale + risk acceptance + approver + expiry."
+      ],
+      "verification_checks": [
+        "All normative statements are tagged with severity class.",
+        "Any MUST violation without waiver metadata fails validation.",
+        "Generated summaries preserve normative modality."
+      ],
+      "source_refs": [
+        "S01",
+        "S02"
+      ]
+    },
+    {
+      "directive_id": "AV1-002",
+      "title": "ASVS Security Verification Floor",
+      "rationale": "AES references OWASP ASVS as the baseline verification model; exposed or sensitive components need explicit ASVS-level handling.",
+      "enforcement_targets": [
+        "security_review",
+        "api_design",
+        "test_plans"
+      ],
+      "implementation_patterns": [
+        "Default externally reachable components to ASVS L2 control coverage.",
+        "Escalate authentication/authorization/high-value data paths to ASVS L3 intent.",
+        "Attach control mapping evidence to review artifacts."
+      ],
+      "verification_checks": [
+        "Security checklist includes ASVS control IDs or equivalent mapped controls.",
+        "Authentication/authorization paths include elevated assurance evidence.",
+        "Unmapped exposed endpoint is treated as policy failure."
+      ],
+      "source_refs": [
+        "S03",
+        "S04"
+      ]
+    },
+    {
+      "directive_id": "AV1-003",
+      "title": "CWE Top 25 Risk Blocking",
+      "rationale": "AES baselines require explicit mitigation for prevalent software weakness classes.",
+      "enforcement_targets": [
+        "sast_pipeline",
+        "threat_model",
+        "code_review"
+      ],
+      "implementation_patterns": [
+        "Map changed components to relevant CWE Top 25 categories.",
+        "Configure scanners to promote relevant CWE hits to blocking severity for high-assurance code.",
+        "Require mitigation note or false-positive disposition for each blocking CWE class."
+      ],
+      "verification_checks": [
+        "CWE mapping exists for every changed externally reachable module.",
+        "Blocking CWE findings cannot be auto-waived.",
+        "Mitigation status is attached to change metadata."
+      ],
+      "source_refs": [
+        "S05"
+      ]
+    },
+    {
+      "directive_id": "AV1-004",
+      "title": "NIST Control-Family Mapping",
+      "rationale": "AES requires security controls to align to a recognized catalog, with SP 800-53 Rev. 5 used as baseline.",
+      "enforcement_targets": [
+        "architecture_review",
+        "compliance_mapping",
+        "audit_artifacts"
+      ],
+      "implementation_patterns": [
+        "Tag each security requirement to at least one SP 800-53 family (AC/AU/CM/SC minimum set).",
+        "Store control-family tags in machine-readable review output.",
+        "Treat untagged high-risk controls as incomplete design evidence."
+      ],
+      "verification_checks": [
+        "Control-family tags exist for all security-critical requirements.",
+        "Audit artifacts show traceable mapping from requirement to control family.",
+        "Missing AC/AU/CM/SC consideration fails readiness check."
+      ],
+      "source_refs": [
+        "S06"
+      ]
+    },
+    {
+      "directive_id": "AV1-005",
+      "title": "Supply-Chain Provenance Minimum",
+      "rationale": "AES baselines set SLSA Level 3 provenance expectations for high-assurance outputs.",
+      "enforcement_targets": [
+        "build_pipeline",
+        "release_gate",
+        "artifact_registry"
+      ],
+      "implementation_patterns": [
+        "Emit provenance records for every release artifact with builder identity and immutable inputs.",
+        "Enforce dependency pinning and integrity metadata in lockfiles.",
+        "Preserve provenance links in release notes and audit logs."
+      ],
+      "verification_checks": [
+        "Release artifact has attached provenance attestation.",
+        "Build input digests are reproducible from recorded metadata.",
+        "Unsigned or provenance-missing critical artifact is blocked."
+      ],
+      "source_refs": [
+        "S07",
+        "S08"
+      ]
+    },
+    {
+      "directive_id": "AV1-006",
+      "title": "OpenTelemetry Structured Telemetry Baseline",
+      "rationale": "AES requires structured observability with trace context propagation and semantic consistency.",
+      "enforcement_targets": [
+        "runtime_instrumentation",
+        "logging",
+        "monitoring"
+      ],
+      "implementation_patterns": [
+        "Emit logs/metrics/traces with consistent service and operation attributes.",
+        "Propagate trace and span identifiers across service boundaries.",
+        "Use histogram metrics for latency distributions used in release gates."
+      ],
+      "verification_checks": [
+        "Telemetry events contain correlation identifiers.",
+        "Schema fields match selected semantic-convention version.",
+        "Latency gate evaluates p95/p99 from histogram-compatible metrics."
+      ],
+      "source_refs": [
+        "S09",
+        "S10"
+      ]
+    },
+    {
+      "directive_id": "AV1-007",
+      "title": "Pinned-Baseline Change Control",
+      "rationale": "AES baseline updates must be deliberate to prevent policy drift and uncontrolled enforcement changes.",
+      "enforcement_targets": [
+        "standards_governance",
+        "policy_updates",
+        "quarterly_review"
+      ],
+      "implementation_patterns": [
+        "Keep policy pins explicit (ASVS, CWE, NIST, SLSA, OpenTelemetry).",
+        "Require impact analysis and migration tickets before baseline bumps.",
+        "Record explicit cross-owner signoff for baseline changes."
+      ],
+      "verification_checks": [
+        "Baseline diff exists for each upstream version bump.",
+        "Mapped rule impacts are listed before merge.",
+        "Unsigned baseline bump is rejected."
+      ],
+      "source_refs": [
+        "S11",
+        "S12"
+      ]
+    }
+  ]
+}

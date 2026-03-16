@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "native_qsg_audit.checkpoint.v2",
+  "title": "Native QSG Audit Checkpoint",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "run_id",
+    "completed_attempt_ids",
+    "updated_at"
+  ],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "run_id": {"type": "string"},
+    "completed_attempt_ids": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "completed_lanes": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "last_attempt_id": {"type": ["string", "null"]},
+    "run_exit_reason": {"type": ["string", "null"]},
+    "last_successful_lane": {"type": ["string", "null"]},
+    "updated_at": {"type": "string"}
+  }
+}

@@ -1,0 +1,29 @@
+version: 1
+updated_at: "2026-03-12T00:00:00Z"
+description: >-
+  High-noise generated and vendored locations that shall be excluded from duplicate
+  and deadcode baselines before cleanup decisions are made.
+exclude_globs:
+  - ".anvil/**"
+  - ".saguaro/**"
+  - "_legacy_saguaro_to_remove/**"
+  - "saguaro_restored+temp/**"
+  - "build/**"
+  - "dist/**"
+  - "venv/**"
+  - "core/native/build/**"
+  - "saguaro/native/build/**"
+  - "saguaro/native/build_release/**"
+  - "saguaro/native/build_test/**"
+  - "saguaro/native/build.stale-*/**"
+  - "Saguaro/build/**"
+  - "Saguaro/.mypy_cache/**"
+  - "Saguaro/.pytest_cache/**"
+  - "Saguaro/.ruff_cache/**"
+  - "Saguaro/.saguaro/**"
+  - "Saguaro/.saguaro_repro/**"
+  - "Saguaro/.saguaro_test_parallel/**"
+  - "Saguaro/venv/**"
+  - "repo_analysis/**"
+  - "runs/**"
+  - "campaign_sample_docs/**"

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["contract_id", "required_fields", "loggers"],
+  "properties": {
+    "contract_id": {"type": "string"},
+    "required_fields": {"type": "array", "items": {"type": "string"}},
+    "loggers": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": true
+}

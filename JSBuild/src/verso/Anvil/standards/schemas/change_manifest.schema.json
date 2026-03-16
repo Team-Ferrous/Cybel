@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "run_id",
+    "changed_files",
+    "aal",
+    "domains",
+    "hot_paths",
+    "public_api_changes",
+    "dependency_changes",
+    "required_rule_ids",
+    "required_runtime_gates"
+  ],
+  "properties": {
+    "run_id": {"type": "string"},
+    "changed_files": {"type": "array", "items": {"type": "string"}},
+    "aal": {"type": "string"},
+    "domains": {"type": "array", "items": {"type": "string"}},
+    "hot_paths": {"type": "array", "items": {"type": "string"}},
+    "public_api_changes": {"type": "array", "items": {"type": "string"}},
+    "dependency_changes": {"type": "array", "items": {"type": "string"}},
+    "required_rule_ids": {"type": "array", "items": {"type": "string"}},
+    "required_runtime_gates": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": true
+}

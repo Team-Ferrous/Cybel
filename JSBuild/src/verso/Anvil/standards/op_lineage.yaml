@@ -1,0 +1,46 @@
+version: 1
+updated_at: "2026-03-12T00:00:00Z"
+default_policy:
+  compatibility_root: core/simd
+  loader_root: saguaro/native
+  authoritative_root: Saguaro/src
+  parity_required: true
+  deletion_requires:
+    - passing_build
+    - passing_loader_test
+    - passing_canary
+ops:
+  - op_id: hnn_core_helpers
+    authoritative:
+      header: Saguaro/include/saguaro/ops/hnn_core_helpers.h
+    compatibility:
+      - saguaro/native/ops/hnn_core_helpers.h
+      - core/simd/hnn_core_helpers.h
+    state: planned_authoritative_migration
+    evidence_tests:
+      - tests/test_operator_surface_contract.py
+      - tests/test_saguaro_native_cmake.py
+  - op_id: tensor_stream_pool
+    authoritative:
+      source: Saguaro/src/ops/common/tensor_stream_pool.cc
+      header: Saguaro/include/saguaro/ops/common/tensor_stream_pool.h
+    compatibility:
+      - saguaro/native/ops/common/tensor_stream_pool.cc
+      - saguaro/native/ops/common/tensor_stream_pool.h
+      - core/simd/common/tensor_stream_pool.cc
+      - core/simd/common/tensor_stream_pool.h
+    state: planned_authoritative_migration
+    evidence_tests:
+      - tests/test_operator_surface_contract.py
+  - op_id: circular_conv
+    authoritative:
+      source: Saguaro/src/ops/circular_conv_op.cc
+      header: Saguaro/include/saguaro/ops/circular_conv_op.h
+    compatibility:
+      - saguaro/native/ops/circular_conv_op.cc
+      - saguaro/native/ops/circular_conv_op.h
+      - core/simd/circular_conv_op.cc
+      - core/simd/circular_conv_op.h
+    state: planned_authoritative_migration
+    evidence_tests:
+      - tests/test_operator_surface_contract.py

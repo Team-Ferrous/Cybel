@@ -1,0 +1,15 @@
+<body>
+<h3>Paste Google Authorization Code</h3>
+
+<input id="codeBox" style="width:100%" />
+<button onclick="submitCode()">Submit</button>
+
+<script>
+const { ipcRenderer } = require('electron');
+
+function submitCode() {
+    const code = document.getElementById("codeBox").value;
+    ipcRenderer.send("google-sheets-code", code);
+}
+</script>
+</body>

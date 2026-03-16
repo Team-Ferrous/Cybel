@@ -1,0 +1,85 @@
+-- The CXX compiler identification is GNU 13.3.0
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/g++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- O-LLVM: Disabled (use -DENABLE_OLLVM=ON with Clang)
+-- Edition: ENTERPRISE (SAGUARO_EDITION=2)
+-- Detecting TensorFlow installation...
+-- Using Python from PYTHON_EXEC: /home/mike/Documents/Github/Saguaro/venv/bin/python
+2026-01-20 14:54:48.831592: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:467] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+E0000 00:00:1768946088.851580 1072901 cuda_dnn.cc:8579] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+E0000 00:00:1768946088.858079 1072901 cuda_blas.cc:1407] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+W0000 00:00:1768946088.874431 1072901 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1768946088.874452 1072901 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1768946088.874454 1072901 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1768946088.874456 1072901 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+2026-01-20 14:54:48.878633: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+/home/mike/Documents/Github/Saguaro/venv/lib/python3.12/site-packages/keras/src/export/tf2onnx_lib.py:8: FutureWarning: In the future `np.object` will be defined as the corresponding NumPy scalar.
+  if not hasattr(np, "object"):
+2026-01-20 14:54:53.299330: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:467] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+E0000 00:00:1768946093.319113 1073008 cuda_dnn.cc:8579] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+E0000 00:00:1768946093.325353 1073008 cuda_blas.cc:1407] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+W0000 00:00:1768946093.341323 1073008 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1768946093.341344 1073008 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1768946093.341346 1073008 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1768946093.341348 1073008 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+2026-01-20 14:54:53.345597: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+/home/mike/Documents/Github/Saguaro/venv/lib/python3.12/site-packages/keras/src/export/tf2onnx_lib.py:8: FutureWarning: In the future `np.object` will be defined as the corresponding NumPy scalar.
+  if not hasattr(np, "object"):
+2026-01-20 14:54:57.992830: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:467] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+E0000 00:00:1768946098.012539 1073233 cuda_dnn.cc:8579] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+E0000 00:00:1768946098.018845 1073233 cuda_blas.cc:1407] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+W0000 00:00:1768946098.034349 1073233 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1768946098.034370 1073233 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1768946098.034373 1073233 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1768946098.034374 1073233 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+2026-01-20 14:54:58.038498: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+/home/mike/Documents/Github/Saguaro/venv/lib/python3.12/site-packages/keras/src/export/tf2onnx_lib.py:8: FutureWarning: In the future `np.object` will be defined as the corresponding NumPy scalar.
+  if not hasattr(np, "object"):
+-- TensorFlow include: /home/mike/Documents/Github/Saguaro/venv/lib/python3.12/site-packages/tensorflow/include
+-- TensorFlow cflags: -I/home/mike/Documents/Github/Saguaro/venv/lib/python3.12/site-packages/tensorflow/include -D_GLIBCXX_USE_CXX11_ABI=1 --std=c++17 -DEIGEN_MAX_ALIGN_BYTES=64
+-- TensorFlow lflags: -L/home/mike/Documents/Github/Saguaro/venv/lib/python3.12/site-packages/tensorflow -l:libtensorflow_framework.so.2
+-- SIMD: Using CPU-detected flags from environment: -O3 -mavx2 -mfma
+-- Controllers: Enabled (spdlog required)
+-- LTO: Enabled
+-- Anti-Debug: Disabled
+-- Found OpenMP_CXX: -fopenmp (found version "4.5") 
+-- Found OpenMP: TRUE (found version "4.5")  
+-- OpenMP: Enabled
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE  
+-- spdlog: Found via CMake package
+-- LAPACK: Disabled (use -DENABLE_LAPACK=ON for 4x matrix inversion)
+-- HPO Orchestrator: Enabled
+-- Symbol Stripping: Enabled (Release build)
+-- 
+-- === Saguaro Build Configuration ===
+-- Version:         1.0.0
+-- Edition:         ENTERPRISE (code=2)
+-- Architecture:    x86_64
+-- Build Type:      Release
+-- LTO:             ON
+-- Production:      OFF
+-- Anti-Debug:      OFF
+-- Strip Symbols:   ON
+-- Output:          /home/mike/Documents/Github/Saguaro/saguaro/native/bin/x86_64/_saguaro_core.so
+-- 
+-- Configuring done (14.2s)
+-- Generating done (0.0s)
+CMake Warning:
+  Manually-specified variables were not used by the project:
+
+    CPU_OPT_FLAGS
+    ENABLE_TBB
+
+
+-- Build files have been written to: /home/mike/Documents/Github/Saguaro/saguaro/native/build

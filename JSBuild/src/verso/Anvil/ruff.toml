@@ -1,0 +1,56 @@
+[lint]
+ignore = ["ANN003", "ANN202", "ANN205", "ANN401", "D205"]
+select = [
+  "E",
+  "W",
+  "ANN",
+  "I",
+  "C901",
+  "BLE",
+  "S102",
+  "S307",
+  "S105",
+  "S106",
+  "S107",
+  "B006",
+  "F401",
+  "F841",
+  "N",
+  "D",
+  "SIM105",
+  "S",
+  "B",
+  "RET",
+  "SIM",
+  "UP",
+]
+
+[lint.mccabe]
+max-complexity = 10
+
+[lint.pydocstyle]
+convention = "google"
+
+[lint.isort]
+known-first-party = ["core", "cli", "tools", "agents", "config", "domains", "saguaro"]
+
+[lint.per-file-ignores]
+"cli/repl.py" = ["E402"]
+"core/agent.py" = ["E402"]
+"core/agents/debugger.py" = ["E402"]
+"core/agents/planner_agent.py" = ["E402"]
+"core/agents/tester.py" = ["E402"]
+"core/native/**" = ["ANN", "D"]
+"core/loops/analysis_loop.py" = ["E402"]
+"core/multi_agent_gatherer.py" = ["E402"]
+"core/unified_chat_loop.py" = ["E402"]
+"scripts/run_analysis.py" = ["E402"]
+"saguaro/**" = ["ANN", "D", "BLE001", "C901", "E501", "S", "B", "RET", "SIM", "UP", "N", "I001", "E402"]
+"saguaro/agents/scribe.py" = ["E501"]
+"saguaro/native/**" = ["ANN", "D", "E501"]
+"saguaro/ops/**" = ["ANN", "D", "E501"]
+"tests/**" = ["S101", "ANN", "D"]
+"tests/test_native_engine_repro.py" = ["E402"]
+"tests/test_repetition_tracker.py" = ["E402"]
+"tools/web_search.py" = ["E402"]
+"scripts/**" = ["ANN", "D"]

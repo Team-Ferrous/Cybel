@@ -22,6 +22,7 @@ class InstanceEngine {
    */
   async spawn(config) {
 
+    let vstAuth = new VestAuthClient();
     if (this.instances.has(config.id)) {
       return { success: false, error: "Instance already exists" };
     }
@@ -33,7 +34,7 @@ class InstanceEngine {
     let providerToken = null;
 
     if (config.secretKey) {
-      providerToken = await VestAuthClient.get(config.secretKey);
+      providerToken = await vstAuth.get(config.secretKey);
     }
 
     const instance = {
@@ -56,16 +57,22 @@ class InstanceEngine {
     return this.instances.get(id);
   }
 
-  delete(id) {
+  async destroy(id) {
     const inst = this.instances.get(id);
-    if (!inst) return;
+    
+    if (!inst) {
+        return { success:false, error:"Instance not found" };
+    }
 
-    // Optionally free FAISS memory
-    if (inst.faissIndex) inst.faissIndex.reset();
+    if (inst.shutdown) {
+        await inst.shutdown();
+    }
 
-    this.instances.delete(id);
+    this.inst.delete(id);
+
+    return { success:true };
   }
-
+  
   /**
    * Ingest a set of documents into an instance's FAISS index
    */
@@ -82,6 +89,7 @@ class InstanceEngine {
   }
 
   async spawnAgent(config) {
+    let vstAuth = new VestAuthClient();
     const agent = {
         id: config.id,
         model: config.model || "mistral7b",
@@ -89,8 +97,8 @@ class InstanceEngine {
     };
 
     // Persist settings
-    await vest.set(`${agent.id}:model`, agent.model);
-    await vest.set(`${agent.id}:systemPrompt`, agent.systemPrompt);
+    //await vstAuth.set(`${agent.id}_model`, agent.model);
+    //await vstAuth.set(`${agent.id}_systemPrompt`, agent.systemPrompt);
     return agent;
 }
 

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["baseline_id", "result_id", "regression_percent"],
+  "properties": {
+    "baseline_id": {"type": "string"},
+    "result_id": {"type": "string"},
+    "regression_percent": {"type": "number"}
+  },
+  "additionalProperties": true
+}

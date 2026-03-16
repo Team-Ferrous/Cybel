@@ -1,0 +1,72 @@
+schema_version: native_qsg_suite.v1
+profile_name: calibrate
+models:
+  - granite4:tiny-h
+  - qwen3.5:4b
+  - qwen3.5:9b
+max_parallel_models: 1
+strict_host: true
+require_saguaro: true
+require_perf: true
+host_contract_id: auto
+affinity_policy: certified_exact
+tuning_contract_policy: generate
+preflight_strictness: optimize
+canonical_decode_threads:
+  - null
+canonical_batch_threads:
+  - null
+scenario_pack:
+  canonical_prompt: "In 3-4 sentences, explain how AVX2 and OpenMP improve CPU LLM inference throughput and latency, using concrete mechanisms, cache locality, KV reuse, and avoiding repetition."
+  canonical_max_new_tokens: 32
+  canonical_context_length: 2048
+  warmup_runs: 1
+  measured_runs: 3
+  thread_matrix_ubatch: [16, 32, 64]
+  continuous_concurrency: []
+  continuous_prompt_classes: []
+  continuous_scheduler_policies: []
+kernel_microbench:
+  warmups: 0
+  iterations: 0
+  synthetic_lengths: []
+  target_kernels: []
+quality_eval:
+  perplexity_corpus: benchmarks/corpora/perplexity_corpus.jsonl
+  confidence_corpus: benchmarks/corpora/confidence_corpus.jsonl
+  rubric_corpus: benchmarks/corpora/coherence_rubric.jsonl
+  accuracy_corpus: benchmarks/corpora/accuracy_corpus.jsonl
+  max_samples_per_family: 0
+calibration_search:
+  bootstrap_profile: probe
+  search_profile: search
+  deep_search_profile: deep_search
+  stage1_top_k: 3
+  stage2_top_k: 2
+  scheduler_top_k: 2
+  max_scheduler_candidates: 12
+  fairness_floor: 0.9
+  queue_wait_p95_ceiling_ms: 200.0
+  decode_tps_regression_floor_pct: 0.92
+  continuous_max_active_requests: [1, 2, 4, 8]
+  continuous_batch_wait_timeout_ms: [1, 2, 4]
+  continuous_state_page_rows: [64, 128, 256]
+  continuous_max_prefill_rows_per_iteration: [512, 1024]
+  continuous_interleaved_streams: [false, true]
+  probe_kernel_iterations: 0
+  search_kernel_iterations: 24
+  deep_search_kernel_iterations: 64
+kernel_microbench:
+  warmups: 4
+  iterations: 24
+  synthetic_lengths: [32, 64, 128]
+  target_kernels:
+    - attention_proj
+    - attention_decode
+    - ffn_gate_up
+    - lm_head
+host_requirements:
+  cpu_governor: performance
+  thp_modes: [never, madvise]
+  min_visible_threads: 1
+  enforce_min_visible_threads: false

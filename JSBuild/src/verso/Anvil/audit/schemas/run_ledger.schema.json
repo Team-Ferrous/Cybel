@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "native_qsg_audit.run_ledger.v1",
+  "title": "Native QSG Run Ledger",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run_id",
+    "generated_at",
+    "lifecycle",
+    "events",
+    "artifact_states"
+  ],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "run_id": {"type": "string"},
+    "generated_at": {"type": "string"},
+    "lifecycle": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": ["state", "artifact"],
+        "properties": {
+          "state": {"type": "string"},
+          "artifact": {"type": "string"},
+          "timestamp": {"type": "string"},
+          "ok": {"type": "boolean"}
+        }
+      }
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "schema_version",
+          "run_id",
+          "timestamp",
+          "level",
+          "source",
+          "event_type",
+          "phase",
+          "lane",
+          "attempt_id",
+          "model",
+          "message"
+        ],
+        "properties": {
+          "schema_version": {"type": "string"},
+          "run_id": {"type": "string"},
+          "timestamp": {"type": "string"},
+          "level": {"type": "string"},
+          "source": {"type": "string"},
+          "event_type": {"type": "string"},
+          "phase": {"type": "string"},
+          "lane": {"type": "string"},
+          "attempt_id": {"type": "string"},
+          "model": {"type": "string"},
+          "message": {"type": "string"},
+          "payload": {"type": "object"}
+        }
+      }
+    },
+    "artifact_states": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "exists", "bytes", "sha256", "question", "required"],
+        "properties": {
+          "path": {"type": "string"},
+          "exists": {"type": "boolean"},
+          "bytes": {"type": "integer"},
+          "sha256": {"type": "string"},
+          "question": {"type": "string"},
+          "required": {"type": "boolean"}
+        }
+      }
+    },
+    "reducer_state": {"type": "object"},
+    "node_receipts": {"type": "array", "items": {"type": "object"}}
+  }
+}

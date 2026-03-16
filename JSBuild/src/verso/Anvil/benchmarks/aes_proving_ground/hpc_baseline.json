@@ -1,0 +1,6 @@
+{
+  "domain": "hpc",
+  "case": "scalar_vector_parity",
+  "max_abs_error": 1e-06,
+  "required_evidence_fields": ["trace_id", "evidence_bundle_id", "scalar_total", "simd_total", "abs_error"]
+}

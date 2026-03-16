@@ -80,7 +80,47 @@ npm rebuild --build-from-source
 echo "🎉 FAISS Node module is ready! Installing npm modules"
 npm install
 
-if $PIP_INSTALLED then
-    cd ../python
-    pip install -r "requirements".txt
-fi
+#if $PIP_INSTALLED then
+cd ../python
+pip install -r "requirements".txt
+#fi
+
+#if $GET_VERSO then
+sudo apt update
+sudo apt install -y \
+build-essential \
+libssl-dev \
+zlib1g-dev \
+libbz2-dev \
+libreadline-dev \
+libsqlite3-dev \
+curl \
+llvm \
+libncurses5-dev \
+libncursesw5-dev \
+xz-utils \
+tk-dev \
+libffi-dev \
+liblzma-dev \
+git
+
+curl https://pyenv.run | bash
+echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bashrc
+echo 'export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc
+echo 'eval "$(pyenv init -)"' >> ~/.bashrc
+source ~/.bashrc
+
+# Install Anvil
+pyenv install 3.12.2
+pyenv global  3.12.2
+cd  ./verso/anvil/
+pip install -r "requirements".txt
+python scripts/install_cli_shims.py --force
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc  
+source ~/.bashrc 
+
+# Build Saguaro
+cd  ./Saguaro
+pip install -r "requirements".txt
+./build_secure.sh
+#fi

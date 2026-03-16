@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "native_qsg_audit.phase_trace.v1",
+  "title": "Native QSG Audit Phase Trace",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "run_id",
+    "attempt_id",
+    "phase",
+    "duration_ms",
+    "calls",
+    "extra"
+  ],
+  "properties": {
+    "run_id": {"type": "string"},
+    "attempt_id": {"type": "string"},
+    "phase": {"type": "string"},
+    "duration_ms": {"type": "number"},
+    "calls": {"type": "integer"},
+    "extra": {"type": "object"}
+  }
+}

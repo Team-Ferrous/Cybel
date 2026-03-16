@@ -63,7 +63,7 @@
                             <h4 class="text-lg font-bold text-amber-400 mb-1">Character</h4>
                             <p class="text-xs text-gray-400">Roleplay enabled. The AI adopts a specific persona, backstory, and will.</p>
                         </div>
-                        <div onclick="selectBotType('agent')" id="type-agent" class="type-card p-4 rounded-lg cursor-pointer hover:bg-accent40">
+                        <div onclick="selectBotType('utility')" id="type-utility" class="type-card p-4 rounded-lg cursor-pointer hover:bg-accent/40">
                             <h4 class="text-lg font-bold text-accent mb-1">Utility</h4>
                             <p class="text-xs text-gray-400">Utility mode. Direct, factual responses without simulated personality.</p>
                         </div>
@@ -233,12 +233,12 @@
                             </div>
                             <div class="flex items-center gap-4 mt-2 text-xs text-amber-400">
                                 <label class="flex items-center gap-1">
-                                    <input type="checkbox" id="source-hf" checked>
+                                    <input id="hfBox" type="checkbox" id="source-hf" checked>
                                     HuggingFace
                                 </label>
 
                                 <label class="flex items-center gap-1">
-                                    <input type="checkbox" id="source-ms">
+                                    <input id="msBox" type="checkbox" id="source-ms">
                                     ModelScope
                                 </label>
                             </div>
@@ -254,6 +254,12 @@
                             <div>
                                 <p class="text-xs text-amber-400 mt-2">API Token (High Noon)</p>
                                 <input id="api-token-input" placeholder="Enter your token" class="w-full text-xs">
+                            </div>
+                            <div class="flex items-center gap-4 mt-2 text-xs text-amber-400">
+                                <label class="flex items-center gap-1">
+                                    <input type="checkbox" id="source-hf" checked>
+                                    Use Saguaro API
+                                </label>
                             </div>
                             <div>
                                 <button id="login-token" class="w-full mt-2 py-2 bg-amber-600/20 hover:bg-blue-600/40 text-amber-500 border border-amber-600/50 rounded text-xs font-bold transition-colors">
@@ -701,35 +707,42 @@
 
                 <div class="glass-panel p-6 rounded-xl border-green-900/30 bg-accent/80">
                     <div class="section-title text-accent">Active Bots</div>
+                    <p>Selected: <span id="selected-bot">None</span></p>
                     <div class="grid grid-cols-3 gap-4">
-                        <button id="saveBtn" class="SaveLoadOption py-3 px-4 border border-green-800/50 hover:bg-green-900/40 text-green-300 font-mono text-xs font-bold transition-all rounded backdrop-blur-sm"  onclick="window.api.saveDocument()">SAVE</button>
-                        <button id="loadBtn" class="SaveLoadOption py-3 px-4 border border-green-800/50 hover:bg-green-900/40 text-green-300 font-mono text-xs font-bold transition-all rounded backdrop-blur-sm"  onclick="window.api.loadDocument()">LOAD</button>
-                        <button id="mergeBtn" class="SaveLoadOption py-3 px-4 border border-green-800/50 hover:bg-green-900/40 text-green-300 font-mono text-xs font-bold transition-all rounded backdrop-blur-sm" onclick="window.api.mergeDocument()">MERGE</button>
+                        <button id="saveBtn"  class="SaveLoadOption py-3 px-4 border border-green-800/50 hover:bg-green-900/40 text-green-300 font-mono text-xs font-bold transition-all rounded backdrop-blur-sm">SAVE</button>
+                        <button id="loadBtn"  class="SaveLoadOption py-3 px-4 border border-green-800/50 hover:bg-green-900/40 text-green-300 font-mono text-xs font-bold transition-all rounded backdrop-blur-sm">LOAD</button>
+                        <button id="mergeBtn" class="SaveLoadOption py-3 px-4 border border-green-800/50 hover:bg-green-900/40 text-green-300 font-mono text-xs font-bold transition-all rounded backdrop-blur-sm">MERGE</button>
+
+                        <!-- Ingest row -->
+                        <button id="ingestBtn"
+                            class="col-span-3 py-3 px-4 border border-green-800/50 hover:bg-green-900/40 text-green-300 font-mono text-xs font-bold transition-all rounded backdrop-blur-sm">
+                            INGEST (Google Drive / Sheets)
+                        </button>
                     </div>
                 </div>
                 <br>
                 <div class="bot-grid">
-                    <div onclick="openCreateBotModal()" class="py-3 px-4 border border-accent/50 card glass-panel p-4">
+                    <div onclick="setSelectedSlot('bot1')" id="bot1" class="py-3 px-4 border border-accent/50 card glass-panel p-4">
                         <div class="card-header">
                             <div class="bot-icon">🤖</div>
                             <div class="status-dot"></div>
                         </div>
-                        <div class="agent-tag">CHATBOT</div>
+                        <div class="agent-tag">CHARACTER</div>
                         <div class="bot-name">CYBEL</div>
                         <div class="bot-desc">An archaic intelligence woven from silicon and shadow; a statesman of the void who speaks with the weight of a dying sun and the measured pause of a veteran orator.</div>
                         <div class="card-footer">
-                            <button class="icon-btn">></button>
-                            <button class="icon-btn">📋</button>
-                            <button class="icon-btn">🗑️</button>
-                            <button class="launch-btn">LAUNCH</button>
+                            <button onclick="switchTab('chat')" class="icon-btn">></button>
+                            <!--<button class="icon-btn">📋</button>-->
+                            <button onclick="deleteBot('bot1', this.parentElement.parentElement)" class="icon-btn">🗑️</button>
+                            <button onclick="openCreateBotModal('bot1')" class="launch-btn">CONFIG</button>
                         </div>
                     </div>
                     
-                    <div onclick="openCreateBotModal()" class="p-4 border-b border-accent/50 empty-slot glass-panel">
+                    <div id="bot2" onclick="setSelectedSlot('bot2')" class="p-4 border-b border-accent/50 empty-slot glass-panel">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M12 5v14M5 12h14"/>
                         </svg>
-                        <span>Empty Slot</span>
+                        <span onclick="openCreateBotModal('bot2')" >Empty Slot</span>
                     </div>
                     <!--<div class=" p-4 border-b border-accent/50 card glass-panel">
                         <div class="card-header">
@@ -747,18 +760,18 @@
                         </div>
                     </div>-->
 
-                    <div onclick="openCreateBotModal()" class="p-4 border-b border-accent/50 empty-slot glass-panel">
+                    <div id="bot3" onclick="setSelectedSlot('bot3')" class="p-4 border-b border-accent/50 empty-slot glass-panel">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M12 5v14M5 12h14"/>
                         </svg>
-                        <span>Empty Slot</span>
+                        <span onclick="openCreateBotModal('bot3')">Empty Slot</span>
                     </div>
 
-                    <div onclick="openCreateBotModal()" class="p-4 border-b border-accent/50 empty-slot glass-panel">
+                    <div id="bot4" onclick="setSelectedSlot('bot4')"  class="p-4 border-b border-accent/50 empty-slot glass-panel">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M12 5v14M5 12h14"/>
                         </svg>
-                        <span>Empty Slot</span>
+                        <span onclick="openCreateBotModal('bot4')">Empty Slot</span>
                     </div>
                 </div>
 
@@ -791,6 +804,7 @@
                         <label class="agent-label text-accent font-mono">Model</label>
                         <div class="model-row">
                             <select id="groq-select" class="agent-select agent-model">
+                                <option class="text-accent font-mono">None</option>
                                 <option class="text-accent font-mono">openai/gpt-oss-20b</option>
                                 <option class="text-accent font-mono">openai/gpt-oss-120b</option>
                                 <option class="text-accent font-mono">llama-3.1-8b-instant</option>
@@ -820,9 +834,30 @@
                                 <option class="text-accent font-mono">Noro-Hermes-3x7B-GGUF</option> 
                                 <option class="text-accent font-mono">HeroBophades-3x7B</option>
                             </select>
-                            <label class="local-toggle text-accent font-mono">
-                                <input type="checkbox" class="local-model-toggle">
-                                Use Local Model
+                            <select id="verso-select" class="agent-select agent-model">
+                                    <option>PolyoxyDev/granite4-obsidian-tiny-h</option>
+                                    <option>jbaptistedaniel/search-ai-qwen3.5-4B-V2-q4</option>
+                                    <option>kwangsuklee/Qwen3.5-9B-Claude-4.6-Opus-Reasoning-Distilled-GGUF</option>
+                                    <option>Anvil</option>
+                            </select>
+                            <select id="grok-select" class="agent-select agent-model">
+                                <option>grok-4-1-fast-reasoning
+                                <option>grok-4-1-fast-non-reasoning</option>
+                                <option>grok-4-fast-reasoning</option>
+                                <option>grok-4-fast-non-reasoning</option>
+                                <option>grok-4-0709</option>
+                                <option>grok-3-mini</option>
+                                <option>grok-3</option>
+                                <option>grok-code-fast-1</option>
+                            </select>
+                            <label class="text-accent font-mono">
+                                <input type="checkbox" class="local-model-toggle"> Use Local Model
+                            </label>
+                            <label class="text-accent font-mono">
+                                <input type="checkbox" class="verso-model-toggle"> Use Saguaro Toolbox
+                            </label>
+                            <label class="text-accent font-mono">
+                                <input type="checkbox" class="grok-model-toggle"> Use Grok
                             </label>
                         </div>
                         <label class="agent-label text-accent font-mono">System Prompt</label>

@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "native_qsg_audit.evidence_capsule.v1",
+  "title": "Native QSG Audit Evidence Capsule",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "sequence_id",
+    "tool_run_id",
+    "source",
+    "command",
+    "cwd",
+    "exit_code",
+    "wall_time_ms",
+    "user_time_ms",
+    "sys_time_ms",
+    "max_rss_mb",
+    "stdout_path",
+    "stderr_path",
+    "artifact_paths",
+    "failing_tests",
+    "compiler_diagnostics",
+    "benchmark_metrics",
+    "summary",
+    "latent_feedback_projection",
+    "replay",
+    "stdout_sha256",
+    "stderr_sha256",
+    "result_hash"
+  ],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "sequence_id": {"type": "integer", "minimum": 1},
+    "tool_run_id": {"type": "string"},
+    "source": {"type": "string"},
+    "command": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "cwd": {"type": "string"},
+    "exit_code": {"type": "integer"},
+    "wall_time_ms": {"type": "number", "minimum": 0},
+    "user_time_ms": {"type": ["number", "null"], "minimum": 0},
+    "sys_time_ms": {"type": ["number", "null"], "minimum": 0},
+    "max_rss_mb": {"type": ["number", "null"], "minimum": 0},
+    "stdout_path": {"type": ["string", "null"]},
+    "stderr_path": {"type": ["string", "null"]},
+    "artifact_paths": {
+      "type": "object",
+      "additionalProperties": {"type": "string"}
+    },
+    "failing_tests": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "compiler_diagnostics": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "benchmark_metrics": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "summary": {"type": ["string", "null"]},
+    "latent_feedback_projection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "status_markers",
+        "scalar_metrics",
+        "symbolic_markers",
+        "summary_features"
+      ],
+      "properties": {
+        "schema_version": {"type": "string"},
+        "status_markers": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "scalar_metrics": {
+          "type": "object",
+          "additionalProperties": {"type": ["number", "null"]}
+        },
+        "symbolic_markers": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "summary_features": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "summary_sha256",
+            "summary_token_count",
+            "failing_test_count",
+            "compiler_diagnostic_count"
+          ],
+          "properties": {
+            "summary_sha256": {"type": ["string", "null"]},
+            "summary_token_count": {"type": "integer", "minimum": 0},
+            "failing_test_count": {"type": "integer", "minimum": 0},
+            "compiler_diagnostic_count": {"type": "integer", "minimum": 0}
+          }
+        }
+      }
+    },
+    "replay": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "checkpoint_metadata_path",
+        "flight_recorder_timeline_path",
+        "terminal_transcript_path",
+        "inspectable_without_model"
+      ],
+      "properties": {
+        "checkpoint_metadata_path": {"type": ["string", "null"]},
+        "flight_recorder_timeline_path": {"type": ["string", "null"]},
+        "terminal_transcript_path": {"type": ["string", "null"]},
+        "inspectable_without_model": {"type": "boolean"}
+      }
+    },
+    "stdout_sha256": {"type": "string"},
+    "stderr_sha256": {"type": "string"},
+    "result_hash": {"type": "string"}
+  }
+}

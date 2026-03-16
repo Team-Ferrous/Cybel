@@ -1,0 +1,24 @@
+{
+  "schema_version": "comparative_benchmark_suite.v1",
+  "suites": [
+    {
+      "name": "small_local",
+      "target": ".",
+      "candidates": [],
+      "fleet_root": "repo_analysis/include-what-you-use-master",
+      "top_k": 4,
+      "ttl_hours": 24.0,
+      "batch_sizes": [64],
+      "iterations": 1
+    },
+    {
+      "name": "medium_fleet",
+      "target": ".",
+      "fleet_root": "repo_analysis",
+      "top_k": 6,
+      "ttl_hours": 24.0,
+      "batch_sizes": [128],
+      "iterations": 1
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["contract_id", "version", "inputs", "outputs", "error_schema"],
+  "properties": {
+    "contract_id": {"type": "string"},
+    "version": {"type": "string"},
+    "inputs": {"type": "array", "items": {"type": "string"}},
+    "outputs": {"type": "array", "items": {"type": "string"}},
+    "error_schema": {"type": "string"}
+  },
+  "additionalProperties": true
+}

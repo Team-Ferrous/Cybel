@@ -1,0 +1,6 @@
+{
+  "domain": "physics",
+  "case": "symplectic_integrator",
+  "max_relative_energy_drift": 0.0005,
+  "required_evidence_fields": ["evidence_bundle_id", "energy_drift", "invariant_status"]
+}

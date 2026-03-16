@@ -1,0 +1,82 @@
+schema_version: native_qsg_suite.v1
+profile_name: gold
+models:
+  - granite4:tiny-h
+  - qwen3.5:4b
+  - qwen3.5:9b
+max_parallel_models: 1
+strict_host: true
+require_saguaro: true
+require_perf: true
+host_contract_id: auto
+affinity_policy: certified_exact
+tuning_contract_policy: required
+preflight_strictness: certify
+assurance_level: AAL-2
+evidence_class: certification
+force_parallel_decode: true
+forbid_autoregressive_fallback: true
+enabled_lanes:
+  - canonical_all_on
+  - continuous_scheduler
+  - kernel_microbench
+  - quality_eval
+canonical_decode_threads:
+  - null
+canonical_batch_threads:
+  - null
+scenario_pack:
+  canonical_prompt: "In 3-4 sentences, explain how AVX2 and OpenMP improve CPU LLM inference throughput and latency, using concrete mechanisms, cache locality, KV reuse, and avoiding repetition."
+  canonical_max_new_tokens: 32
+  canonical_context_length: 2048
+  warmup_runs: 1
+  measured_runs: 3
+  thread_matrix_ubatch: [32]
+  continuous_concurrency: [1, 2, 4, 8]
+  continuous_prompt_classes: [short, medium, long]
+  continuous_scheduler_policies: [fcfs, priority]
+kernel_microbench:
+  warmups: 8
+  iterations: 128
+  synthetic_lengths: [32, 64, 128, 256]
+  target_kernels:
+    - embedding_lookup
+    - attention_proj
+    - attention_rope_kv
+    - attention_decode
+    - attention_out_proj
+    - ffn_gate_up
+    - ffn_down
+    - ssm_projection
+    - ssm_conv
+    - ssm_recurrent
+    - ssm_output
+    - lm_head
+    - sanitize
+quality_eval:
+  perplexity_corpus: benchmarks/corpora/perplexity_corpus.jsonl
+  confidence_corpus: benchmarks/corpora/confidence_corpus.jsonl
+  rubric_corpus: benchmarks/corpora/coherence_rubric.jsonl
+  accuracy_corpus: benchmarks/corpora/accuracy_corpus.jsonl
+  max_samples_per_family: 0
+calibration_search:
+  bootstrap_profile: probe
+  search_profile: search
+  deep_search_profile: deep_search
+  stage1_top_k: 3
+  stage2_top_k: 2
+  scheduler_top_k: 2
+  max_scheduler_candidates: 12
+  fairness_floor: 0.9
+  queue_wait_p95_ceiling_ms: 200.0
+  decode_tps_regression_floor_pct: 0.92
+  continuous_batch_wait_timeout_ms: [1, 2, 4]
+  continuous_state_page_rows: [64, 128, 256]
+  continuous_max_prefill_rows_per_iteration: [512, 1024]
+  continuous_interleaved_streams: [false, true]
+  search_kernel_iterations: 24
+host_requirements:
+  cpu_governor: performance
+  thp_modes: [never, madvise]
+  min_visible_threads: 1
+  enforce_min_visible_threads: false

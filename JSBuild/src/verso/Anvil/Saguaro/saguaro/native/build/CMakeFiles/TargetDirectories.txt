@@ -1,0 +1,9 @@
+/home/mike/Documents/Github/Saguaro/saguaro/native/build/CMakeFiles/saguaro_core.dir
+/home/mike/Documents/Github/Saguaro/saguaro/native/build/CMakeFiles/hpo_main.dir
+/home/mike/Documents/Github/Saguaro/saguaro/native/build/CMakeFiles/hpo_main_lib.dir
+/home/mike/Documents/Github/Saguaro/saguaro/native/build/CMakeFiles/edit_cache.dir
+/home/mike/Documents/Github/Saguaro/saguaro/native/build/CMakeFiles/rebuild_cache.dir
+/home/mike/Documents/Github/Saguaro/saguaro/native/build/CMakeFiles/list_install_components.dir
+/home/mike/Documents/Github/Saguaro/saguaro/native/build/CMakeFiles/install.dir
+/home/mike/Documents/Github/Saguaro/saguaro/native/build/CMakeFiles/install/local.dir
+/home/mike/Documents/Github/Saguaro/saguaro/native/build/CMakeFiles/install/strip.dir

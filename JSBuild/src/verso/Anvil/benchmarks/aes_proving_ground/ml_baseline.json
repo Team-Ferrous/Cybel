@@ -1,0 +1,6 @@
+{
+  "domain": "ml",
+  "case": "stable_softmax",
+  "max_abs_sum_error": 1e-06,
+  "required_evidence_fields": ["trace_id", "evidence_bundle_id", "run_metadata"]
+}

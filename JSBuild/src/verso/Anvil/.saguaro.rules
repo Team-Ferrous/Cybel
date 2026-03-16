@@ -1,0 +1,95 @@
+rules:
+  - id: AES-CR-ROOT-1
+    pattern: "except:\\s*pass"
+    severity: P0
+    message: "Bare except:pass violates AES Cleanroom mandate (no symptom masking)."
+    scope: "**/*.py"
+    closure_level: blocking
+    enforcement_kind: native
+    requires_artifact: false
+
+  - id: AES-ML-FINITE
+    pattern: "optimizer\\.step\\(\\)"
+    negative_lookahead: "isfinite|is_finite|finite_check|torch\\.isfinite"
+    severity: P1
+    message: "optimizer.step() without nearby finite check violates AES-ML-1."
+    scope: "**/*.py"
+    closure_level: blocking
+    enforcement_kind: native
+    requires_artifact: false
+
+  - id: AES-ERR-SILENT
+    pattern: "return\\s+None\\s*$"
+    severity: P2
+    message: "Returning None in exception paths may mask errors (AES-ERR-1)."
+    scope: "**/*.py"
+    closure_level: guarded
+    enforcement_kind: native
+    requires_artifact: false
+
+  - id: AES-PERF-CHRONICLE
+    pattern: "#\\s*PERF:"
+    negative_lookahead: "Chronicle|baseline"
+    severity: P2
+    message: "Performance-tagged code should reference Chronicle baseline/protocol."
+    scope: "**/*.py"
+    closure_level: guarded
+    enforcement_kind: native
+    requires_artifact: false
+
+  - id: AES-SUP-INTEGRITY
+    pattern: "^[A-Za-z0-9_.-]+(?:==|>=|<=|~=).*(?!--hash)"
+    severity: P2
+    message: "Dependencies should include hash verification for high-assurance paths."
+    scope: "requirements*.txt"
+    closure_level: guarded
+    enforcement_kind: native
+    requires_artifact: true
+
+  - id: AES-SUP-PROVENANCE
+    pattern: "(?i)(release|build|workflow)"
+    negative_lookahead: "provenance|attestation|slsa|sbom"
+    severity: P1
+    message: "Release/build workflows require provenance or attestation markers."
+    scope: ".github/workflows/*"
+    closure_level: blocking
+    enforcement_kind: native
+    requires_artifact: true
+
+  - id: AES-SUP-SIGNING
+    pattern: "(?i)(release|publish|artifact)"
+    negative_lookahead: "cosign|sigstore|gpg|minisign|sign"
+    severity: P1
+    message: "Release workflows should include artifact-signing controls."
+    scope: ".github/workflows/*"
+    closure_level: blocking
+    enforcement_kind: native
+    requires_artifact: true
+
+  - id: AES-WAIVER-METADATA
+    pattern: "waiver_id:\\s*[A-Za-z0-9_-]+"
+    negative_lookahead: "risk_owner|expiry|remediation_ticket"
+    severity: P1
+    message: "Waiver metadata must include owner, expiry, and remediation linkage."
+    scope: "standards/waivers/*.yaml"
+    closure_level: blocking
+    enforcement_kind: native
+    requires_artifact: true
+
+  - id: AES-REDTEAM-UNRESOLVED
+    pattern: "(?i)status:\\s*(open|unresolved|critical)"
+    severity: P1
+    message: "Unresolved red-team findings block closure for high-assurance changes."
+    scope: "artifacts/red_team/*"
+    closure_level: blocking
+    enforcement_kind: native
+    requires_artifact: true
+
+  - id: AES-HIGH-AAL-FALLBACK
+    pattern: "(?i)AAL-(0|1).*fallback|fallback.*AAL-(0|1)"
+    severity: P1
+    message: "Unsafe high-AAL fallback behavior detected."
+    scope: "**/*.py"
+    closure_level: blocking
+    enforcement_kind: native
+    requires_artifact: false

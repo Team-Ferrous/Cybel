@@ -1,0 +1,12 @@
+Metadata-Version: 2.4
+Name: anvil
+Version: 0.1.0
+Summary: Anvil Agent with HighNoon Native Acceleration
+Author: Anvil Team
+Requires-Dist: numpy
+Requires-Dist: jsonschema
+Requires-Dist: requests
+Requires-Dist: pyyaml
+Dynamic: author
+Dynamic: requires-dist
+Dynamic: summary

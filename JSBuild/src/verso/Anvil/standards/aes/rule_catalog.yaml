@@ -1,0 +1,363 @@
+catalog_version: 1
+authoritative_package_root: saguaro
+excluded_reference_roots:
+  - Saguaro/
+legacy_seed_path: standards/aes/rule_seed_legacy.json
+defaults:
+  source_version: v2
+  precedence: 100
+  selectors: {}
+  parameters: {}
+  required_artifacts: []
+  waiverable: false
+  rollout_stage: ratchet
+  engine_execution_modes:
+    agent: static
+    aes: static
+    native: static
+    ruff: static
+    semantic: static
+    human: manual
+  status_by_severity:
+    AAL-0: blocking
+    AAL-1: blocking
+    AAL-2: guarded
+    AAL-3: advisory
+groups:
+  - name: traceability
+    match_prefixes: [AES-TR]
+    section_title: Traceability And Evidence
+    source_refs:
+      - aes_analysis/v2/deep-research-report v2.md#traceability
+      - aes_analysis/v1/AES_Primary.md#verification-obligations
+    execution_mode: artifact
+    rollout_stage: ratchet
+    status: blocking
+    required_artifacts:
+      - traceability.json
+      - evidence_bundle.json
+    waiverable: true
+  - name: reviews
+    match_prefixes: [AES-REV]
+    section_title: Review And Closure
+    source_refs:
+      - aes_analysis/v2/deep-research-report v2.md#independent-review
+      - standards/review_matrix.yaml
+    execution_mode: workflow_gate
+    rollout_stage: ratchet
+    status: blocking
+    required_artifacts:
+      - evidence_bundle.json
+      - review_matrix.yaml
+    waiverable: true
+  - name: architecture
+    match_prefixes: [AES-ARCH]
+    section_title: Architecture Governance
+    source_refs:
+      - aes_analysis/v2/deep-research-report v2.md#architecture
+      - aes_analysis/v2/Anvil Engineering Standard v2.txt#architecture
+    execution_mode: workflow_gate
+    rollout_stage: ratchet
+    status: advisory
+  - name: prompt-governance
+    match_prefixes: [AES-PRM]
+    section_title: Prompt Governance
+    source_refs:
+      - aes_analysis/v2/deep-research-report v2.md#operating-model
+      - standards/traceability/PROMPT_TO_RULE_MAP.yaml
+    execution_mode: workflow_gate
+    rollout_stage: ratchet
+    status: advisory
+  - name: corrective-engineering
+    match_prefixes: [AES-CR]
+    section_title: Correctness
+    source_refs:
+      - aes_analysis/v2/deep-research-report v2.md#error-handling
+    execution_mode: static
+  - name: complexity
+    match_prefixes: [AES-CPLX, AES-ERR, AES-PY]
+    section_title: Core Language Controls
+    source_refs:
+      - aes_analysis/v2/deep-research-report v2.md#error-handling
+      - aes_analysis/v1/AES_Primary.md#coding-standards
+    execution_mode: static
+  - name: security
+    match_prefixes: [AES-SEC, AES-SUP]
+    section_title: Security And Supply Chain
+    source_refs:
+      - aes_analysis/v2/deep-research-report v2.md#supply-chain
+      - standards/AES_SOURCE_BASELINES.md
+    execution_mode: static
+  - name: cpp-hpc
+    match_prefixes: [AES-CPP, AES-HPC]
+    section_title: Cpp And HPC
+    source_refs:
+      - aes_analysis/v2/deep-research-report v2.md#hpc
+      - aes_analysis/v1/AES_Primary.md#hpc
+    execution_mode: static
+  - name: ml-domain
+    match_prefixes: [AES-ML]
+    section_title: Ml Domain
+    source_refs:
+      - aes_analysis/v2/deep-research-report v2.md#ml
+      - standards/domain_rules/ml.md
+    execution_mode: static
+  - name: quantum-domain
+    match_prefixes: [AES-QC]
+    section_title: Quantum Domain
+    source_refs:
+      - aes_analysis/v2/deep-research-report v2.md#quantum
+      - standards/domain_rules/quantum.md
+    execution_mode: static
+  - name: physics-domain
+    match_prefixes: [AES-PHYS]
+    section_title: Physics Domain
+    source_refs:
+      - aes_analysis/v2/deep-research-report v2.md#physics
+      - standards/domain_rules/physics.md
+    execution_mode: static
+  - name: agent-ops
+    match_prefixes: [AES-AG, AES-OBS]
+    section_title: Agent Operations
+    source_refs:
+      - aes_analysis/v2/deep-research-report v2.md#operations
+      - prompts/GEMINI.md
+    execution_mode: runtime_gate
+    rollout_stage: ratchet
+    status: advisory
+    required_artifacts:
+      - runtime_gates.json
+overrides:
+  AES-VIS-1:
+    title: Visual Governance Packs Present
+    source_refs:
+      - aes_analysis/v2/deep-research-report v2.md#visual-governance
+      - aes_visuals/v1/directives.json
+      - aes_visuals/v2/directives.json
+    execution_mode: artifact
+    status: blocking
+    required_artifacts:
+      - aes_visuals/v1/directives.json
+      - aes_visuals/v2/directives.json
+  AES-VIS-2:
+    title: Visual Governance Packs Valid
+    source_refs:
+      - aes_analysis/v2/deep-research-report v2.md#visual-governance
+    execution_mode: artifact
+    status: blocking
+    required_artifacts:
+      - aes_visuals/v1/directives.json
+      - aes_visuals/v2/directives.json
+  AES-TR-1:
+    title: Traceability Ledger Required
+  AES-TR-2:
+    title: Evidence Bundle Required
+  AES-TR-3:
+    title: Waivers Must Be Valid
+    required_artifacts:
+      - standards/waivers
+  AES-REV-1:
+    title: Independent Review Required
+    execution_mode: workflow_gate
+    status: blocking
+    engine: human
+  AES-ARCH-1:
+    title: Runtime Enforcement Over Prompt Prose
+  AES-ARCH-2:
+    title: Unified Hook Bus
+  AES-ARCH-3:
+    title: Legacy Paths As Adapters
+  AES-ARCH-4:
+    title: Machine Readable Rule Loading
+    execution_mode: static
+    check_function: core.aes.checks.metadata_checks.check_catalog_authority
+  AES-PRM-1:
+    title: Prompt Contracts Are Provenance Only
+  AES-CR-1:
+    title: Root Cause Fixes Over Masking
+    check_function: core.aes.checks.metadata_checks.check_no_silent_fallback_markers
+  AES-CR-2:
+    title: No Bare Except
+  AES-CR-3:
+    title: No Silent Verification Bypass
+    check_function: core.aes.checks.metadata_checks.check_no_verification_bypass_markers
+    pattern: null
+  AES-CPLX-1:
+    title: Complexity Bound
+    parameters:
+      threshold_key: complexity
+  AES-ERR-1:
+    title: Public Error Contract
+    execution_mode: static
+    check_function: core.aes.checks.api_contract_checks.check_public_api_contract_markers
+    status: advisory
+    selectors:
+      exclude_path_prefixes:
+        - saguaro/native/
+        - core/native/
+        - saguaro/ops/
+      include_path_tokens:
+        - api
+        - routes
+        - service
+      public_export_marker: __all__
+      surface: public_error_contracts
+  AES-ERR-2:
+    title: Suspicious None Return
+    execution_mode: static
+    check_function: core.aes.checks.universal_checks.check_suspicious_exception_none_returns
+    pattern: null
+  AES-SEC-1:
+    title: No Hardcoded Secrets
+  AES-SEC-2:
+    title: Security Sensitive Paths Hardened
+  AES-SEC-3:
+    title: Threat Model And Provenance Markers
+  AES-SUP-1:
+    title: Explicit Dependency Pins
+    execution_mode: static
+    check_function: core.aes.checks.supply_chain_checks.check_dependency_locking
+    status: blocking
+  AES-SUP-2:
+    title: Dependency Hashes Required
+    execution_mode: static
+    check_function: core.aes.checks.supply_chain_checks.check_dependency_locking
+    status: blocking
+  AES-SUP-3:
+    title: Provenance Markers Required
+    execution_mode: workflow_gate
+    status: advisory
+    required_artifacts:
+      - sbom.json
+  AES-SUP-4:
+    title: Signing Markers Required
+    execution_mode: workflow_gate
+    status: advisory
+    required_artifacts:
+      - sbom.json
+  AES-PY-1:
+    title: Public APIs Typed
+    selectors:
+      exclude_path_prefixes:
+        - saguaro/native/
+        - core/native/
+        - saguaro/ops/
+      surface: public_python_functions
+  AES-PY-2:
+    title: Ruff Baseline
+  AES-PY-3:
+    title: No Mutable Defaults
+  AES-PY-4:
+    title: No Dynamic Execution
+    status: blocking
+  AES-PY-5:
+    title: No Wildcard Imports
+    status: guarded
+  AES-PY-6:
+    title: Context Managed File Access
+    status: guarded
+  AES-CPP-1:
+    title: Manual Cpp Safety Review
+    source_version: v1-supplement
+    status: advisory
+  AES-CPP-2:
+    title: No Using Namespace Std In Headers
+    check_function: core.aes.checks.architecture_checks.check_header_namespace_pollution
+    status: blocking
+  AES-CPP-3:
+    title: Raii Required
+    status: blocking
+  AES-CPP-4:
+    title: Nodiscard Error Returns
+    source_version: v1-supplement
+    status: blocking
+  AES-CPP-5:
+    title: No C Style Casts
+    status: blocking
+  AES-ML-1:
+    title: Finite Gradient Gate
+    pattern: null
+  AES-ML-2:
+    title: Stable Numerics
+  AES-ML-4:
+    title: Data Validation
+  AES-ML-5:
+    title: Reproducibility Manifest
+    execution_mode: runtime_gate
+    status: advisory
+    required_artifacts:
+      - domain_reports/ml_run_manifest.json
+  AES-QC-2:
+    title: No Magic Angles
+  AES-QC-3:
+    title: Noise Model Present
+    execution_mode: runtime_gate
+    status: advisory_pending_threshold
+    required_artifacts:
+      - domain_reports/quantum_report.json
+  AES-QC-4:
+    title: Transpilation Required
+    execution_mode: runtime_gate
+    status: advisory
+    required_artifacts:
+      - domain_reports/quantum_report.json
+  AES-QC-5:
+    title: Shot Sufficiency
+    source_version: v1-supplement
+    execution_mode: runtime_gate
+    status: advisory_pending_threshold
+    required_artifacts:
+      - domain_reports/quantum_report.json
+  AES-HPC-1:
+    title: OpenMP Parallel Regions Tagged
+  AES-HPC-2:
+    title: Alignment Contracts
+    status: blocking
+  AES-HPC-3:
+    title: Explicit OpenMP Clauses
+    status: blocking
+  AES-HPC-4:
+    title: Scalar Oracle Exists
+    source_version: v1-supplement
+    execution_mode: runtime_gate
+    status: advisory
+    required_artifacts:
+      - domain_reports/hpc_report.json
+  AES-PHYS-1:
+    title: Conservation Monitors
+    execution_mode: runtime_gate
+    status: advisory
+    required_artifacts:
+      - domain_reports/physics_report.json
+  AES-PHYS-3:
+    title: Symplectic Integrator
+    source_version: v1-supplement
+    execution_mode: runtime_gate
+    status: advisory_pending_threshold
+    required_artifacts:
+      - domain_reports/physics_report.json
+  AES-AG-1:
+    title: Compliance Context Persisted
+    required_artifacts:
+      - change_manifest.json
+      - runtime_gates.json
+  AES-AG-2:
+    title: Chronicle Gate
+    required_artifacts:
+      - chronicle.json
+  AES-AG-3:
+    title: Runtime Gate Completion
+    required_artifacts:
+      - runtime_gates.json
+  AES-OBS-1:
+    title: Telemetry Contract
+    check_function: core.aes.checks.telemetry_checks.check_traceability_markers
+    execution_mode: runtime_gate
+    status: advisory
+    required_artifacts:
+      - telemetry_contract.json
+  AES-OBS-2:
+    title: Structured Operational Logging
+    check_function: core.aes.checks.telemetry_checks.check_operational_logging_markers
+    execution_mode: runtime_gate
+    status: advisory

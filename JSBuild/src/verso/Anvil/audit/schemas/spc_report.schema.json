@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "native_qsg_audit.spc_report.v1",
+  "title": "Native QSG SPC Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run_id",
+    "generated_at",
+    "compare_to",
+    "topology_hash",
+    "history_runs_considered",
+    "status",
+    "drift_alert",
+    "models"
+  ],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "run_id": {"type": "string"},
+    "generated_at": {"type": "string"},
+    "compare_to": {"type": "string"},
+    "topology_hash": {"type": "string"},
+    "host_fingerprint": {"type": "string"},
+    "history_runs_considered": {"type": "integer"},
+    "cohort_type": {"type": "string"},
+    "status": {"type": "string"},
+    "drift_alert": {"type": "boolean"},
+    "models": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["model", "history_count", "decode_tps_p50", "ttft_ms_p95"],
+        "properties": {
+          "model": {"type": "string"},
+          "history_count": {"type": "integer"},
+          "decode_tps_p50": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["current", "ewma", "cusum", "alert"],
+            "properties": {
+              "current": {"type": "number"},
+              "ewma": {"type": "number"},
+              "cusum": {"type": "number"},
+              "alert": {"type": "boolean"}
+            }
+          },
+          "ttft_ms_p95": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["current", "ewma", "cusum", "alert"],
+            "properties": {
+              "current": {"type": "number"},
+              "ewma": {"type": "number"},
+              "cusum": {"type": "number"},
+              "alert": {"type": "boolean"}
+            }
+          }
+        }
+      }
+    }
+  }
+}

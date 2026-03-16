@@ -1,0 +1,20 @@
+[
+  {
+    "tokens": 316,
+    "time": 72.0708954334259,
+    "context_size": 32768,
+    "tier": "extreme",
+    "model": "granite4:tiny-h",
+    "throughput": 4.384571581907136,
+    "timestamp": 1769223710.6040158
+  },
+  {
+    "tokens": 97,
+    "time": 39.34445023536682,
+    "context_size": 32768,
+    "tier": "extreme",
+    "model": "granite4:tiny-h",
+    "throughput": 2.465404889882194,
+    "timestamp": 1769230385.0363464
+  }
+]

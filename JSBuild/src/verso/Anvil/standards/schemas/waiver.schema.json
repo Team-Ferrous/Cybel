@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AES Waiver",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "waiver_id",
+    "rule_id",
+    "change_scope",
+    "compensating_control",
+    "risk_owner",
+    "expiry",
+    "remediation_ticket"
+  ],
+  "properties": {
+    "waiver_id": {"type": "string", "minLength": 1},
+    "rule_id": {"type": "string", "minLength": 1},
+    "change_scope": {"type": "string", "minLength": 1},
+    "compensating_control": {"type": "string", "minLength": 1},
+    "risk_owner": {"type": "string", "minLength": 1},
+    "expiry": {"type": "string", "minLength": 1},
+    "remediation_ticket": {"type": "string", "minLength": 1}
+  }
+}

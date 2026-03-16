@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "native_qsg_audit.closure_result.v1",
+  "title": "Native QSG Closure Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run_id",
+    "generated_at",
+    "overall_pass",
+    "artifacts",
+    "runtime_gates",
+    "saguaro_verify",
+    "required_questions",
+    "unresolved"
+  ],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "run_id": {"type": "string"},
+    "generated_at": {"type": "string"},
+    "advisory_only": {"type": "boolean"},
+    "overall_pass": {"type": "boolean"},
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "exists"],
+        "properties": {
+          "path": {"type": "string"},
+          "exists": {"type": "boolean"}
+        }
+      }
+    },
+    "runtime_gates": {"type": "object"},
+    "saguaro_verify": {"type": "object"},
+    "required_questions": {"type": "array", "items": {"type": "string"}},
+    "unresolved": {"type": "array", "items": {"type": "string"}}
+  }
+}

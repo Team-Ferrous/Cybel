@@ -1,0 +1,4 @@
+# AES verification and generative testing dependencies
+hypothesis>=6.120.0
+atheris>=2.3.0; platform_system == "Linux" and python_version >= "3.8"
+jsonschema>=4.26

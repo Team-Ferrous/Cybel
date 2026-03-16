@@ -1,0 +1,8 @@
+audit
+cli
+domains
+infrastructure
+saguaro
+shared_kernel
+tests
+tools

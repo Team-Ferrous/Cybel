@@ -1,0 +1,199 @@
+# Deep Research Prompt: Unified Anvil Standards & Guidelines
+
+> **Purpose**: Copy this entire prompt into ChatGPT Deep Research or Gemini Deep Research to generate a comprehensive, unified coding standards document for the Anvil agent system.
+
+---
+
+## System Instruction
+
+You are a senior systems-engineering standards architect. Your task is to produce a **single, unified coding standards and governance document** called **"The Anvil Engineering Standard" (AES)**.
+
+This document must **synthesize** the governing principles from the standards listed below — not simply list them. The output should be a coherent, domain-adapted rulebook that an AI coding agent named **Anvil** will follow when writing, reviewing, auditing, and maintaining code in these domains:
+
+- **General Software Engineering** (Python 3.12+, C++17, systems programming)
+- **Deep Learning / Machine Learning** (training loops, gradient integrity, numerical stability, model architecture)
+- **Quantum Computing** (quantum circuits, VQC, quantum error correction, hybrid classical-quantum systems)
+- **Physics Simulation** (numerical methods, conservation laws, symmetry enforcement)
+- **High-Performance Computing** (SIMD/AVX2, CPU-first design, OpenMP, memory alignment, cache discipline)
+
+The Anvil agent operates as a multi-agent system with a semantic code intelligence layer called **Saguaro**. It performs code understanding, generation, auditing, and autonomous task execution for large repositories.
+
+---
+
+## Source Standards To Synthesize
+
+Research each of these deeply. Extract the principles, adapt them to software engineering for the domains above, and merge them into a single coherent framework. **Do not just list what each standard says — synthesize a unified rulebook.**
+
+### Tier 1: Currently Used (Foundation)
+
+| Standard | Source | Key Principles to Extract |
+|---|---|---|
+| **NASA-STD-8739.8B** | NASA Software Assurance & Safety Standard (2022) | Systematic assurance, IV&V, safety classification, defect prevention |
+| **NASA NPR 7150.2D** | NASA Software Engineering Requirements | Full traceability (requirement → design → code → test → result), FTA, FMEA |
+| **DO-178C** | RTCA/FAA Avionics Certification | Development Assurance Levels (DAL-A through DAL-E), structural coverage, zero dead code, MC/DC coverage |
+| **FIA F1 Telemetry** | FIA Technical Regulations + real F1 telemetry practice | Real-time telemetry, compounding metrics, saturation monitoring, low-latency iteration |
+| **Google SRE** | Site Reliability Engineering (O'Reilly) | Golden Signals (latency, throughput, errors, saturation), SLOs, error budgets, toil reduction |
+| **CMMI Level 5** | SEI / Raytheon practice | Quantitative process management, statistical evidence for claims, continuous improvement |
+| **IBM Cleanroom** | IBM Research | Defect prevention over defect masking, statistical testing, correctness verification |
+| **JEDEC** | JESD47/JESD22 reliability standards | Statistical rigor for qualification, verification closure, confidence intervals |
+
+### Tier 2: Additional Standards to Research and Incorporate
+
+| Standard | Key Principles to Extract |
+|---|---|
+| **MISRA C/C++** | Safe subset of C/C++, undefined behavior prevention, defensive coding patterns |
+| **CERT C/C++ Secure Coding** | Security-focused coding rules, buffer safety, integer overflow prevention |
+| **ISO 26262** (Automotive Safety) | ASIL levels → adapt to software severity, safety lifecycle, fault analysis |
+| **IEC 61508** (Functional Safety) | Safety integrity levels, systematic capability, random hardware fault tolerance concepts adapted to software |
+| **IEEE 730** (Software Quality Assurance) | SQA plans, process assurance, product assurance, quality metrics |
+| **IEEE 12207** (Software Life Cycle Processes) | Standard software lifecycle phases, supply/acquirer/developer/maintenance/operation processes |
+| **OWASP ASVS** (Application Security Verification Standard) | Security verification levels (L1-L3), security requirements checklist |
+| **CWE Top 25** | Most dangerous software weaknesses — map to prevention rules |
+| **NIST SP 800-53** | Security controls catalog — extract coding-relevant controls |
+| **SEI CERT Oracle Coding Standard for Java** (adapt patterns) | Secure coding patterns — adapt principles to Python |
+| **PEP 8 + PEP 484 + PEP 526** | Python coding conventions, type hinting requirements |
+| **C++ Core Guidelines** (Stroustrup/Sutter) | Modern C++ best practices, resource management, type safety |
+| **Google C++ Style Guide** | Practical C++ conventions, naming, include order, exception handling |
+| **Google Python Style Guide** | Python conventions, docstrings, type annotations, imports |
+| **ML-specific**: Google's ML Test Score, ML Engineering Best Practices | Testing ML systems, monitoring, data validation, model validation |
+| **Quantum-specific**: IBM Qiskit Best Practices, Cirq patterns | Quantum circuit design patterns, noise-aware programming, transpilation discipline |
+| **Numerical Computing**: IEEE 754, Kahan summation, Higham's accuracy rules | Floating-point discipline, error propagation, numerical stability |
+| **AUTOSAR Adaptive** (Software Architecture) | Component-based architecture, service interfaces, deterministic execution |
+
+### Tier 3: Cross-Cutting Concerns
+
+| Topic | What to Research |
+|---|---|
+| **Technical Debt Management** | SQALE model, Fowler's debt taxonomy, refactoring discipline |
+| **Code Review Standards** | Google's code review practices, Conventional Comments, review checklists |
+| **Documentation Standards** | Diátaxis framework (tutorials/how-to/reference/explanation), API doc completeness |
+| **Error Handling Philosophy** | Erlang's "let it crash", Go's explicit error handling, Rust's Result type — derive a unified philosophy |
+| **Observability** | OpenTelemetry, structured logging, distributed tracing, metrics taxonomy |
+| **Dependency Management** | Supply chain security (SLSA, Sigstore), dependency pinning, vulnerability scanning |
+| **Concurrency Safety** | Thread safety verification, lock-free patterns, data race prevention |
+| **API Design** | Hyrum's Law, Postel's Law, API stability contracts, semantic versioning |
+
+---
+
+## Output Requirements
+
+### Structure the Document As:
+
+```
+1. PREAMBLE
+   - Purpose and scope
+   - Domains governed (general, DL/ML, quantum, physics, HPC)
+   - How to read this document (mandatory vs. advisory vs. aspirational)
+
+2. SEVERITY & ASSURANCE FRAMEWORK
+   - Unified severity levels (synthesize DAL + ASIL + SIL into one coherent system)
+   - Verification requirements per severity level
+   - When to apply each level
+
+3. UNIVERSAL CODING MANDATES
+   - Rules that apply to ALL code, regardless of language or domain
+   - Traceability requirements
+   - Complexity bounds
+   - Error handling philosophy
+   - Documentation requirements
+   - Security baseline
+
+4. LANGUAGE-SPECIFIC STANDARDS
+   4a. Python Standards
+   4b. C/C++ Standards  
+   4c. Quantum Circuit Standards (Qiskit/Cirq patterns)
+
+5. DOMAIN-SPECIFIC STANDARDS
+   5a. Deep Learning / ML Standards
+       - Training loop integrity
+       - Gradient verification
+       - Numerical stability
+       - Data pipeline validation
+       - Model versioning and reproducibility
+   5b. Quantum Computing Standards
+       - Circuit design discipline
+       - Noise-aware programming
+       - Classical-quantum interface rules
+   5c. Physics Simulation Standards
+       - Conservation law verification
+       - Symmetry enforcement
+       - Numerical method selection criteria
+   5d. High-Performance Computing Standards
+       - CPU-first / SIMD-first rules
+       - Memory alignment and cache discipline
+       - Concurrency and threading rules
+
+6. VERIFICATION & TESTING FRAMEWORK
+   - Test taxonomy (unit, integration, property-based, fuzz, benchmark)
+   - Coverage requirements per severity level
+   - ML-specific testing (data tests, model tests, infrastructure tests)
+   - Quantum-specific testing (simulator validation, noise model testing)
+
+7. OBSERVABILITY & TELEMETRY
+   - Golden Signals adapted per domain
+   - Mandatory metrics
+   - Alerting thresholds
+   - Performance baselining
+
+8. AGENT WORKFLOW GOVERNANCE
+   - Rules for AI coding agents specifically
+   - Code generation guardrails
+   - Self-verification requirements
+   - Red-team / self-correction protocols
+
+9. CODE REVIEW & CHANGE MANAGEMENT
+   - Review requirements per severity level
+   - Change risk assessment
+   - Regression gates
+
+10. ANTI-PATTERNS REGISTRY
+    - Explicitly forbidden patterns per domain
+    - Common failure modes
+    - "Never do this" examples with rationale
+
+11. APPENDICES
+    - Quick-reference checklists
+    - Severity decision tree
+    - Glossary of synthesized terms
+```
+
+### Quality Requirements:
+
+1. **Synthesize, don't concatenate.** The output should read as ONE standard, not a list of summaries. When NASA and DO-178C both say "traceability," merge them into one Anvil rule with the strictest interpretation.
+
+2. **Be prescriptive, not advisory.** Use "MUST", "SHALL", "MUST NOT" (RFC 2119 language) for mandatory rules. Use "SHOULD" for strong recommendations. Use "MAY" for optional guidance.
+
+3. **Include rationale.** For every major rule, include a one-line rationale explaining WHY, citing the source standard(s).
+
+4. **Be concrete.** Don't say "use appropriate error handling." Say "All public functions MUST return errors explicitly. Exception: constructors may raise. All error paths MUST be tested. [Source: CERT C, Google Style, IBM Cleanroom]."
+
+5. **Include code examples** where they clarify a rule (especially for numerical stability, SIMD patterns, and quantum circuits).
+
+6. **Target length**: 8,000-15,000 words. Comprehensive but scannable.
+
+7. **Format**: Markdown with tables, code blocks, and clear heading hierarchy.
+
+---
+
+## Context: What Anvil Looks Like Today
+
+The agent currently uses these concepts (keep them, evolve them):
+
+- **DAL-based verification hierarchy**: DAL-A for SIMD kernels, DAL-B for Python training, DAL-C for config/tooling, DAL-D for docs
+- **Golden Signals**: Latency (step_time, TTFT, P50/P95/P99), Throughput (tokens/sec, GFLOPS), Errors (non-finite, gradient failures), Saturation (thread util, SIMD coverage, RSS)
+- **Traceability**: requirement → design → code → test → verification result
+- **Severity matrix**: P0 (catastrophic / DAL-A) through P3 (docs / DAL-D)
+- **CPU-first, SIMD-first compute** for all hot paths
+- **Complexity mandate**: O(1)/O(log n)/O(n) preferred; O(n²)+ in hot paths prohibited
+- **Zero dead code** policy
+- **Cleanroom philosophy**: fix root cause, never mask symptoms
+- **Chronicle protocol**: baseline metrics → change → result metrics logged
+- **Red-team protocol**: complexity check, FMEA, FTA, OWASP, regression gate
+
+Evolve and strengthen these. Don't discard them.
+
+---
+
+## Final Instruction
+
+Produce the complete "Anvil Engineering Standard (AES)" document. Make it the kind of document that, if an AI agent follows it perfectly, would produce code rivaling the quality standards of NASA flight software, while remaining practical for a fast-moving research & development project in deep learning and quantum computing.

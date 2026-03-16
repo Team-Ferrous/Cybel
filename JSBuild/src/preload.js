@@ -15,30 +15,18 @@ contextBridge.exposeInMainWorld("api", {
     exportDocument:       (doc)  => ipcRenderer.invoke("engine:export_document",    doc),
     updateCharacter:      (character) => ipcRenderer.invoke("engine:updateCharacter", character),
     spawnInstance: (config) => ipcRenderer.invoke("engine:spawn_instance", config),
-    openFileDialog: () => ipcRenderer.invoke('open-file-dialog'),
-    saveFileDialog: () => ipcRenderer.invoke('save-file-dialog'),
-    DecodeRawDirectory: (dir) =>
-      ipcRenderer.invoke('decode-directory', {
-        dir,
-        options: { mode: "raw" }
-    }),
-    DecodeChatDirectory: (dir) =>
-      ipcRenderer.invoke('decode-directory', {
-        dir,
-        options: { mode: "chat", includeMetadata: true }
-    }),
     ingestDocuments:    (paths)              => ipcRenderer.invoke("rag:ingest", paths),
     ingestGoogleSheets: (spreadsheetId)      => ipcRenderer.invoke("ingest-google-sheet", spreadsheetId).then(res => console.log("Ingest result:", res)).catch(err => console.error(err)),
     engineIngestChats:  (instanceId, files)  => ipcRenderer.invoke("engine:ingest_documents", { instanceId, files }),
     loadModel: (modelName)                   => ipcRenderer.invoke("engine:loadModel", { modelName }),
-
-    // AGENT WORKFLOW
+    openGDDialog: ()                         => ipcRenderer.invoke("open-gdrive-dialog"),
+    getEngineInstance: ()                    => ipcRenderer.invoke("engine:getEngineInstance"),
     spawnAgent: (config)                   => ipcRenderer.invoke("engine:spawnAgent", config),
     getAgent: (id)                         => ipcRenderer.invoke("engine:getAgent",       id),
     attachAgent: (id, agent)               => ipcRenderer.invoke("engine:attachAgent", id, agent),
     queryAgent:  (id, vector, k)           => ipcRenderer.invoke("engine:queryAgent",              id, vector, k),
     ingestAgentDocuments: (id, docs)       => ipcRenderer.invoke("engine:ingestDocuments", id, docs),
-    generateAgentResponse: ()              => ipcRenderer.invoke("engine:generateAgentResponse", agent.model, fullPrompt),
+    generateAgentResponse: (agentId, model, prompt)               => ipcRenderer.invoke("engine:generateAgentResponse", agentId, model, prompt),
     hfLogin: ()                            => ipcRenderer.invoke('hf-login'),
     msLogin: ()                            => ipcRenderer.invoke('ms-login'),
   });

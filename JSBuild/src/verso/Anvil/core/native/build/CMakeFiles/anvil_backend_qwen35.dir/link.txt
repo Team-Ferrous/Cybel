@@ -1,0 +1,1 @@
+/usr/bin/c++ -fPIC -O3 -DNDEBUG -flto=auto -fno-fat-lto-objects -shared  -o libanvil_backend_qwen35.so CMakeFiles/anvil_backend_qwen35.dir/split/backends/qwen35/backend_module.cpp.o  -Wl,-rpath,"\$ORIGIN:\$ORIGIN/build:/home/mike/Documents/Github/Anvil/core/native/build" libanvil_runtime_core.so 

@@ -1,0 +1,78 @@
+name: C++ Safety Gates
+
+on:
+  pull_request:
+    branches: ["main", "master"]
+  push:
+    branches: ["main", "master"]
+
+jobs:
+  asan-ubsan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Build Tooling
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake build-essential ninja-build
+
+      - name: Configure ASan/UBSan
+        run: |
+          cmake -S core/native -B build/native-asan \
+            -G Ninja \
+            -DENABLE_SANITIZERS=ON \
+            -DSANITIZERS=address,undefined
+
+      - name: Build ASan/UBSan
+        run: cmake --build build/native-asan
+
+  tsan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Build Tooling
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake build-essential ninja-build
+
+      - name: Configure TSan
+        run: |
+          cmake -S core/native -B build/native-tsan \
+            -G Ninja \
+            -DENABLE_SANITIZERS=ON \
+            -DSANITIZERS=thread
+
+      - name: Build TSan
+        run: cmake --build build/native-tsan
+
+  static-analysis:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Static Analysis Tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cppcheck clang-tidy
+
+      - name: Run cppcheck
+        run: |
+          cppcheck --enable=warning,style,performance,portability \
+            --error-exitcode=1 \
+            --std=c++17 \
+            core/native
+
+      - name: Run clang-tidy (best-effort)
+        run: |
+          FILES=$(find core/native -name '*.cpp' -o -name '*.cc' -o -name '*.cxx')
+          if [ -n "$FILES" ]; then
+            clang-tidy $FILES -- -std=c++17
+          fi

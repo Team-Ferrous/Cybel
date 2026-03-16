@@ -1,0 +1,25 @@
+version: 1
+updated_at: "2026-03-12T00:00:00Z"
+shims:
+  - shim_id: main_py_launcher
+    path: main.py
+    state: deprecated_compatibility
+    replacement: anvil.py
+    removal_gate:
+      - tests/test_operator_surface_contract.py
+      - tests/test_entrypoints.py
+  - shim_id: core_simd_mirror_tree
+    path: core/simd
+    state: compatibility_mirror
+    replacement: Saguaro/src
+    removal_gate:
+      - tests/test_operator_surface_contract.py
+      - tests/test_model_graph.py
+      - bash core/native/build_native.sh
+  - shim_id: lowercase_native_ops_tree
+    path: saguaro/native/ops
+    state: compatibility_mirror
+    replacement: Saguaro/src
+    removal_gate:
+      - tests/test_operator_surface_contract.py
+      - tests/test_saguaro_native_cmake.py

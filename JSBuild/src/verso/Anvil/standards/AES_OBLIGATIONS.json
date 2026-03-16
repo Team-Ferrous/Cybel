@@ -1,0 +1,230 @@
+{
+  "authoritative_package_root": "saguaro",
+  "catalog_version": 1,
+  "defaults": {
+    "required_artifacts": [],
+    "required_rule_ids": [],
+    "required_runtime_gates": []
+  },
+  "excluded_reference_roots": [
+    "Saguaro/"
+  ],
+  "obligations": [
+    {
+      "id": "baseline-low-assurance",
+      "required_artifacts": [
+        "change_manifest.json"
+      ],
+      "required_rule_ids": [
+        "AES-ARCH-4",
+        "AES-CR-2",
+        "AES-PY-1",
+        "AES-PY-3"
+      ],
+      "when": {
+        "aal": [
+          "AAL-2",
+          "AAL-3"
+        ]
+      }
+    },
+    {
+      "id": "baseline-high-assurance",
+      "required_artifacts": [
+        "change_manifest.json",
+        "traceability.json",
+        "evidence_bundle.json",
+        "runtime_gates.json"
+      ],
+      "required_rule_ids": [
+        "AES-TR-1",
+        "AES-TR-2",
+        "AES-TR-3",
+        "AES-REV-1",
+        "AES-AG-1"
+      ],
+      "required_runtime_gates": [
+        "traceability_gate",
+        "evidence_closure_gate",
+        "review_independence_gate",
+        "waiver_validity_gate"
+      ],
+      "when": {
+        "aal": [
+          "AAL-0",
+          "AAL-1"
+        ]
+      }
+    },
+    {
+      "id": "hot-path-runtime",
+      "required_artifacts": [
+        "chronicle.json",
+        "telemetry_contract.json"
+      ],
+      "required_rule_ids": [
+        "AES-AG-2",
+        "AES-OBS-1",
+        "AES-OBS-2"
+      ],
+      "required_runtime_gates": [
+        "chronicle_gate",
+        "telemetry_contract_gate"
+      ],
+      "when": {
+        "hot_path": true
+      }
+    },
+    {
+      "id": "dependency-change",
+      "required_artifacts": [
+        "sbom.json"
+      ],
+      "required_rule_ids": [
+        "AES-SUP-1",
+        "AES-SUP-2",
+        "AES-SUP-3",
+        "AES-SUP-4"
+      ],
+      "required_runtime_gates": [
+        "supply_chain_gate"
+      ],
+      "when": {
+        "dependency_changes": true
+      }
+    },
+    {
+      "id": "ml-domain",
+      "required_artifacts": [
+        "domain_reports/ml_run_manifest.json"
+      ],
+      "required_rule_ids": [
+        "AES-ML-1",
+        "AES-ML-2",
+        "AES-ML-4",
+        "AES-ML-5"
+      ],
+      "required_runtime_gates": [
+        "domain_report_gate"
+      ],
+      "when": {
+        "domains": [
+          "ml"
+        ]
+      }
+    },
+    {
+      "id": "hpc-domain",
+      "required_artifacts": [
+        "domain_reports/hpc_report.json"
+      ],
+      "required_rule_ids": [
+        "AES-HPC-2",
+        "AES-HPC-3",
+        "AES-HPC-4"
+      ],
+      "required_runtime_gates": [
+        "domain_report_gate"
+      ],
+      "when": {
+        "domains": [
+          "hpc"
+        ]
+      }
+    },
+    {
+      "id": "quantum-domain",
+      "required_artifacts": [
+        "domain_reports/quantum_report.json"
+      ],
+      "required_rule_ids": [
+        "AES-QC-3",
+        "AES-QC-4",
+        "AES-QC-5"
+      ],
+      "required_runtime_gates": [
+        "domain_report_gate"
+      ],
+      "when": {
+        "domains": [
+          "quantum"
+        ]
+      }
+    },
+    {
+      "id": "physics-domain",
+      "required_artifacts": [
+        "domain_reports/physics_report.json"
+      ],
+      "required_rule_ids": [
+        "AES-PHYS-1",
+        "AES-PHYS-3"
+      ],
+      "required_runtime_gates": [
+        "domain_report_gate"
+      ],
+      "when": {
+        "domains": [
+          "physics"
+        ]
+      }
+    }
+  ],
+  "thresholds": {
+    "complexity": {
+      "max_cyclomatic": 10,
+      "max_statements": 60
+    },
+    "dependency": {
+      "require_hashes": true
+    },
+    "domain_reports": {
+      "hpc": {
+        "required": [
+          "scalar_oracle",
+          "perf_baseline"
+        ]
+      },
+      "ml": {
+        "required": [
+          "run_manifest",
+          "deterministic_eval",
+          "non_finite_check",
+          "drift_report"
+        ]
+      },
+      "physics": {
+        "required": [
+          "invariant_ledger",
+          "drift_report"
+        ]
+      },
+      "quantum": {
+        "required": [
+          "backend",
+          "transpilation",
+          "noise_model",
+          "simulator_parity"
+        ]
+      }
+    },
+    "hot_path_perf": {
+      "regression_block_percent": 5.0,
+      "regression_warn_percent": 2.0
+    },
+    "runtime_gates": {
+      "chronicle_required_aal": [
+        "AAL-0",
+        "AAL-1"
+      ],
+      "require_reports_for_hot_paths": true
+    },
+    "telemetry": {
+      "required_fields": [
+        "run_id",
+        "trace_id",
+        "aal"
+      ]
+    }
+  }
+}

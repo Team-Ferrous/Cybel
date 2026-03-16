@@ -3,7 +3,6 @@
 import io
 import torch
 from flask import Flask, request, send_file, jsonify
-from diffusers import NewbiePipeline
 from sparc3d_sdf.scripts.sdf import run
 
 app = Flask(__name__)

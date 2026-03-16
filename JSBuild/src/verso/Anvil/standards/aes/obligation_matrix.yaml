@@ -1,0 +1,104 @@
+catalog_version: 1
+defaults:
+  required_rule_ids: []
+  required_runtime_gates: []
+  required_artifacts: []
+obligations:
+  - id: baseline-low-assurance
+    when:
+      aal: [AAL-2, AAL-3]
+    required_rule_ids:
+      - AES-ARCH-4
+      - AES-CR-2
+      - AES-PY-1
+      - AES-PY-3
+    required_artifacts:
+      - change_manifest.json
+  - id: baseline-high-assurance
+    when:
+      aal: [AAL-0, AAL-1]
+    required_rule_ids:
+      - AES-TR-1
+      - AES-TR-2
+      - AES-TR-3
+      - AES-REV-1
+      - AES-AG-1
+    required_runtime_gates:
+      - traceability_gate
+      - evidence_closure_gate
+      - review_independence_gate
+      - waiver_validity_gate
+    required_artifacts:
+      - change_manifest.json
+      - traceability.json
+      - evidence_bundle.json
+      - runtime_gates.json
+  - id: hot-path-runtime
+    when:
+      hot_path: true
+    required_rule_ids:
+      - AES-AG-2
+      - AES-OBS-1
+      - AES-OBS-2
+    required_runtime_gates:
+      - chronicle_gate
+      - telemetry_contract_gate
+    required_artifacts:
+      - chronicle.json
+      - telemetry_contract.json
+  - id: dependency-change
+    when:
+      dependency_changes: true
+    required_rule_ids:
+      - AES-SUP-1
+      - AES-SUP-2
+      - AES-SUP-3
+      - AES-SUP-4
+    required_runtime_gates:
+      - supply_chain_gate
+    required_artifacts:
+      - sbom.json
+  - id: ml-domain
+    when:
+      domains: [ml]
+    required_rule_ids:
+      - AES-ML-1
+      - AES-ML-2
+      - AES-ML-4
+      - AES-ML-5
+    required_runtime_gates:
+      - domain_report_gate
+    required_artifacts:
+      - domain_reports/ml_run_manifest.json
+  - id: hpc-domain
+    when:
+      domains: [hpc]
+    required_rule_ids:
+      - AES-HPC-2
+      - AES-HPC-3
+      - AES-HPC-4
+    required_runtime_gates:
+      - domain_report_gate
+    required_artifacts:
+      - domain_reports/hpc_report.json
+  - id: quantum-domain
+    when:
+      domains: [quantum]
+    required_rule_ids:
+      - AES-QC-3
+      - AES-QC-4
+      - AES-QC-5
+    required_runtime_gates:
+      - domain_report_gate
+    required_artifacts:
+      - domain_reports/quantum_report.json
+  - id: physics-domain
+    when:
+      domains: [physics]
+    required_rule_ids:
+      - AES-PHYS-1
+      - AES-PHYS-3
+    required_runtime_gates:
+      - domain_report_gate
+    required_artifacts:
+      - domain_reports/physics_report.json

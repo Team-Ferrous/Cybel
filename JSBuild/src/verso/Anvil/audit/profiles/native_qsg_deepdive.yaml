@@ -1,0 +1,66 @@
+schema_version: native_qsg_suite.v1
+profile_name: deepdive
+models:
+  - granite4:tiny-h
+  - qwen3.5:4b
+  - qwen3.5:9b
+max_parallel_models: 1
+strict_host: true
+require_saguaro: true
+require_perf: true
+host_contract_id: auto
+affinity_policy: repair_allowed
+tuning_contract_policy: optional
+preflight_strictness: certify
+assurance_level: AAL-2
+evidence_class: certification
+force_parallel_decode: true
+forbid_autoregressive_fallback: true
+enabled_lanes:
+  - canonical_all_on
+  - continuous_scheduler
+  - kernel_microbench
+  - quality_eval
+canonical_decode_threads:
+  - null
+canonical_batch_threads:
+  - null
+scenario_pack:
+  canonical_prompt: "Write a compact technical note explaining how TTFT, decode throughput, kernel-level hotspot ranking, and calibration metrics interact in a native CPU inference pipeline."
+  canonical_max_new_tokens: 48
+  canonical_context_length: 4096
+  warmup_runs: 1
+  measured_runs: 4
+  thread_matrix_ubatch: [16, 32, 64]
+  continuous_concurrency: [1, 2, 4, 8]
+  continuous_prompt_classes: [short, medium, long]
+  continuous_scheduler_policies: [fcfs, priority]
+kernel_microbench:
+  warmups: 12
+  iterations: 256
+  synthetic_lengths: [32, 64, 128, 256, 512]
+  target_kernels:
+    - embedding_lookup
+    - attention_proj
+    - attention_rope_kv
+    - attention_decode
+    - attention_out_proj
+    - ffn_gate_up
+    - ffn_down
+    - ssm_projection
+    - ssm_conv
+    - ssm_recurrent
+    - ssm_output
+    - lm_head
+    - sanitize
+quality_eval:
+  perplexity_corpus: benchmarks/corpora/perplexity_corpus.jsonl
+  confidence_corpus: benchmarks/corpora/confidence_corpus.jsonl
+  rubric_corpus: benchmarks/corpora/coherence_rubric.jsonl
+  accuracy_corpus: benchmarks/corpora/accuracy_corpus.jsonl
+  max_samples_per_family: 0
+host_requirements:
+  cpu_governor: performance
+  thp_modes: [never, madvise]
+  min_visible_threads: 1
+  enforce_min_visible_threads: false

@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["required_runtime_gates", "results"],
+  "properties": {
+    "required_runtime_gates": {"type": "array", "items": {"type": "string"}},
+    "missing_artifacts": {"type": "array", "items": {"type": "string"}},
+    "results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["gate_id", "passed", "required_artifacts", "missing_artifacts", "message"],
+        "properties": {
+          "gate_id": {"type": "string"},
+          "passed": {"type": "boolean"},
+          "required_artifacts": {"type": "array", "items": {"type": "string"}},
+          "missing_artifacts": {"type": "array", "items": {"type": "string"}},
+          "message": {"type": "string"}
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": true
+}

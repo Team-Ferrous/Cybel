@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "native_qsg_audit.traceability_graph.v1",
+  "title": "Native QSG Traceability Graph",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run_id",
+    "generated_at",
+    "nodes",
+    "edges",
+    "question_counts"
+  ],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "run_id": {"type": "string"},
+    "generated_at": {"type": "string"},
+    "nodes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "question", "label", "artifact_ref", "metadata"],
+        "properties": {
+          "id": {"type": "string"},
+          "question": {"type": "string"},
+          "label": {"type": "string"},
+          "artifact_ref": {"type": "string"},
+          "metadata": {"type": "object"}
+        }
+      }
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "src", "dst", "relation", "evidence"],
+        "properties": {
+          "id": {"type": "string"},
+          "src": {"type": "string"},
+          "dst": {"type": "string"},
+          "relation": {"type": "string"},
+          "evidence": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    },
+    "question_counts": {"type": "object"}
+  }
+}

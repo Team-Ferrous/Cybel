@@ -1,14 +1,12 @@
 // backend.js
 import fs         from "fs";
-import path       from "path";
 import crypto     from "crypto";
 import electron   from "electron";
 import Store from 'electron-store';
+import path from 'path';
 
 import { google } from "googleapis";
-import open       from "open";
-import readline   from 'readline';
-const { dialog, ipcMain } = electron;
+import { InstanceEngine } from "./instance_engine.js";
 
 import OpenAI            from "openai";
 import { createXai    }  from '@ai-sdk/xai';
@@ -16,7 +14,7 @@ import { generateText }  from 'ai';
 import { error        }  from "node:console";
 
 import { pipeline      } from "@xenova/transformers";
-import { findGenerator } from './model_switcher.js'
+import { findGenerator, modelRegistry, activeStack } from './model_switcher.js'
 import { embeddingDim, embeddingIndex, embedText } from "./embeddings.js";
 
 import { dirname       } from 'node:path';
@@ -24,66 +22,67 @@ import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { reflect, RecallMemory, RetainMemory } from "./hindsight.js";
 import dotenv from "dotenv";
+const { dialog, ipcMain } = electron;
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname  = dirname(__filename);
+const require    = createRequire(import.meta.url);
+const { IndexFlatL2 }  = require(path.resolve(__dirname, './node_modules/faiss-node/build/Release/faiss-node'));
+dotenv.config({ path: path.join(__dirname, ".env") });
 
 const TOKEN_PATH = path.join(__dirname, 'token.json');
 const CREDENTIALS_PATH = path.join(__dirname, 'credentials.json');
-
-export async function authorizeSheets() {
-    // Load client secrets from a local file.
-    const credentials = JSON.parse(fs.readFileSync(CREDENTIALS_PATH, 'utf-8'));
-    const { client_secret, client_id, redirect_uris } = credentials.installed;
-
-    const oAuth2Client = new google.auth.OAuth2(
-        client_id,
-        client_secret,
-        redirect_uris[0] // usually "urn:ietf:wg:oauth:2.0:oob" or http://localhost
-    );
-
-    // Check if we have previously stored a token.
-    if (fs.existsSync(TOKEN_PATH)) {
-        const token = JSON.parse(fs.readFileSync(TOKEN_PATH, 'utf-8'));
-        oAuth2Client.setCredentials(token);
-        return oAuth2Client;
-    }
-
-    // Generate a new token
-    const authUrl = oAuth2Client.generateAuthUrl({
-        access_type: 'offline',
-        scope: [
-            'https://www.googleapis.com/auth/spreadsheets.readonly',
-            'https://www.googleapis.com/auth/drive.readonly'
-        ],
-    });
-
-    // Open browser for user to authorize
-    await open(authUrl);
-
-    // Ask user to paste the code
-    const rl = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout,
-    });
-
-    const code = await new Promise(resolve => {
-        rl.question('Enter the code from Google here: ', answer => {
-            rl.close();
-            resolve(answer);
-        });
-    });
-
-    const tokenResponse = await oAuth2Client.getToken(code);
-    oAuth2Client.setCredentials(tokenResponse.tokens);
-
-    // Save token for future use
-    fs.writeFileSync(TOKEN_PATH, JSON.stringify(tokenResponse.tokens, null, 2));
-    console.log('✅ Token stored to', TOKEN_PATH);
-
-    return oAuth2Client;
-}
-
+const engine     = new InstanceEngine();
 const SHEETS_TOKEN_PATH = path.join(__dirname, "sheets_token.json");
 const SHEETS_CREDENTIALS_PATH = path.join(__dirname, "sheets_credentials.json"); // from GCP
 let sheetsAuth;
+
+async function requestOAuthCode() {
+    return new Promise(resolve => {
+
+        const authWin = new BrowserWindow({
+            width: 400,
+            height: 220,
+            modal: true,
+            title: "Google Authorization",
+            webPreferences: {
+                nodeIntegration: true,
+                contextIsolation: false
+            }
+        });
+
+        authWin.loadFile("oauth_code.html");
+
+        ipcMain.once("google-sheets-code", (_, code) => {
+            authWin.close();
+            resolve(code);
+        });
+
+    });
+}
+
+async function authorizeSheets() {
+    if (sheetsAuth) return sheetsAuth;
+
+    const credentials = JSON.parse(fs.readFileSync(SHEETS_CREDENTIALS_PATH, "utf-8"));
+    const { client_secret, client_id, redirect_uris } = credentials.installed;
+    const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0]);
+    console.log("Authorizing Google Sheets access...");
+    if (fs.existsSync(SHEETS_TOKEN_PATH)) {
+        const token = JSON.parse(fs.readFileSync(SHEETS_TOKEN_PATH, "utf-8"));
+        oAuth2Client.setCredentials(token);
+    } else {
+        // Here you’d need a simple input dialog in Electron to get the code
+        const code = await requestOAuthCode();
+
+        const { tokens } = await oAuth2Client.getToken(code);
+        oAuth2Client.setCredentials(tokens);
+        fs.writeFileSync(SHEETS_TOKEN_PATH, JSON.stringify(tokens), "utf-8");
+    }
+    console.log("Google Sheets authorization successful");
+    sheetsAuth = oAuth2Client;
+    return oAuth2Client;
+}
 
 async function fetchSpreadsheet(spreadsheetId, range = "Sheet1!A:F") {
     const auth = await authorizeSheets();
@@ -110,12 +109,6 @@ async function ingestSpreadsheetToFAISS(spreadsheetId, range = "Sheet1!A:F") {
     await ingestSheets(null, rows);
     return { success: true, rowsIngested: rows.length };
 }
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname  = dirname(__filename);
-const require    = createRequire(import.meta.url);
-const { IndexFlatL2 }  = require(path.resolve(__dirname, './node_modules/faiss-node/build/Release/faiss-node'));
-dotenv.config({ path: path.join(__dirname, ".env") });
 
 // main.js
 const store = new Store();
@@ -182,9 +175,25 @@ function setGroqKey(key){
     store.set("groqKey", key);
 }
 
+function setEngineInstance(eng){
+    engine = eng;
+}
+
 function setEngine(conf){
+    //eng = getEngineInstance();// || new InstanceEngine();
     CONFIG.engine = conf;
     store.set("current-engine", CONFIG.engine)
+    // set engine to currently loaded pipeline + model set
+    //setEngineInstance(eng);
+}
+
+function getEngine(conf){
+    CONFIG.engine = conf;
+    store.set("current-engine", CONFIG.engine)
+}
+
+function getEngineInstance(){
+    return engine;
 }
 
 async function ingestSheets(id, rows) {
@@ -200,9 +209,8 @@ async function ingestSheets(id, rows) {
     }
 
     await embeddingIndex.add(embeddings);
-
     // Optional: persist for cache
-    fs.writeFileSync(metaPath, JSON.stringify(docs), "utf-8");
+    fs.writeFileSync(metaPath,  JSON.stringify(docs), "utf-8");
     fs.writeFileSync(indexPath, JSON.stringify(embeddings), "utf-8");
 }
 
@@ -227,7 +235,7 @@ async function loadDocument(doc) {
             title: "Import Document",
             defaultPath: doc.title + ".txt",
             filters: [
-            { name: "Text Files", extensions: ["txt"] }
+            { name: "Text, JSON, PDF Files", extensions: ["txt", "json", "pdf"] }
             ]
         });
 
@@ -237,7 +245,31 @@ async function loadDocument(doc) {
 
         const importPath = result.filePaths[0];
         const data       = await fs.readFile(importPath , "utf-8");
-        return { success: true, path: importPath, document: JSON.parse(data) };
+        if (importPath.endsWith(".pdf")) {
+            // embed in faiss
+            embeddingIndex = new IndexFlatL2({ dims: embeddingDim });
+            //await Promise.all(docs.map(embedDoc))
+            const chunks = chunkText(data);
+            for (const doc of chunks) {
+                // Skip anything that isn’t an object or missing content
+                if (doc && typeof doc.content === "string" && doc.content.trim() !== "") {
+                    const emb = await embedder(doc, { pooling: "mean", normalize: true });
+                    embeddings.push(Array.from(emb.data));
+                } else {
+                    console.warn("⚠️ Skipping doc with invalid content:", doc);
+                }
+            }
+            await embeddingIndex.add(embeddings);
+            console.log(`⚡ Built new FAISS index, ntotal: ${embeddingIndex.ntotal()}`);
+            // return text content for now, but ideally we’d want to keep the PDF structure and metadata
+            return { success: true, path: importPath, document: data };
+        }
+        else if (importPath.endsWith(".txt")) {
+            return { success: true, path: importPath, document: data };
+        }
+        else if (importPath.endsWith(".json")) {
+            return { success: true, path: importPath, document: JSON.parse(data) };
+        }
     } catch (err) {
         return { success: false, error: err.message };
     }
@@ -247,9 +279,9 @@ async function deleteDocument(doc) {
   try {
     const result = await dialog.showMessageBox({
             title: "Select Document to Delete",
-            defaultPath: doc.title + ".txt",
+            defaultPath: doc.title + ".json",
             filters: [
-            { name: "Text Files", extensions: ["txt"] }
+            { name: "JSON Files", extensions: ["json"] }
             ]
         });
 
@@ -272,9 +304,9 @@ async function replicateDocument(doc) {
 
     const result = await dialog.showOpenDialog({
             title: "Import Document",
-            defaultPath: doc.title + ".txt",
+            defaultPath: doc.title + ".json",
             filters: [
-            { name: "Text Files", extensions: ["txt"] }
+            { name: "JSON Files", extensions: ["json"] }
             ]
         });
 
@@ -361,29 +393,44 @@ function computeDocumentsHash() {
 async function loadModels() {
     try {
         let hfToken = localStorage.getItem("hfToken");
+        let msToken = localStorage.getItem("msToken");
+        let groqToken = localStorage.getItem("groqToken");
+        let grokToken = localStorage.getItem("grokToken");
+        let HNToken   = localStorage.getItem("HNToken");
 
         console.log("Loading embedding model...");
-        embedder = await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2", { token: hfToken });
+        embedder = await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2", { token: hfToken }, model_file_name="all-MiniLM-L6-v2.pt");
         console.log("Embedding model loaded!");
 
         if (CONFIG.generationMode === "groq") {
             console.log("Loading Groq (requested) model...");
-            generator = await pipeline("text-generation", "Xenova/phi-2", { token: hfToken });
+            generator = await pipeline("text-generation", "Xenova/phi-2", { token: groqToken });
             console.log("Generator model loaded!");
         }
         if (CONFIG.generationMode === "grok") {
             console.log("Loading Grok model...");
-            generator = await pipeline("text-generation", "Xenova/phi-2", { token: hfToken });
+            generator = await pipeline("text-generation", "Xenova/phi-2", { token: grokToken });
             console.log("Generator model loaded!");
         }
         if (CONFIG.generationMode === "local") {
-            console.log("Loading local text-generation model...");
-            generator = await pipeline("text-generation", "Xenova/phi-2", { token: hfToken });
-            console.log("Generator model loaded!");
+            let hfToggle = document.getElementById("hfBox");
+            let msToggle = document.getElementById("msBox");
+
+            if(hfToggle && hfToggle.checked && !msToggle.checked ){
+                console.log("Loading local text-generation model...");
+                generator = await pipeline("text-generation", "Xenova/phi-2", { token: hfToken });
+                console.log("Generator model loaded!");
+            }else if ( msToggle && msToggle.checked && !hfToggle.checked){
+                console.log("Loading local text-generation model...");
+                generator = await pipeline("text-generation", "Xenova/phi-2", { token: msToken });
+                console.log("Generator model loaded!");        
+            } else {
+                return { success: false, error: "Please select exactly one model source (HuggingFace or ModelScope) in the settings." };
+            }
         }
         if (CONFIG.generationMode === "verso") {
             console.log("Loading Verso model...");
-            generator = await pipeline("text-generation", "Xenova/phi-2", { token: hfToken });
+            generator = await pipeline("text-generation", "Xenova/phi-2", { token: HNToken });
             console.log("Generator model loaded!");
         }
     } catch (err) {
@@ -510,6 +557,7 @@ async function generateLocal(prompt) {
     }
     return result[0].generated_text;
 }
+
 
 async function generateVerso(prompt) {
     if(generator == null){
@@ -765,6 +813,13 @@ export  {
     updateCharacter,
     createGroqClient,
     setEngine, 
+    getEngine,
+    getEngineInstance,
+    authorizeSheets,
+    ingestSpreadsheetToFAISS,
+    fetchSpreadsheet,
+    ingestSheets,
     resetActiveStack,
-    generateAgentResponse
+    generateAgentResponse,
+    embeddings
 };

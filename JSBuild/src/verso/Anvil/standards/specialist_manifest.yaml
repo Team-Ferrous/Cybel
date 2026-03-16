@@ -1,0 +1,54 @@
+generic_role_aliases:
+  researcher: ResearchLibrarianSubagent
+  architect: SoftwareArchitectureSubagent
+  analyzer: RepoCampaignAnalysisSubagent
+  repo_analyzer: RepoCampaignAnalysisSubagent
+  implementer: ImplementationEngineerSubagent
+  validator: TestAuditSubagent
+  tester: TestAuditSubagent
+  planner: CampaignDirectorSubagent
+  campaign_director: CampaignDirectorSubagent
+  documentation: DocumentationWhitepaperSubagent
+  observability: TelemetrySystemsSubagent
+  determinism: DeterminismComplianceSubagent
+  deadcode: DeadCodeTriageSubagent
+
+role_domain_hints:
+  researcher: [research, web]
+  architect: [architecture, design]
+  analyzer: [repo, analysis_local]
+  implementer: [implementation, code]
+  validator: [audit, test]
+  tester: [audit, test]
+  planner: [planning, campaign]
+  documentation: [docs, whitepaper]
+  observability: [telemetry, observability]
+  determinism: [determinism, reproducibility]
+  deadcode: [deadcode, dead_code, code_cleanup]
+
+question_domain_hints:
+  research: [research, web]
+  architecture: [architecture, design]
+  investigation: [repo, analysis_local]
+
+prompt_key_overrides:
+  CampaignDirectorSubagent: foundation/campaign_director
+  RepoIngestionSubagent: foundation/repo_ingestion
+  ResearchCrawlerSubagent: foundation/research_crawler
+  ArchitectureAdjudicatorSubagent: foundation/architecture_adjudicator
+  FeatureCartographerSubagent: foundation/feature_cartographer
+  HypothesisLabSubagent: foundation/hypothesis_lab
+  MarketAnalysisSubagent: foundation/market_analysis
+  MathAnalysisSubagent: foundation/math_analysis
+  HardwareOptimizationSubagent: foundation/hardware_optimization
+  QuantumAlgorithmsSubagent: foundation/quantum_algorithms
+  PhysicsSimulationSubagent: foundation/physics_simulation
+  ImplementationEngineerSubagent: foundation/implementation_engineer
+  TelemetrySystemsSubagent: foundation/telemetry_systems
+  TestAuditSubagent: foundation/test_audit
+  CodebaseCartographerSubagent: foundation/codebase_cartographer
+  ReleasePackagingSubagent: foundation/release_packaging
+  DocumentationWhitepaperSubagent: foundation/documentation_whitepaper
+  AESSentinelSubagent: foundation/aes_sentinel
+  DeterminismComplianceSubagent: foundation/determinism_compliance
+  DeadCodeTriageSubagent: toolchain/dead_code_triage

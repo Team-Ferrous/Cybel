@@ -1,0 +1,5682 @@
+[
+  {
+    "auto_fixable": false,
+    "check_function": "core.aes.checks.telemetry_checks.check_traceability_markers",
+    "cwe": [],
+    "domain": [
+      "universal"
+    ],
+    "domains": [
+      "universal"
+    ],
+    "engine": "agent",
+    "execution_mode": "runtime_gate",
+    "id": "AES-OBS-1",
+    "language": [
+      "json",
+      "md",
+      "python"
+    ],
+    "languages": [
+      "json",
+      "md",
+      "python"
+    ],
+    "negative_lookahead": null,
+    "parameters": {
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [
+      "runtime_gates.json",
+      "telemetry_contract.json"
+    ],
+    "rollout_stage": "ratchet",
+    "section": "10",
+    "section_title": "Agent Operations",
+    "selectors": {
+      "exclude_path_prefixes": [
+        "saguaro/native/",
+        "core/native/",
+        "saguaro/ops/"
+      ],
+      "include_path_tokens": [
+        "api",
+        "routes",
+        "service"
+      ],
+      "public_export_marker": "__all__",
+      "surface": "public_error_contracts"
+    },
+    "severity": "AAL-2",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#operations",
+      "prompts/GEMINI.md"
+    ],
+    "source_version": "v2",
+    "status": "advisory",
+    "svl_min": null,
+    "text": "Golden-signal relevant metrics SHOULD be captured before and after major changes.",
+    "title": "Telemetry Contract",
+    "waiverable": false
+  },
+  {
+    "auto_fixable": false,
+    "check_function": "core.aes.checks.telemetry_checks.check_operational_logging_markers",
+    "cwe": [],
+    "domain": [
+      "universal"
+    ],
+    "domains": [
+      "universal"
+    ],
+    "engine": "agent",
+    "execution_mode": "runtime_gate",
+    "id": "AES-OBS-2",
+    "language": [
+      "json",
+      "python"
+    ],
+    "languages": [
+      "json",
+      "python"
+    ],
+    "negative_lookahead": null,
+    "parameters": {
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [
+      "runtime_gates.json"
+    ],
+    "rollout_stage": "ratchet",
+    "section": "10",
+    "section_title": "Agent Operations",
+    "selectors": {
+      "exclude_path_prefixes": [
+        "saguaro/native/",
+        "core/native/",
+        "saguaro/ops/"
+      ],
+      "surface": "public_python_functions"
+    },
+    "severity": "AAL-2",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#operations",
+      "prompts/GEMINI.md"
+    ],
+    "source_version": "v2",
+    "status": "advisory",
+    "svl_min": null,
+    "text": "Verification output SHOULD distinguish blocking and advisory defects.",
+    "title": "Structured Operational Logging",
+    "waiverable": false
+  },
+  {
+    "auto_fixable": false,
+    "check_function": null,
+    "cwe": [],
+    "domain": [
+      "universal"
+    ],
+    "domains": [
+      "universal"
+    ],
+    "engine": "human",
+    "execution_mode": "workflow_gate",
+    "id": "AES-REV-1",
+    "language": [
+      "json",
+      "yaml",
+      "md"
+    ],
+    "languages": [
+      "json",
+      "yaml",
+      "md"
+    ],
+    "negative_lookahead": null,
+    "parameters": {
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [
+      "evidence_bundle.json",
+      "review_matrix.yaml"
+    ],
+    "rollout_stage": "ratchet",
+    "section": "11",
+    "section_title": "Review And Closure",
+    "selectors": {},
+    "severity": "AAL-1",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#independent-review",
+      "standards/review_matrix.yaml"
+    ],
+    "source_version": "v2",
+    "status": "blocking",
+    "svl_min": null,
+    "text": "AAL-0 and AAL-1 work MUST receive independent review.",
+    "title": "Independent Review Required",
+    "waiverable": true
+  },
+  {
+    "auto_fixable": false,
+    "check_function": null,
+    "cwe": [],
+    "domain": [
+      "universal"
+    ],
+    "domains": [
+      "universal"
+    ],
+    "engine": "agent",
+    "execution_mode": "workflow_gate",
+    "id": "AES-REV-2",
+    "language": [
+      "md",
+      "json"
+    ],
+    "languages": [
+      "md",
+      "json"
+    ],
+    "negative_lookahead": null,
+    "parameters": {
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [
+      "evidence_bundle.json",
+      "review_matrix.yaml"
+    ],
+    "rollout_stage": "ratchet",
+    "section": "11",
+    "section_title": "Review And Closure",
+    "selectors": {},
+    "severity": "AAL-1",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#independent-review",
+      "standards/review_matrix.yaml"
+    ],
+    "source_version": "v2",
+    "status": "blocking",
+    "svl_min": null,
+    "text": "Items lacking code, tests, evidence, or roadmap update MUST remain PARTIAL.",
+    "title": "Items lacking code, tests, evidence, or roadmap update MUST remain PARTIAL",
+    "waiverable": true
+  },
+  {
+    "auto_fixable": false,
+    "check_function": null,
+    "cwe": [],
+    "domain": [
+      "universal"
+    ],
+    "domains": [
+      "universal"
+    ],
+    "engine": "agent",
+    "execution_mode": "workflow_gate",
+    "id": "AES-REV-3",
+    "language": [
+      "md",
+      "json",
+      "yaml"
+    ],
+    "languages": [
+      "md",
+      "json",
+      "yaml"
+    ],
+    "negative_lookahead": null,
+    "parameters": {
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [
+      "evidence_bundle.json",
+      "review_matrix.yaml"
+    ],
+    "rollout_stage": "ratchet",
+    "section": "11",
+    "section_title": "Review And Closure",
+    "selectors": {},
+    "severity": "AAL-2",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#independent-review",
+      "standards/review_matrix.yaml"
+    ],
+    "source_version": "v2",
+    "status": "blocking",
+    "svl_min": null,
+    "text": "Baseline version changes MUST be explicit and auditable.",
+    "title": "Baseline version changes MUST be explicit and auditable",
+    "waiverable": true
+  },
+  {
+    "auto_fixable": false,
+    "check_function": null,
+    "cwe": [],
+    "domain": [
+      "universal"
+    ],
+    "domains": [
+      "universal"
+    ],
+    "engine": "agent",
+    "execution_mode": "workflow_gate",
+    "id": "AES-ARCH-1",
+    "language": [
+      "python",
+      "json",
+      "yaml"
+    ],
+    "languages": [
+      "python",
+      "json",
+      "yaml"
+    ],
+    "negative_lookahead": null,
+    "parameters": {
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [],
+    "rollout_stage": "ratchet",
+    "section": "2",
+    "section_title": "Architecture Governance",
+    "selectors": {},
+    "severity": "AAL-1",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#architecture",
+      "aes_analysis/v2/Anvil Engineering Standard v2.txt#architecture"
+    ],
+    "source_version": "v2",
+    "status": "advisory",
+    "svl_min": null,
+    "text": "Blocking enforcement MUST happen in runtime gates, not prompt prose alone.",
+    "title": "Runtime Enforcement Over Prompt Prose",
+    "waiverable": false
+  },
+  {
+    "auto_fixable": false,
+    "check_function": null,
+    "cwe": [],
+    "domain": [
+      "universal"
+    ],
+    "domains": [
+      "universal"
+    ],
+    "engine": "agent",
+    "execution_mode": "workflow_gate",
+    "id": "AES-ARCH-2",
+    "language": [
+      "python",
+      "json",
+      "yaml"
+    ],
+    "languages": [
+      "python",
+      "json",
+      "yaml"
+    ],
+    "negative_lookahead": null,
+    "parameters": {
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [],
+    "rollout_stage": "ratchet",
+    "section": "2",
+    "section_title": "Architecture Governance",
+    "selectors": {},
+    "severity": "AAL-1",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#architecture",
+      "aes_analysis/v2/Anvil Engineering Standard v2.txt#architecture"
+    ],
+    "source_version": "v2",
+    "status": "advisory",
+    "svl_min": null,
+    "text": "All code-modifying workflows MUST pass through a unified hook bus.",
+    "title": "Unified Hook Bus",
+    "waiverable": false
+  },
+  {
+    "auto_fixable": false,
+    "check_function": null,
+    "cwe": [],
+    "domain": [
+      "universal"
+    ],
+    "domains": [
+      "universal"
+    ],
+    "engine": "agent",
+    "execution_mode": "workflow_gate",
+    "id": "AES-ARCH-3",
+    "language": [
+      "python"
+    ],
+    "languages": [
+      "python"
+    ],
+    "negative_lookahead": null,
+    "parameters": {
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [],
+    "rollout_stage": "ratchet",
+    "section": "2",
+    "section_title": "Architecture Governance",
+    "selectors": {},
+    "severity": "AAL-2",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#architecture",
+      "aes_analysis/v2/Anvil Engineering Standard v2.txt#architecture"
+    ],
+    "source_version": "v2",
+    "status": "advisory",
+    "svl_min": null,
+    "text": "Legacy orchestration paths MUST remain compatibility adapters only.",
+    "title": "Legacy Paths As Adapters",
+    "waiverable": false
+  },
+  {
+    "auto_fixable": false,
+    "check_function": "core.aes.checks.metadata_checks.check_catalog_authority",
+    "cwe": [],
+    "domain": [
+      "universal"
+    ],
+    "domains": [
+      "universal"
+    ],
+    "engine": "agent",
+    "execution_mode": "static",
+    "id": "AES-ARCH-4",
+    "language": [
+      "python",
+      "json"
+    ],
+    "languages": [
+      "python",
+      "json"
+    ],
+    "negative_lookahead": null,
+    "parameters": {
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [],
+    "rollout_stage": "ratchet",
+    "section": "2",
+    "section_title": "Architecture Governance",
+    "selectors": {},
+    "severity": "AAL-1",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#architecture",
+      "aes_analysis/v2/Anvil Engineering Standard v2.txt#architecture"
+    ],
+    "source_version": "v2",
+    "status": "advisory",
+    "svl_min": null,
+    "text": "Rule loading MUST be machine-readable and deterministic.",
+    "title": "Machine Readable Rule Loading",
+    "waiverable": false
+  },
+  {
+    "auto_fixable": false,
+    "check_function": null,
+    "cwe": [],
+    "domain": [
+      "universal"
+    ],
+    "domains": [
+      "universal"
+    ],
+    "engine": "aes",
+    "execution_mode": "workflow_gate",
+    "id": "AES-PRM-1",
+    "language": [
+      "md",
+      "python"
+    ],
+    "languages": [
+      "md",
+      "python"
+    ],
+    "negative_lookahead": null,
+    "parameters": {
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [],
+    "rollout_stage": "ratchet",
+    "section": "2",
+    "section_title": "Prompt Governance",
+    "selectors": {},
+    "severity": "AAL-1",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#operating-model",
+      "standards/traceability/PROMPT_TO_RULE_MAP.yaml"
+    ],
+    "source_version": "v2",
+    "status": "advisory",
+    "svl_min": null,
+    "text": "Prompt contracts MUST expose required governance keys and freshness-safe references.",
+    "title": "Prompt Contracts Are Provenance Only",
+    "waiverable": false
+  },
+  {
+    "auto_fixable": false,
+    "check_function": "core.aes.checks.universal_checks.check_aes_visuals_pack_presence",
+    "cwe": [],
+    "domain": [
+      "universal"
+    ],
+    "domains": [
+      "universal"
+    ],
+    "engine": "agent",
+    "execution_mode": "artifact",
+    "id": "AES-VIS-1",
+    "language": [
+      "json"
+    ],
+    "languages": [
+      "json"
+    ],
+    "negative_lookahead": null,
+    "parameters": {
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [
+      "aes_visuals/v1/directives.json",
+      "aes_visuals/v2/directives.json"
+    ],
+    "rollout_stage": "ratchet",
+    "section": "2",
+    "selectors": {},
+    "severity": "AAL-0",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#visual-governance",
+      "aes_visuals/v1/directives.json",
+      "aes_visuals/v2/directives.json"
+    ],
+    "source_version": "v2",
+    "status": "blocking",
+    "svl_min": null,
+    "text": "Visual governance packs MUST include aes_visuals/v1 and aes_visuals/v2 directives manifests.",
+    "title": "Visual Governance Packs Present",
+    "waiverable": false
+  },
+  {
+    "auto_fixable": false,
+    "check_function": "core.aes.checks.universal_checks.check_aes_visuals_pack_shape",
+    "cwe": [],
+    "domain": [
+      "universal"
+    ],
+    "domains": [
+      "universal"
+    ],
+    "engine": "agent",
+    "execution_mode": "artifact",
+    "id": "AES-VIS-2",
+    "language": [
+      "json"
+    ],
+    "languages": [
+      "json"
+    ],
+    "negative_lookahead": null,
+    "parameters": {
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [
+      "aes_visuals/v1/directives.json",
+      "aes_visuals/v2/directives.json"
+    ],
+    "rollout_stage": "ratchet",
+    "section": "2",
+    "selectors": {},
+    "severity": "AAL-0",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#visual-governance"
+    ],
+    "source_version": "v2",
+    "status": "blocking",
+    "svl_min": null,
+    "text": "Visual governance packs MUST remain model-readable JSON objects with typed directives.",
+    "title": "Visual Governance Packs Valid",
+    "waiverable": false
+  },
+  {
+    "auto_fixable": false,
+    "check_function": null,
+    "cwe": [],
+    "domain": [
+      "universal"
+    ],
+    "domains": [
+      "universal"
+    ],
+    "engine": "agent",
+    "execution_mode": "artifact",
+    "id": "AES-TR-1",
+    "language": [
+      "json",
+      "yaml",
+      "md",
+      "python"
+    ],
+    "languages": [
+      "json",
+      "yaml",
+      "md",
+      "python"
+    ],
+    "negative_lookahead": null,
+    "parameters": {
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [
+      "traceability.json",
+      "evidence_bundle.json"
+    ],
+    "rollout_stage": "ratchet",
+    "section": "3",
+    "section_title": "Traceability And Evidence",
+    "selectors": {},
+    "severity": "AAL-1",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#traceability",
+      "aes_analysis/v1/AES_Primary.md#verification-obligations"
+    ],
+    "source_version": "v2",
+    "status": "blocking",
+    "svl_min": null,
+    "text": "High-assurance work MUST preserve requirement-to-verification trace links.",
+    "title": "Traceability Ledger Required",
+    "waiverable": true
+  },
+  {
+    "auto_fixable": false,
+    "check_function": null,
+    "cwe": [],
+    "domain": [
+      "universal"
+    ],
+    "domains": [
+      "universal"
+    ],
+    "engine": "agent",
+    "execution_mode": "artifact",
+    "id": "AES-TR-2",
+    "language": [
+      "json",
+      "yaml",
+      "md"
+    ],
+    "languages": [
+      "json",
+      "yaml",
+      "md"
+    ],
+    "negative_lookahead": null,
+    "parameters": {
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [
+      "traceability.json",
+      "evidence_bundle.json"
+    ],
+    "rollout_stage": "ratchet",
+    "section": "3",
+    "section_title": "Traceability And Evidence",
+    "selectors": {},
+    "severity": "AAL-1",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#traceability",
+      "aes_analysis/v1/AES_Primary.md#verification-obligations"
+    ],
+    "source_version": "v2",
+    "status": "blocking",
+    "svl_min": null,
+    "text": "AAL-0 and AAL-1 completion MUST include a valid evidence bundle.",
+    "title": "Evidence Bundle Required",
+    "waiverable": true
+  },
+  {
+    "auto_fixable": false,
+    "check_function": null,
+    "cwe": [],
+    "domain": [
+      "universal"
+    ],
+    "domains": [
+      "universal"
+    ],
+    "engine": "agent",
+    "execution_mode": "artifact",
+    "id": "AES-TR-3",
+    "language": [
+      "json",
+      "yaml",
+      "md"
+    ],
+    "languages": [
+      "json",
+      "yaml",
+      "md"
+    ],
+    "negative_lookahead": null,
+    "parameters": {
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [
+      "traceability.json",
+      "evidence_bundle.json",
+      "standards/waivers"
+    ],
+    "rollout_stage": "ratchet",
+    "section": "3",
+    "section_title": "Traceability And Evidence",
+    "selectors": {},
+    "severity": "AAL-1",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#traceability",
+      "aes_analysis/v1/AES_Primary.md#verification-obligations"
+    ],
+    "source_version": "v2",
+    "status": "blocking",
+    "svl_min": null,
+    "text": "Waivers MUST be bounded, time-limited, and include compensating controls.",
+    "title": "Waivers Must Be Valid",
+    "waiverable": true
+  },
+  {
+    "auto_fixable": false,
+    "check_function": "core.aes.checks.metadata_checks.check_no_silent_fallback_markers",
+    "cwe": [],
+    "domain": [
+      "universal"
+    ],
+    "domains": [
+      "universal"
+    ],
+    "engine": "agent",
+    "execution_mode": "static",
+    "id": "AES-CR-1",
+    "language": [
+      "python",
+      "c",
+      "c++"
+    ],
+    "languages": [
+      "python",
+      "c",
+      "c++"
+    ],
+    "negative_lookahead": null,
+    "parameters": {
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [],
+    "rollout_stage": "ratchet",
+    "section": "4",
+    "section_title": "Correctness",
+    "selectors": {},
+    "severity": "AAL-1",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#error-handling"
+    ],
+    "source_version": "v2",
+    "status": "blocking",
+    "svl_min": null,
+    "text": "Root-cause fixes MUST be preferred over masking behavior.",
+    "title": "Root Cause Fixes Over Masking",
+    "waiverable": false
+  },
+  {
+    "auto_fixable": false,
+    "check_function": "core.aes.checks.universal_checks.check_no_bare_except",
+    "cwe": [],
+    "domain": [
+      "universal"
+    ],
+    "domains": [
+      "universal"
+    ],
+    "engine": "agent",
+    "execution_mode": "static",
+    "id": "AES-CR-2",
+    "language": [
+      "python"
+    ],
+    "languages": [
+      "python"
+    ],
+    "negative_lookahead": null,
+    "parameters": {
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [],
+    "rollout_stage": "ratchet",
+    "section": "4",
+    "section_title": "Correctness",
+    "selectors": {},
+    "severity": "AAL-0",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#error-handling"
+    ],
+    "source_version": "v2",
+    "status": "blocking",
+    "svl_min": null,
+    "text": "Bare exception swallowing MUST NOT be used.",
+    "title": "No Bare Except",
+    "waiverable": false
+  },
+  {
+    "auto_fixable": false,
+    "check_function": "core.aes.checks.metadata_checks.check_no_verification_bypass_markers",
+    "cwe": [],
+    "domain": [
+      "universal"
+    ],
+    "domains": [
+      "universal"
+    ],
+    "engine": "agent",
+    "execution_mode": "static",
+    "id": "AES-CR-3",
+    "language": [
+      "python",
+      "c",
+      "c++"
+    ],
+    "languages": [
+      "python",
+      "c",
+      "c++"
+    ],
+    "negative_lookahead": null,
+    "parameters": {
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [],
+    "rollout_stage": "ratchet",
+    "section": "4",
+    "section_title": "Correctness",
+    "selectors": {},
+    "severity": "AAL-1",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#error-handling"
+    ],
+    "source_version": "v2",
+    "status": "blocking",
+    "svl_min": null,
+    "text": "Fallback paths MUST NOT silently bypass required verification.",
+    "title": "No Silent Verification Bypass",
+    "waiverable": false
+  },
+  {
+    "auto_fixable": false,
+    "check_function": "core.aes.checks.universal_checks.check_complexity_bounds",
+    "cwe": [],
+    "domain": [
+      "universal"
+    ],
+    "domains": [
+      "universal"
+    ],
+    "engine": "agent",
+    "execution_mode": "static",
+    "id": "AES-CPLX-1",
+    "language": [
+      "python"
+    ],
+    "languages": [
+      "python"
+    ],
+    "negative_lookahead": null,
+    "parameters": {
+      "threshold_key": "complexity",
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [],
+    "rollout_stage": "ratchet",
+    "section": "5",
+    "section_title": "Core Language Controls",
+    "selectors": {},
+    "severity": "AAL-1",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#error-handling",
+      "aes_analysis/v1/AES_Primary.md#coding-standards"
+    ],
+    "source_version": "v2",
+    "status": "blocking",
+    "svl_min": null,
+    "text": "Risk-bearing functions SHOULD stay within bounded complexity.",
+    "title": "Complexity Bound",
+    "waiverable": false
+  },
+  {
+    "auto_fixable": false,
+    "check_function": "core.aes.checks.api_contract_checks.check_public_api_contract_markers",
+    "cwe": [],
+    "domain": [
+      "universal"
+    ],
+    "domains": [
+      "universal"
+    ],
+    "engine": "agent",
+    "execution_mode": "static",
+    "id": "AES-ERR-1",
+    "language": [
+      "python"
+    ],
+    "languages": [
+      "python"
+    ],
+    "negative_lookahead": null,
+    "parameters": {
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [],
+    "rollout_stage": "ratchet",
+    "section": "5",
+    "section_title": "Core Language Controls",
+    "selectors": {},
+    "severity": "AAL-2",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#error-handling",
+      "aes_analysis/v1/AES_Primary.md#coding-standards"
+    ],
+    "source_version": "v2",
+    "status": "advisory",
+    "svl_min": null,
+    "text": "Public interfaces SHOULD declare error contracts and failure modes.",
+    "title": "Public Error Contract",
+    "waiverable": false
+  },
+  {
+    "auto_fixable": false,
+    "check_function": "core.aes.checks.universal_checks.check_suspicious_exception_none_returns",
+    "cwe": [],
+    "domain": [
+      "universal"
+    ],
+    "domains": [
+      "universal"
+    ],
+    "engine": "native",
+    "execution_mode": "static",
+    "id": "AES-ERR-2",
+    "language": [
+      "python"
+    ],
+    "languages": [
+      "python"
+    ],
+    "negative_lookahead": null,
+    "parameters": {
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [],
+    "rollout_stage": "ratchet",
+    "section": "5",
+    "section_title": "Core Language Controls",
+    "selectors": {},
+    "severity": "AAL-2",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#error-handling",
+      "aes_analysis/v1/AES_Primary.md#coding-standards"
+    ],
+    "source_version": "v2",
+    "status": "guarded",
+    "svl_min": null,
+    "text": "Silent None returns in exception paths SHOULD be treated as suspect.",
+    "title": "Suspicious None Return",
+    "waiverable": false
+  },
+  {
+    "auto_fixable": false,
+    "check_function": "core.aes.security_verification.check_hardcoded_secrets",
+    "cwe": [
+      "CWE-798"
+    ],
+    "domain": [
+      "universal"
+    ],
+    "domains": [
+      "universal"
+    ],
+    "engine": "aes",
+    "execution_mode": "static",
+    "id": "AES-SEC-1",
+    "language": [
+      "python",
+      "json",
+      "yaml",
+      "env"
+    ],
+    "languages": [
+      "python",
+      "json",
+      "yaml",
+      "env"
+    ],
+    "negative_lookahead": null,
+    "parameters": {
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [],
+    "rollout_stage": "ratchet",
+    "section": "6",
+    "section_title": "Security And Supply Chain",
+    "selectors": {},
+    "severity": "AAL-0",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#supply-chain",
+      "standards/AES_SOURCE_BASELINES.md"
+    ],
+    "source_version": "v2",
+    "status": "blocking",
+    "svl_min": "SVL-2",
+    "text": "Hardcoded secrets MUST NOT be committed (SVL baseline).",
+    "title": "No Hardcoded Secrets",
+    "waiverable": false
+  },
+  {
+    "auto_fixable": false,
+    "check_function": "core.aes.security_verification.check_svl_compliance",
+    "cwe": [
+      "CWE-78",
+      "CWE-94",
+      "CWE-502"
+    ],
+    "domain": [
+      "universal"
+    ],
+    "domains": [
+      "universal"
+    ],
+    "engine": "aes",
+    "execution_mode": "static",
+    "id": "AES-SEC-2",
+    "language": [
+      "python"
+    ],
+    "languages": [
+      "python"
+    ],
+    "negative_lookahead": null,
+    "parameters": {
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [],
+    "rollout_stage": "ratchet",
+    "section": "6",
+    "section_title": "Security And Supply Chain",
+    "selectors": {},
+    "severity": "AAL-1",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#supply-chain",
+      "standards/AES_SOURCE_BASELINES.md"
+    ],
+    "source_version": "v2",
+    "status": "blocking",
+    "svl_min": "SVL-2",
+    "text": "Security-sensitive paths MUST mitigate CWE Top 25 classes in SVL workflows.",
+    "title": "Security Sensitive Paths Hardened",
+    "waiverable": false
+  },
+  {
+    "auto_fixable": false,
+    "check_function": "core.aes.security_verification.check_svl_compliance",
+    "cwe": [
+      "CWE-693"
+    ],
+    "domain": [
+      "universal"
+    ],
+    "domains": [
+      "universal"
+    ],
+    "engine": "aes",
+    "execution_mode": "static",
+    "id": "AES-SEC-3",
+    "language": [
+      "python",
+      "txt",
+      "toml",
+      "yaml"
+    ],
+    "languages": [
+      "python",
+      "txt",
+      "toml",
+      "yaml"
+    ],
+    "negative_lookahead": null,
+    "parameters": {
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [],
+    "rollout_stage": "ratchet",
+    "section": "6",
+    "section_title": "Security And Supply Chain",
+    "selectors": {},
+    "severity": "AAL-1",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#supply-chain",
+      "standards/AES_SOURCE_BASELINES.md"
+    ],
+    "source_version": "v2",
+    "status": "blocking",
+    "svl_min": "SVL-1",
+    "text": "Exposed surfaces and dependencies MUST include threat-model and provenance markers.",
+    "title": "Threat Model And Provenance Markers",
+    "waiverable": false
+  },
+  {
+    "auto_fixable": false,
+    "check_function": "core.aes.checks.supply_chain_checks.check_dependency_locking",
+    "cwe": [],
+    "domain": [
+      "universal"
+    ],
+    "domains": [
+      "universal"
+    ],
+    "engine": "aes",
+    "execution_mode": "static",
+    "id": "AES-SUP-1",
+    "language": [
+      "txt",
+      "toml",
+      "yaml",
+      "md"
+    ],
+    "languages": [
+      "txt",
+      "toml",
+      "yaml",
+      "md"
+    ],
+    "negative_lookahead": null,
+    "parameters": {
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [],
+    "rollout_stage": "ratchet",
+    "section": "6",
+    "section_title": "Security And Supply Chain",
+    "selectors": {},
+    "severity": "AAL-2",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#supply-chain",
+      "standards/AES_SOURCE_BASELINES.md"
+    ],
+    "source_version": "v2",
+    "status": "blocking",
+    "svl_min": null,
+    "text": "Dependency baselines MUST be explicit and auditable.",
+    "title": "Explicit Dependency Pins",
+    "waiverable": false
+  },
+  {
+    "auto_fixable": false,
+    "check_function": "core.aes.checks.supply_chain_checks.check_dependency_locking",
+    "cwe": [],
+    "domain": [
+      "universal"
+    ],
+    "domains": [
+      "universal"
+    ],
+    "engine": "aes",
+    "execution_mode": "static",
+    "id": "AES-SUP-2",
+    "language": [
+      "txt",
+      "toml"
+    ],
+    "languages": [
+      "txt",
+      "toml"
+    ],
+    "negative_lookahead": null,
+    "parameters": {
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [],
+    "rollout_stage": "ratchet",
+    "section": "6",
+    "section_title": "Security And Supply Chain",
+    "selectors": {},
+    "severity": "AAL-1",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#supply-chain",
+      "standards/AES_SOURCE_BASELINES.md"
+    ],
+    "source_version": "v2",
+    "status": "blocking",
+    "svl_min": null,
+    "text": "Pinned dependencies MUST include integrity hash metadata.",
+    "title": "Dependency Hashes Required",
+    "waiverable": false
+  },
+  {
+    "auto_fixable": false,
+    "check_function": "core.aes.supply_chain.check_provenance",
+    "cwe": [],
+    "domain": [
+      "universal"
+    ],
+    "domains": [
+      "universal"
+    ],
+    "engine": "aes",
+    "execution_mode": "workflow_gate",
+    "id": "AES-SUP-3",
+    "language": [
+      "yaml",
+      "json",
+      "md"
+    ],
+    "languages": [
+      "yaml",
+      "json",
+      "md"
+    ],
+    "negative_lookahead": null,
+    "parameters": {
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [
+      "sbom.json"
+    ],
+    "rollout_stage": "ratchet",
+    "section": "6",
+    "section_title": "Security And Supply Chain",
+    "selectors": {},
+    "severity": "AAL-1",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#supply-chain",
+      "standards/AES_SOURCE_BASELINES.md"
+    ],
+    "source_version": "v2",
+    "status": "advisory",
+    "svl_min": null,
+    "text": "Release workflows MUST contain provenance/attestation signals.",
+    "title": "Provenance Markers Required",
+    "waiverable": false
+  },
+  {
+    "auto_fixable": false,
+    "check_function": "core.aes.supply_chain.check_provenance",
+    "cwe": [],
+    "domain": [
+      "universal"
+    ],
+    "domains": [
+      "universal"
+    ],
+    "engine": "aes",
+    "execution_mode": "workflow_gate",
+    "id": "AES-SUP-4",
+    "language": [
+      "yaml",
+      "json",
+      "md"
+    ],
+    "languages": [
+      "yaml",
+      "json",
+      "md"
+    ],
+    "negative_lookahead": null,
+    "parameters": {
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [
+      "sbom.json"
+    ],
+    "rollout_stage": "ratchet",
+    "section": "6",
+    "section_title": "Security And Supply Chain",
+    "selectors": {},
+    "severity": "AAL-1",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#supply-chain",
+      "standards/AES_SOURCE_BASELINES.md"
+    ],
+    "source_version": "v2",
+    "status": "advisory",
+    "svl_min": null,
+    "text": "Release workflows MUST include artifact-signing controls.",
+    "title": "Signing Markers Required",
+    "waiverable": false
+  },
+  {
+    "auto_fixable": false,
+    "check_function": null,
+    "cwe": [],
+    "domain": [
+      "hpc"
+    ],
+    "domains": [
+      "hpc"
+    ],
+    "engine": "human",
+    "execution_mode": "static",
+    "id": "AES-CPP-1",
+    "language": [
+      "c",
+      "c++"
+    ],
+    "languages": [
+      "c",
+      "c++"
+    ],
+    "negative_lookahead": null,
+    "parameters": {
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [],
+    "rollout_stage": "ratchet",
+    "section": "7",
+    "section_title": "Cpp And HPC",
+    "selectors": {},
+    "severity": "AAL-1",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#hpc",
+      "aes_analysis/v1/AES_Primary.md#hpc"
+    ],
+    "source_version": "v1-supplement",
+    "status": "advisory",
+    "svl_min": null,
+    "text": "Native high-performance paths MUST document SIMD and OpenMP assumptions.",
+    "title": "Manual Cpp Safety Review",
+    "waiverable": false
+  },
+  {
+    "auto_fixable": false,
+    "check_function": "core.aes.checks.architecture_checks.check_header_namespace_pollution",
+    "cwe": [],
+    "domain": [
+      "hpc"
+    ],
+    "domains": [
+      "hpc"
+    ],
+    "engine": "agent",
+    "execution_mode": "static",
+    "id": "AES-CPP-2",
+    "language": [
+      "c",
+      "c++"
+    ],
+    "languages": [
+      "c",
+      "c++"
+    ],
+    "negative_lookahead": null,
+    "parameters": {
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [],
+    "rollout_stage": "ratchet",
+    "section": "7",
+    "section_title": "Cpp And HPC",
+    "selectors": {},
+    "severity": "AAL-1",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#hpc",
+      "aes_analysis/v1/AES_Primary.md#hpc"
+    ],
+    "source_version": "v2",
+    "status": "blocking",
+    "svl_min": null,
+    "text": "High-risk kernels MUST keep scalar or reference validation paths.",
+    "title": "No Using Namespace Std In Headers",
+    "waiverable": false
+  },
+  {
+    "auto_fixable": false,
+    "check_function": "core.aes.checks.hpc_checks.check_raii_enforcement",
+    "cwe": [],
+    "domain": [
+      "hpc"
+    ],
+    "domains": [
+      "hpc"
+    ],
+    "engine": "aes",
+    "execution_mode": "static",
+    "id": "AES-CPP-3",
+    "language": [
+      "c",
+      "c++"
+    ],
+    "languages": [
+      "c",
+      "c++"
+    ],
+    "negative_lookahead": null,
+    "parameters": {
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [],
+    "rollout_stage": "ratchet",
+    "section": "7",
+    "section_title": "Cpp And HPC",
+    "selectors": {},
+    "severity": "AAL-1",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#hpc",
+      "aes_analysis/v1/AES_Primary.md#hpc"
+    ],
+    "source_version": "v2",
+    "status": "blocking",
+    "svl_min": null,
+    "text": "High-risk native code MUST avoid raw allocation patterns without RAII ownership.",
+    "title": "Raii Required",
+    "waiverable": false
+  },
+  {
+    "auto_fixable": false,
+    "check_function": "core.aes.checks.hpc_checks.check_nodiscard_returns",
+    "cwe": [],
+    "domain": [
+      "hpc"
+    ],
+    "domains": [
+      "hpc"
+    ],
+    "engine": "aes",
+    "execution_mode": "static",
+    "id": "AES-CPP-4",
+    "language": [
+      "c",
+      "c++"
+    ],
+    "languages": [
+      "c",
+      "c++"
+    ],
+    "negative_lookahead": null,
+    "parameters": {
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [],
+    "rollout_stage": "ratchet",
+    "section": "7",
+    "section_title": "Cpp And HPC",
+    "selectors": {},
+    "severity": "AAL-1",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#hpc",
+      "aes_analysis/v1/AES_Primary.md#hpc"
+    ],
+    "source_version": "v1-supplement",
+    "status": "blocking",
+    "svl_min": null,
+    "text": "Error-bearing native return paths SHOULD use [[nodiscard]] contracts.",
+    "title": "Nodiscard Error Returns",
+    "waiverable": false
+  },
+  {
+    "auto_fixable": false,
+    "check_function": "core.aes.checks.hpc_checks.check_c_style_casts",
+    "cwe": [],
+    "domain": [
+      "hpc"
+    ],
+    "domains": [
+      "hpc"
+    ],
+    "engine": "aes",
+    "execution_mode": "static",
+    "id": "AES-CPP-5",
+    "language": [
+      "c",
+      "c++"
+    ],
+    "languages": [
+      "c",
+      "c++"
+    ],
+    "negative_lookahead": null,
+    "parameters": {
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [],
+    "rollout_stage": "ratchet",
+    "section": "7",
+    "section_title": "Cpp And HPC",
+    "selectors": {},
+    "severity": "AAL-1",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#hpc",
+      "aes_analysis/v1/AES_Primary.md#hpc"
+    ],
+    "source_version": "v2",
+    "status": "blocking",
+    "svl_min": null,
+    "text": "C-style casts SHOULD NOT appear in high-assurance C++ code paths.",
+    "title": "No C Style Casts",
+    "waiverable": false
+  },
+  {
+    "auto_fixable": false,
+    "check_function": "core.aes.checks.universal_checks.check_type_annotations",
+    "cwe": [],
+    "domain": [
+      "universal"
+    ],
+    "domains": [
+      "universal"
+    ],
+    "engine": "agent",
+    "execution_mode": "static",
+    "id": "AES-PY-1",
+    "language": [
+      "python"
+    ],
+    "languages": [
+      "python"
+    ],
+    "negative_lookahead": null,
+    "parameters": {
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [],
+    "rollout_stage": "ratchet",
+    "section": "7",
+    "section_title": "Core Language Controls",
+    "selectors": {},
+    "severity": "AAL-2",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#error-handling",
+      "aes_analysis/v1/AES_Primary.md#coding-standards"
+    ],
+    "source_version": "v2",
+    "status": "guarded",
+    "svl_min": null,
+    "text": "Public Python APIs SHOULD carry type hints.",
+    "title": "Public APIs Typed",
+    "waiverable": false
+  },
+  {
+    "auto_fixable": true,
+    "check_function": "core.aes.checks.ruff_checks.check_ruff_import_order",
+    "cwe": [],
+    "domain": [
+      "universal"
+    ],
+    "domains": [
+      "universal"
+    ],
+    "engine": "ruff",
+    "execution_mode": "static",
+    "id": "AES-PY-2",
+    "language": [
+      "python"
+    ],
+    "languages": [
+      "python"
+    ],
+    "negative_lookahead": null,
+    "parameters": {
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [],
+    "rollout_stage": "ratchet",
+    "section": "7",
+    "section_title": "Core Language Controls",
+    "selectors": {},
+    "severity": "AAL-2",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#error-handling",
+      "aes_analysis/v1/AES_Primary.md#coding-standards"
+    ],
+    "source_version": "v2",
+    "status": "guarded",
+    "svl_min": null,
+    "text": "Imports SHOULD be deterministic and ordered.",
+    "title": "Ruff Baseline",
+    "waiverable": false
+  },
+  {
+    "auto_fixable": false,
+    "check_function": "core.aes.checks.universal_checks.check_mutable_defaults",
+    "cwe": [],
+    "domain": [
+      "universal"
+    ],
+    "domains": [
+      "universal"
+    ],
+    "engine": "agent",
+    "execution_mode": "static",
+    "id": "AES-PY-3",
+    "language": [
+      "python"
+    ],
+    "languages": [
+      "python"
+    ],
+    "negative_lookahead": null,
+    "parameters": {
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [],
+    "rollout_stage": "ratchet",
+    "section": "7",
+    "section_title": "Core Language Controls",
+    "selectors": {},
+    "severity": "AAL-2",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#error-handling",
+      "aes_analysis/v1/AES_Primary.md#coding-standards"
+    ],
+    "source_version": "v2",
+    "status": "guarded",
+    "svl_min": null,
+    "text": "Mutable default arguments SHOULD NOT be used.",
+    "title": "No Mutable Defaults",
+    "waiverable": false
+  },
+  {
+    "auto_fixable": false,
+    "check_function": "core.aes.checks.universal_checks.check_no_dynamic_execution",
+    "cwe": [],
+    "domain": [
+      "universal"
+    ],
+    "domains": [
+      "universal"
+    ],
+    "engine": "agent",
+    "execution_mode": "static",
+    "id": "AES-PY-4",
+    "language": [
+      "python"
+    ],
+    "languages": [
+      "python"
+    ],
+    "negative_lookahead": null,
+    "parameters": {
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [],
+    "rollout_stage": "ratchet",
+    "section": "7",
+    "section_title": "Core Language Controls",
+    "selectors": {},
+    "severity": "AAL-1",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#error-handling",
+      "aes_analysis/v1/AES_Primary.md#coding-standards"
+    ],
+    "source_version": "v2",
+    "status": "blocking",
+    "svl_min": null,
+    "text": "Dynamic execution MUST NOT be used outside explicitly sandboxed environments.",
+    "title": "No Dynamic Execution",
+    "waiverable": false
+  },
+  {
+    "auto_fixable": false,
+    "check_function": "core.aes.checks.universal_checks.check_no_wildcard_imports",
+    "cwe": [],
+    "domain": [
+      "universal"
+    ],
+    "domains": [
+      "universal"
+    ],
+    "engine": "agent",
+    "execution_mode": "static",
+    "id": "AES-PY-5",
+    "language": [
+      "python"
+    ],
+    "languages": [
+      "python"
+    ],
+    "negative_lookahead": null,
+    "parameters": {
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [],
+    "rollout_stage": "ratchet",
+    "section": "7",
+    "section_title": "Core Language Controls",
+    "selectors": {},
+    "severity": "AAL-2",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#error-handling",
+      "aes_analysis/v1/AES_Primary.md#coding-standards"
+    ],
+    "source_version": "v2",
+    "status": "guarded",
+    "svl_min": null,
+    "text": "Wildcard imports MUST NOT be used in governed Python code.",
+    "title": "No Wildcard Imports",
+    "waiverable": false
+  },
+  {
+    "auto_fixable": false,
+    "check_function": "core.aes.checks.universal_checks.check_context_managed_open",
+    "cwe": [],
+    "domain": [
+      "universal"
+    ],
+    "domains": [
+      "universal"
+    ],
+    "engine": "agent",
+    "execution_mode": "static",
+    "id": "AES-PY-6",
+    "language": [
+      "python"
+    ],
+    "languages": [
+      "python"
+    ],
+    "negative_lookahead": null,
+    "parameters": {
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [],
+    "rollout_stage": "ratchet",
+    "section": "7",
+    "section_title": "Core Language Controls",
+    "selectors": {},
+    "severity": "AAL-2",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#error-handling",
+      "aes_analysis/v1/AES_Primary.md#coding-standards"
+    ],
+    "source_version": "v2",
+    "status": "guarded",
+    "svl_min": null,
+    "text": "File operations MUST use context managers in governed Python code.",
+    "title": "Context Managed File Access",
+    "waiverable": false
+  },
+  {
+    "auto_fixable": false,
+    "check_function": null,
+    "cwe": [],
+    "domain": [
+      "hpc"
+    ],
+    "domains": [
+      "hpc"
+    ],
+    "engine": "native",
+    "execution_mode": "static",
+    "id": "AES-HPC-1",
+    "language": [
+      "c",
+      "c++",
+      "python"
+    ],
+    "languages": [
+      "c",
+      "c++",
+      "python"
+    ],
+    "negative_lookahead": null,
+    "parameters": {
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [],
+    "rollout_stage": "ratchet",
+    "section": "8",
+    "section_title": "Cpp And HPC",
+    "selectors": {},
+    "severity": "AAL-1",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#hpc",
+      "aes_analysis/v1/AES_Primary.md#hpc"
+    ],
+    "source_version": "v2",
+    "status": "blocking",
+    "svl_min": null,
+    "text": "Parallel constructs SHOULD make scheduling and reduction assumptions explicit.",
+    "title": "OpenMP Parallel Regions Tagged",
+    "waiverable": false
+  },
+  {
+    "auto_fixable": false,
+    "check_function": "core.aes.checks.hpc_checks.check_alignment_contracts",
+    "cwe": [],
+    "domain": [
+      "hpc"
+    ],
+    "domains": [
+      "hpc"
+    ],
+    "engine": "agent",
+    "execution_mode": "static",
+    "id": "AES-HPC-2",
+    "language": [
+      "c",
+      "c++"
+    ],
+    "languages": [
+      "c",
+      "c++"
+    ],
+    "negative_lookahead": null,
+    "parameters": {
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [],
+    "rollout_stage": "ratchet",
+    "section": "8",
+    "section_title": "Cpp And HPC",
+    "selectors": {},
+    "severity": "AAL-1",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#hpc",
+      "aes_analysis/v1/AES_Primary.md#hpc"
+    ],
+    "source_version": "v2",
+    "status": "blocking",
+    "svl_min": null,
+    "text": "Alignment-sensitive SIMD code SHOULD declare alignment intent.",
+    "title": "Alignment Contracts",
+    "waiverable": false
+  },
+  {
+    "auto_fixable": false,
+    "check_function": "core.aes.checks.hpc_checks.check_explicit_omp_clauses",
+    "cwe": [],
+    "domain": [
+      "hpc"
+    ],
+    "domains": [
+      "hpc"
+    ],
+    "engine": "agent",
+    "execution_mode": "static",
+    "id": "AES-HPC-3",
+    "language": [
+      "c",
+      "c++"
+    ],
+    "languages": [
+      "c",
+      "c++"
+    ],
+    "negative_lookahead": null,
+    "parameters": {
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [],
+    "rollout_stage": "ratchet",
+    "section": "8",
+    "section_title": "Cpp And HPC",
+    "selectors": {},
+    "severity": "AAL-1",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#hpc",
+      "aes_analysis/v1/AES_Primary.md#hpc"
+    ],
+    "source_version": "v2",
+    "status": "blocking",
+    "svl_min": null,
+    "text": "OpenMP parallel regions SHOULD declare explicit data or scheduling clauses.",
+    "title": "Explicit OpenMP Clauses",
+    "waiverable": false
+  },
+  {
+    "auto_fixable": false,
+    "check_function": "core.aes.checks.hpc_checks.check_scalar_reference_impl",
+    "cwe": [],
+    "domain": [
+      "hpc"
+    ],
+    "domains": [
+      "hpc"
+    ],
+    "engine": "agent",
+    "execution_mode": "runtime_gate",
+    "id": "AES-HPC-4",
+    "language": [
+      "c",
+      "c++"
+    ],
+    "languages": [
+      "c",
+      "c++"
+    ],
+    "negative_lookahead": null,
+    "parameters": {
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [
+      "domain_reports/hpc_report.json"
+    ],
+    "rollout_stage": "ratchet",
+    "section": "8",
+    "section_title": "Cpp And HPC",
+    "selectors": {},
+    "severity": "AAL-2",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#hpc",
+      "aes_analysis/v1/AES_Primary.md#hpc"
+    ],
+    "source_version": "v1-supplement",
+    "status": "advisory",
+    "svl_min": null,
+    "text": "SIMD kernels SHOULD provide a scalar or reference oracle.",
+    "title": "Scalar Oracle Exists",
+    "waiverable": false
+  },
+  {
+    "auto_fixable": false,
+    "check_function": "core.aes.checks.ml_checks.check_gradient_health_gate",
+    "cwe": [],
+    "domain": [
+      "ml"
+    ],
+    "domains": [
+      "ml"
+    ],
+    "engine": "semantic",
+    "execution_mode": "static",
+    "id": "AES-ML-1",
+    "language": [
+      "python"
+    ],
+    "languages": [
+      "python"
+    ],
+    "negative_lookahead": "isfinite|is_finite|torch\\.isfinite",
+    "parameters": {
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [],
+    "rollout_stage": "ratchet",
+    "section": "8",
+    "section_title": "Ml Domain",
+    "selectors": {},
+    "severity": "AAL-1",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#ml",
+      "standards/domain_rules/ml.md"
+    ],
+    "source_version": "v2",
+    "status": "blocking",
+    "svl_min": null,
+    "text": "Training loops MUST check for non-finite gradients before optimizer updates.",
+    "title": "Finite Gradient Gate",
+    "waiverable": false
+  },
+  {
+    "auto_fixable": false,
+    "check_function": "core.aes.checks.ml_checks.check_stable_numerics",
+    "cwe": [],
+    "domain": [
+      "ml"
+    ],
+    "domains": [
+      "ml"
+    ],
+    "engine": "agent",
+    "execution_mode": "static",
+    "id": "AES-ML-2",
+    "language": [
+      "python"
+    ],
+    "languages": [
+      "python"
+    ],
+    "negative_lookahead": null,
+    "parameters": {
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [],
+    "rollout_stage": "ratchet",
+    "section": "8",
+    "section_title": "Ml Domain",
+    "selectors": {},
+    "severity": "AAL-1",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#ml",
+      "standards/domain_rules/ml.md"
+    ],
+    "source_version": "v2",
+    "status": "blocking",
+    "svl_min": null,
+    "text": "Unstable numerics MUST be guarded with stable formulations.",
+    "title": "Stable Numerics",
+    "waiverable": false
+  },
+  {
+    "auto_fixable": false,
+    "check_function": "core.aes.checks.ml_checks.check_data_validation",
+    "cwe": [],
+    "domain": [
+      "ml"
+    ],
+    "domains": [
+      "ml"
+    ],
+    "engine": "agent",
+    "execution_mode": "static",
+    "id": "AES-ML-4",
+    "language": [
+      "python"
+    ],
+    "languages": [
+      "python"
+    ],
+    "negative_lookahead": null,
+    "parameters": {
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [],
+    "rollout_stage": "ratchet",
+    "section": "8",
+    "section_title": "Ml Domain",
+    "selectors": {},
+    "severity": "AAL-2",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#ml",
+      "standards/domain_rules/ml.md"
+    ],
+    "source_version": "v2",
+    "status": "guarded",
+    "svl_min": null,
+    "text": "Data ingest boundaries SHOULD validate schema, shape, and dtype.",
+    "title": "Data Validation",
+    "waiverable": false
+  },
+  {
+    "auto_fixable": false,
+    "check_function": "core.aes.checks.ml_checks.check_reproducibility_manifest",
+    "cwe": [],
+    "domain": [
+      "ml"
+    ],
+    "domains": [
+      "ml"
+    ],
+    "engine": "agent",
+    "execution_mode": "runtime_gate",
+    "id": "AES-ML-5",
+    "language": [
+      "python"
+    ],
+    "languages": [
+      "python"
+    ],
+    "negative_lookahead": null,
+    "parameters": {
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [
+      "domain_reports/ml_run_manifest.json"
+    ],
+    "rollout_stage": "ratchet",
+    "section": "8",
+    "section_title": "Ml Domain",
+    "selectors": {},
+    "severity": "AAL-2",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#ml",
+      "standards/domain_rules/ml.md"
+    ],
+    "source_version": "v2",
+    "status": "advisory",
+    "svl_min": null,
+    "text": "Training configuration SHOULD record seeds and versioning.",
+    "title": "Reproducibility Manifest",
+    "waiverable": false
+  },
+  {
+    "auto_fixable": false,
+    "check_function": "core.aes.checks.physics_checks.check_conservation_monitors",
+    "cwe": [],
+    "domain": [
+      "physics"
+    ],
+    "domains": [
+      "physics"
+    ],
+    "engine": "agent",
+    "execution_mode": "runtime_gate",
+    "id": "AES-PHYS-1",
+    "language": [
+      "python",
+      "c",
+      "c++"
+    ],
+    "languages": [
+      "python",
+      "c",
+      "c++"
+    ],
+    "negative_lookahead": null,
+    "parameters": {
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [
+      "domain_reports/physics_report.json"
+    ],
+    "rollout_stage": "ratchet",
+    "section": "8",
+    "section_title": "Physics Domain",
+    "selectors": {},
+    "severity": "AAL-1",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#physics",
+      "standards/domain_rules/physics.md"
+    ],
+    "source_version": "v2",
+    "status": "advisory",
+    "svl_min": null,
+    "text": "Simulation cores SHOULD monitor conservation-sensitive quantities.",
+    "title": "Conservation Monitors",
+    "waiverable": false
+  },
+  {
+    "auto_fixable": false,
+    "check_function": "core.aes.checks.physics_checks.check_symplectic_integrator",
+    "cwe": [],
+    "domain": [
+      "physics"
+    ],
+    "domains": [
+      "physics"
+    ],
+    "engine": "agent",
+    "execution_mode": "runtime_gate",
+    "id": "AES-PHYS-3",
+    "language": [
+      "python",
+      "c",
+      "c++"
+    ],
+    "languages": [
+      "python",
+      "c",
+      "c++"
+    ],
+    "negative_lookahead": null,
+    "parameters": {
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [
+      "domain_reports/physics_report.json"
+    ],
+    "rollout_stage": "ratchet",
+    "section": "8",
+    "section_title": "Physics Domain",
+    "selectors": {},
+    "severity": "AAL-1",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#physics",
+      "standards/domain_rules/physics.md"
+    ],
+    "source_version": "v1-supplement",
+    "status": "advisory_pending_threshold",
+    "svl_min": null,
+    "text": "Hamiltonian systems SHOULD avoid non-symplectic integrator markers.",
+    "title": "Symplectic Integrator",
+    "waiverable": false
+  },
+  {
+    "auto_fixable": false,
+    "check_function": "core.aes.checks.quantum_checks.check_no_magic_angles",
+    "cwe": [],
+    "domain": [
+      "quantum"
+    ],
+    "domains": [
+      "quantum"
+    ],
+    "engine": "agent",
+    "execution_mode": "static",
+    "id": "AES-QC-2",
+    "language": [
+      "python"
+    ],
+    "languages": [
+      "python"
+    ],
+    "negative_lookahead": null,
+    "parameters": {
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [],
+    "rollout_stage": "ratchet",
+    "section": "8",
+    "section_title": "Quantum Domain",
+    "selectors": {},
+    "severity": "AAL-2",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#quantum",
+      "standards/domain_rules/quantum.md"
+    ],
+    "source_version": "v2",
+    "status": "guarded",
+    "svl_min": null,
+    "text": "Parameterized circuits SHOULD avoid magic-angle literals in gate construction.",
+    "title": "No Magic Angles",
+    "waiverable": false
+  },
+  {
+    "auto_fixable": false,
+    "check_function": "core.aes.checks.quantum_checks.check_noise_model_present",
+    "cwe": [],
+    "domain": [
+      "quantum"
+    ],
+    "domains": [
+      "quantum"
+    ],
+    "engine": "agent",
+    "execution_mode": "runtime_gate",
+    "id": "AES-QC-3",
+    "language": [
+      "python"
+    ],
+    "languages": [
+      "python"
+    ],
+    "negative_lookahead": null,
+    "parameters": {
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [
+      "domain_reports/quantum_report.json"
+    ],
+    "rollout_stage": "ratchet",
+    "section": "8",
+    "section_title": "Quantum Domain",
+    "selectors": {},
+    "severity": "AAL-2",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#quantum",
+      "standards/domain_rules/quantum.md"
+    ],
+    "source_version": "v2",
+    "status": "advisory_pending_threshold",
+    "svl_min": null,
+    "text": "Noisy simulations SHOULD specify a noise model explicitly.",
+    "title": "Noise Model Present",
+    "waiverable": false
+  },
+  {
+    "auto_fixable": false,
+    "check_function": "core.aes.checks.quantum_checks.check_transpilation_required",
+    "cwe": [],
+    "domain": [
+      "quantum"
+    ],
+    "domains": [
+      "quantum"
+    ],
+    "engine": "agent",
+    "execution_mode": "runtime_gate",
+    "id": "AES-QC-4",
+    "language": [
+      "python"
+    ],
+    "languages": [
+      "python"
+    ],
+    "negative_lookahead": null,
+    "parameters": {
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [
+      "domain_reports/quantum_report.json"
+    ],
+    "rollout_stage": "ratchet",
+    "section": "8",
+    "section_title": "Quantum Domain",
+    "selectors": {},
+    "severity": "AAL-1",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#quantum",
+      "standards/domain_rules/quantum.md"
+    ],
+    "source_version": "v2",
+    "status": "advisory",
+    "svl_min": null,
+    "text": "Backend execution SHOULD follow explicit compilation or transpilation.",
+    "title": "Transpilation Required",
+    "waiverable": false
+  },
+  {
+    "auto_fixable": false,
+    "check_function": "core.aes.checks.quantum_checks.check_shot_sufficiency",
+    "cwe": [],
+    "domain": [
+      "quantum"
+    ],
+    "domains": [
+      "quantum"
+    ],
+    "engine": "agent",
+    "execution_mode": "runtime_gate",
+    "id": "AES-QC-5",
+    "language": [
+      "python"
+    ],
+    "languages": [
+      "python"
+    ],
+    "negative_lookahead": null,
+    "parameters": {
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [
+      "domain_reports/quantum_report.json"
+    ],
+    "rollout_stage": "ratchet",
+    "section": "8",
+    "section_title": "Quantum Domain",
+    "selectors": {},
+    "severity": "AAL-2",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#quantum",
+      "standards/domain_rules/quantum.md"
+    ],
+    "source_version": "v1-supplement",
+    "status": "advisory_pending_threshold",
+    "svl_min": null,
+    "text": "Shot count SHOULD meet minimum confidence thresholds.",
+    "title": "Shot Sufficiency",
+    "waiverable": false
+  },
+  {
+    "auto_fixable": false,
+    "check_function": null,
+    "cwe": [],
+    "domain": [
+      "universal"
+    ],
+    "domains": [
+      "universal"
+    ],
+    "engine": "agent",
+    "execution_mode": "runtime_gate",
+    "id": "AES-AG-1",
+    "language": [
+      "python",
+      "md"
+    ],
+    "languages": [
+      "python",
+      "md"
+    ],
+    "negative_lookahead": null,
+    "parameters": {
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [
+      "runtime_gates.json",
+      "change_manifest.json"
+    ],
+    "rollout_stage": "ratchet",
+    "section": "9",
+    "section_title": "Agent Operations",
+    "selectors": {},
+    "severity": "AAL-2",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#operations",
+      "prompts/GEMINI.md"
+    ],
+    "source_version": "v2",
+    "status": "advisory",
+    "svl_min": null,
+    "text": "Agents MUST surface their assurance context during non-trivial implementation work.",
+    "title": "Compliance Context Persisted",
+    "waiverable": false
+  },
+  {
+    "auto_fixable": false,
+    "check_function": null,
+    "cwe": [],
+    "domain": [
+      "universal"
+    ],
+    "domains": [
+      "universal"
+    ],
+    "engine": "agent",
+    "execution_mode": "runtime_gate",
+    "id": "AES-AG-2",
+    "language": [
+      "python",
+      "md"
+    ],
+    "languages": [
+      "python",
+      "md"
+    ],
+    "negative_lookahead": null,
+    "parameters": {
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [
+      "runtime_gates.json",
+      "chronicle.json"
+    ],
+    "rollout_stage": "ratchet",
+    "section": "9",
+    "section_title": "Agent Operations",
+    "selectors": {},
+    "severity": "AAL-2",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#operations",
+      "prompts/GEMINI.md"
+    ],
+    "source_version": "v2",
+    "status": "advisory",
+    "svl_min": null,
+    "text": "Prompt guidance is advisory; runtime policy is authoritative.",
+    "title": "Chronicle Gate",
+    "waiverable": false
+  },
+  {
+    "auto_fixable": false,
+    "check_function": null,
+    "cwe": [],
+    "domain": [
+      "universal"
+    ],
+    "domains": [
+      "universal"
+    ],
+    "engine": "agent",
+    "execution_mode": "runtime_gate",
+    "id": "AES-AG-3",
+    "language": [
+      "python",
+      "json"
+    ],
+    "languages": [
+      "python",
+      "json"
+    ],
+    "negative_lookahead": null,
+    "parameters": {
+      "thresholds": {
+        "complexity": {
+          "max_cyclomatic": 10,
+          "max_statements": 60
+        },
+        "dependency": {
+          "require_hashes": true
+        },
+        "domain_reports": {
+          "hpc": {
+            "required": [
+              "scalar_oracle",
+              "perf_baseline"
+            ]
+          },
+          "ml": {
+            "required": [
+              "run_manifest",
+              "deterministic_eval",
+              "non_finite_check",
+              "drift_report"
+            ]
+          },
+          "physics": {
+            "required": [
+              "invariant_ledger",
+              "drift_report"
+            ]
+          },
+          "quantum": {
+            "required": [
+              "backend",
+              "transpilation",
+              "noise_model",
+              "simulator_parity"
+            ]
+          }
+        },
+        "hot_path_perf": {
+          "regression_block_percent": 5.0,
+          "regression_warn_percent": 2.0
+        },
+        "runtime_gates": {
+          "chronicle_required_aal": [
+            "AAL-0",
+            "AAL-1"
+          ],
+          "require_reports_for_hot_paths": true
+        },
+        "telemetry": {
+          "required_fields": [
+            "run_id",
+            "trace_id",
+            "aal"
+          ]
+        }
+      }
+    },
+    "pattern": null,
+    "precedence": 100,
+    "required_artifacts": [
+      "runtime_gates.json"
+    ],
+    "rollout_stage": "ratchet",
+    "section": "9",
+    "section_title": "Agent Operations",
+    "selectors": {},
+    "severity": "AAL-2",
+    "source_refs": [
+      "aes_analysis/v2/deep-research-report v2.md#operations",
+      "prompts/GEMINI.md"
+    ],
+    "source_version": "v2",
+    "status": "advisory",
+    "svl_min": null,
+    "text": "Hook receipts and verification evidence SHOULD be retained for audit.",
+    "title": "Runtime Gate Completion",
+    "waiverable": false
+  }
+]

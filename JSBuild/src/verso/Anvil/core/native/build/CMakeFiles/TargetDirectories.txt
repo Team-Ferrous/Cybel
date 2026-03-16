@@ -1,0 +1,9 @@
+/home/mike/Documents/Github/Anvil/core/native/build/CMakeFiles/anvil_kernels_obj.dir
+/home/mike/Documents/Github/Anvil/core/native/build/CMakeFiles/anvil_runtime_core_obj.dir
+/home/mike/Documents/Github/Anvil/core/native/build/CMakeFiles/anvil_runtime_core.dir
+/home/mike/Documents/Github/Anvil/core/native/build/CMakeFiles/anvil_compat_obj.dir
+/home/mike/Documents/Github/Anvil/core/native/build/CMakeFiles/anvil_backend_granite4_tinyh.dir
+/home/mike/Documents/Github/Anvil/core/native/build/CMakeFiles/anvil_backend_qwen35.dir
+/home/mike/Documents/Github/Anvil/core/native/build/CMakeFiles/anvil_native_ops.dir
+/home/mike/Documents/Github/Anvil/core/native/build/CMakeFiles/edit_cache.dir
+/home/mike/Documents/Github/Anvil/core/native/build/CMakeFiles/rebuild_cache.dir
