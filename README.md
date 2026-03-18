@@ -29,7 +29,7 @@ The goal is simple:
 
 Supports switching between multiple inference backends:
 
-* Groq
+* Groq (OpenAI, Qwen, and more!)
 * xAI Grok
 * Local Transformers
 * Verso pipeline *(experimental)*
