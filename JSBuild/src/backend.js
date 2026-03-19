@@ -21,6 +21,7 @@ import { dirname       } from 'node:path';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { reflect, RecallMemory, RetainMemory } from "./hindsight.js";
+import { Decoder }        from './decoder.js';
 import dotenv from "dotenv";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -865,6 +866,9 @@ async function sendMessage(userInput) {
         };
 
         const fullUserInput   = `Time: ${contextVars.time}\nDay: ${contextVars.day}\nUser: ${userInput}`;
+        let dc = new Decoder();
+        let parsed = dc.parseChat(fullUserInput, `chat_${contextVars.time}_${contextVars.day}`, {preserveFormatting: true, includeMetadata: true});
+        saveDocument(parsed);
         const embeddingVector = await embedText(fullUserInput);
 
         console.log("STEP 3: retrieveTopK from FAISS");
