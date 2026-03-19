@@ -2,7 +2,7 @@
 
 An **open-source agentic workflow engine** and execution layer for orchestrating autonomous AI systems **locally**.
 
-Automat-LLM provides a modular runtime that allows AI agents to reason, retrieve knowledge, interact with tools, and coordinate workflows across multiple model providers.
+Cybel provides a modular runtime that allows AI agents to reason, retrieve knowledge, interact with tools, and coordinate workflows across multiple model providers.
 
 The goal is simple:
 
@@ -29,14 +29,14 @@ The goal is simple:
 
 Supports switching between multiple inference backends:
 
-* Groq
+* Groq (OpenAI, Qwen, and more!)
 * xAI Grok
 * Local Transformers
 * Verso pipeline *(experimental)*
 
 ### Data Ingestion
 
-Automat-LLM can ingest knowledge from multiple sources:
+Cybel can ingest knowledge from multiple sources:
 
 * JSON knowledge bases
 * Uploaded documents
@@ -88,7 +88,7 @@ Response
 
 # Google Sheets Ingestion
 
-Automat-LLM can ingest **structured spreadsheet data directly from Google Sheets**.
+Cybel can ingest **structured spreadsheet data directly from Google Sheets**.
 
 This enables workflows where agents reason over live datasets without manual exports.
 
