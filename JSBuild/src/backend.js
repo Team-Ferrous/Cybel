@@ -1,28 +1,27 @@
 // backend.js
-import fs         from "fs";
-import crypto     from "crypto";
-import electron   from "electron";
-import Store from 'electron-store';
-import path from 'path';
+import fs     from "fs";
+import crypto from "crypto";
+import Store  from 'electron-store';
+import path   from 'path';
+import { dialog, ipcMain, shell, BrowserWindow }   from "electron";
 
-import { google } from "googleapis";
+import OpenAI             from "openai";
+import { google       }   from "googleapis";
+import { createXai    }   from '@ai-sdk/xai';
+import { generateText }   from 'ai';
+import { error        }   from "node:console";
+import { pipeline     }   from "@xenova/transformers";
+import { spawn        }   from "child_process";
+
 import { InstanceEngine } from "./instance_engine.js";
-
-import OpenAI            from "openai";
-import { createXai    }  from '@ai-sdk/xai';
-import { generateText }  from 'ai';
-import { error        }  from "node:console";
-
-import { pipeline      } from "@xenova/transformers";
-import { findGenerator, modelRegistry, activeStack } from './model_switcher.js'
-import { embeddingDim, embeddingIndex, embedText } from "./embeddings.js";
+import { embeddingDim,  embeddingIndex, embedText   } from "./embeddings.js";
+import { findGenerator, modelRegistry,  activeStack } from './model_switcher.js'
 
 import { dirname       } from 'node:path';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { reflect, RecallMemory, RetainMemory } from "./hindsight.js";
 import dotenv from "dotenv";
-const { dialog, ipcMain } = electron;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = dirname(__filename);
@@ -30,16 +29,25 @@ const require    = createRequire(import.meta.url);
 const { IndexFlatL2 }  = require(path.resolve(__dirname, './node_modules/faiss-node/build/Release/faiss-node'));
 dotenv.config({ path: path.join(__dirname, ".env") });
 
-const TOKEN_PATH = path.join(__dirname, 'token.json');
-const CREDENTIALS_PATH = path.join(__dirname, 'credentials.json');
-const engine     = new InstanceEngine();
+const engine            = new InstanceEngine();
 const SHEETS_TOKEN_PATH = path.join(__dirname, "sheets_token.json");
 const SHEETS_CREDENTIALS_PATH = path.join(__dirname, "sheets_credentials.json"); // from GCP
 let sheetsAuth;
+// main.js
+const store = new Store();
+
+let CONFIG = {
+    temperature:      0.75,
+    contextWindow:    4096,
+    generationMode:   "groq", //  "groq" | "local" | "grok" | "verso"
+    model:            "openai/gpt-oss-20b",
+    citation_options: 'enabled',
+    tokenKey:          store.get("tokenKey") || null, //localStorage.getItem("groqKey") //process.env.GROQ_API_KEY,
+    agent_instances:   engine.instances,
+};
 
 async function requestOAuthCode() {
     return new Promise(resolve => {
-
         const authWin = new BrowserWindow({
             width: 400,
             height: 220,
@@ -51,35 +59,56 @@ async function requestOAuthCode() {
             }
         });
 
-        authWin.loadFile("oauth_code.html");
-
+        authWin.loadFile("./oauth_code.html");
         ipcMain.once("google-sheets-code", (_, code) => {
             authWin.close();
             resolve(code);
         });
-
     });
 }
-
 async function authorizeSheets() {
     if (sheetsAuth) return sheetsAuth;
-
-    const credentials = JSON.parse(fs.readFileSync(SHEETS_CREDENTIALS_PATH, "utf-8"));
+    const credentialsRaw = await fs.promises.readFile(SHEETS_CREDENTIALS_PATH, "utf-8");
+    const credentials = JSON.parse(credentialsRaw);
     const { client_secret, client_id, redirect_uris } = credentials.installed;
-    const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0]);
-    console.log("Authorizing Google Sheets access...");
-    if (fs.existsSync(SHEETS_TOKEN_PATH)) {
-        const token = JSON.parse(fs.readFileSync(SHEETS_TOKEN_PATH, "utf-8"));
-        oAuth2Client.setCredentials(token);
-    } else {
-        // Here you’d need a simple input dialog in Electron to get the code
-        const code = await requestOAuthCode();
+    const oAuth2Client = new google.auth.OAuth2(
+        client_id,
+        client_secret,
+        redirect_uris[0]
+    );
 
+    console.log("Authorizing Google Sheets access...");
+
+    try {
+        const tokenRaw = await fs.promises.readFile(SHEETS_TOKEN_PATH, "utf-8");
+        const token = JSON.parse(tokenRaw);
+
+        oAuth2Client.setCredentials(token);
+
+        console.log("Using existing Google Sheets token");
+
+    } catch (err) {
+
+        console.log("No token found, starting OAuth flow");
+
+        const authUrl = oAuth2Client.generateAuthUrl({
+            access_type: "offline",
+            scope: ["https://www.googleapis.com/auth/spreadsheets.readonly"]
+        });
+
+        await shell.openExternal(authUrl);
+        const code = await requestOAuthCode();
         const { tokens } = await oAuth2Client.getToken(code);
         oAuth2Client.setCredentials(tokens);
-        fs.writeFileSync(SHEETS_TOKEN_PATH, JSON.stringify(tokens), "utf-8");
+        await fs.promises.writeFile(
+            SHEETS_TOKEN_PATH,
+            JSON.stringify(tokens),
+            "utf-8"
+        );
     }
+
     console.log("Google Sheets authorization successful");
+
     sheetsAuth = oAuth2Client;
     return oAuth2Client;
 }
@@ -110,18 +139,6 @@ async function ingestSpreadsheetToFAISS(spreadsheetId, range = "Sheet1!A:F") {
     return { success: true, rowsIngested: rows.length };
 }
 
-// main.js
-const store = new Store();
-
-let CONFIG = {
-    temperature:      0.75,
-    contextWindow:    4096,
-    generationMode:   "groq", //  "groq" | "local" | "grok" | "verso"
-    model:            "openai/gpt-oss-20b",
-    citation_options: 'enabled',
-    groqKey:          store.get("groqKey") || null //localStorage.getItem("groqKey") //process.env.GROQ_API_KEY,
-};
-
 function createGroqClient() {
     return new Groq({ apiKey: CONFIG.groqKey });
 }
@@ -134,8 +151,49 @@ let generator;
 let docs       = []
 let embeddings = [];
 
+// Usage:
+//const vector = await getOAIEmbedding("Hello world");
+//console.log(vector.length); // 1536 for text-embedding-3-small
+//Example using HuggingFace transformers.js:
+async function getOAIEmbedding(text) {
+    const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+    async function embedder(text, options = {}) {
+        const response = await client.embeddings.create({
+            model: "text-embedding-3-small",
+            input: text
+        });
+        return response.data[0].embedding;
+    }
+    
+    const vector = await embedder("Hello world");
+
+    return vector;
+}
+
+async function getHFEmbedding(text) {
+    const embedPipeline = await pipeline("feature-extraction", "sentence-transformers/all-MiniLM-L6-v2");
+
+    async function embedder(txt) {
+        const result = await embedPipeline(txt);
+        // result is a nested array, flatten if needed
+        return result[0].flat();
+    }
+
+    const vector = await embedder(text);
+    return vector;
+}
+
 // Active conversation stack
 let activeConversationStack = []; // each entry: { user: string, bot: string }
+
+function pushToConversationStack(userInput, botResponse) {
+    activeConversationStack.push({ user: userInput, bot: botResponse });
+}
+
+function getConversationHistory() {
+    return activeConversationStack.map(entry => `User: ${entry.user}\nBot: ${entry.bot}`).join("\n\n");
+}
 
 // ---------------------------
 // Paths
@@ -146,13 +204,15 @@ const indexPath  = path.join(__dirname, "vector.index");
 const metaPath   = path.join(__dirname, "vector_docs.json");
 const hashPath   = path.join(__dirname, "doc_hash.txt");
 
-
 if (!fs.existsSync(inputDir)) fs.mkdirSync(inputDir, { recursive: true });
 if (!fs.existsSync(logsDir)) fs.mkdirSync(logsDir, { recursive: true });
 
 //----------------------------
 // Utility & Engine Functions
 //----------------------------
+function setGenerationMode(gen){
+    CONFIG.generationMode = gen;
+}
 
 function setTemperature(gen){
     CONFIG.temperature = gen;
@@ -170,9 +230,9 @@ function updateEngine(engine){
     CONFIG.model = engine;
 }
 
-function setGroqKey(key){
-    CONFIG.groqKey = key;
-    store.set("groqKey", key);
+function setTokenKey(key){
+    CONFIG.tokenKey = key;
+    store.set("tokenKey", key);
 }
 
 function setEngineInstance(eng){
@@ -180,16 +240,12 @@ function setEngineInstance(eng){
 }
 
 function setEngine(conf){
-    //eng = getEngineInstance();// || new InstanceEngine();
     CONFIG.engine = conf;
     store.set("current-engine", CONFIG.engine)
-    // set engine to currently loaded pipeline + model set
-    //setEngineInstance(eng);
 }
 
-function getEngine(conf){
-    CONFIG.engine = conf;
-    store.set("current-engine", CONFIG.engine)
+function getEngine(){
+    return store.get("current-engine");
 }
 
 function getEngineInstance(){
@@ -198,11 +254,11 @@ function getEngineInstance(){
 
 async function ingestSheets(id, rows) {
     if (!embeddingIndex) embeddingIndex = new IndexFlatL2({ dims: embeddingDim });
-
     for (const row of rows) {
         const text = Object.entries(row)
                            .map(([k,v]) => `${k}: ${v}`)
                            .join(", ");
+        embedder  = await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2", { token: config.hfToken });
         const emb = await embedder(text, { pooling: "mean", normalize: true });
         embeddings.push(Array.from(emb.data));
         docs.push({ content: text, metadata: row });
@@ -226,15 +282,8 @@ function chunkText(text, chunkSize = 500, overlap = 50) {
     return chunks;
 }
 
-async function ensureDocumentDir() {
-  await fs.mkdir(DOCUMENT_DIR, { recursive: true });
-}
-
 async function saveDocument(doc) {
   try {
-
-    await ensureDocumentDir();
-
     const result = await dialog.showSaveDialog({
       title: "Save Document",
       defaultPath: doc.title + ".json",
@@ -248,7 +297,6 @@ async function saveDocument(doc) {
     }
 
     const filePath = result.filePath;
-
     await fs.promises.writeFile(
       filePath,
       JSON.stringify(doc, null, 2),
@@ -256,7 +304,6 @@ async function saveDocument(doc) {
     );
 
     return { success: true, path: filePath };
-
   } catch (err) {
     console.error("Save error:", err);
     return { success: false, error: err.message };
@@ -268,7 +315,9 @@ async function loadDocument() {
             title: "Import Document",
             defaultPath: "default.txt",
             filters: [
-            { name: "Text, JSON, PDF Files", extensions: ["txt", "json", "pdf"] }
+              {name: "Text or JSON", extensions: ["txt", "json" ]},
+              {name: "Spreadsheet Files", extensions: [ "xlsx", "xls", "csv", "tsv"]},  
+              {name: "PDF Files extensions:", extensions: [ "pdf"]}
             ]
         });
 
@@ -288,6 +337,24 @@ async function loadDocument() {
                 if (doc && typeof doc.content === "string" && doc.content.trim() !== "") {
                     const emb = await embedder(doc.content, { pooling: "mean", normalize: true });
                     embeddings.push(Array.from(emb.data));
+                } else {
+                    console.warn("⚠️ Skipping doc with invalid content:", doc);
+                }
+            }
+            await embeddingIndex.add(embeddings);
+            console.log(`⚡ Built new FAISS index, ntotal: ${embeddingIndex.ntotal()}`);
+            // return text content for now, but ideally we’d want to keep the PDF structure and metadata
+            return { success: true, path: importPath, document: data };
+        }
+        else if (importPath.endsWith(".xlsx") || importPath.endsWith(".xls") || importPath.endsWith(".csv") || importPath.endsWith(".tsv")) {
+            // embed in faiss
+            embeddingIndex = new IndexFlatL2({ dims: embeddingDim });
+            //await Promise.all(docs.map(embedDoc))
+            const chunks = chunkText(data);
+            for (const doc of chunks) {
+                // Skip anything that isn’t an object or missing content
+                if (doc && typeof doc.content === "string" && doc.content.trim() !== "") {
+                    ingestSheets(null, [doc]); // also add to sheets for agent use
                 } else {
                     console.warn("⚠️ Skipping doc with invalid content:", doc);
                 }
@@ -432,7 +499,7 @@ async function loadModels() {
         let HNToken   = localStorage.getItem("HNToken");
 
         console.log("Loading embedding model...");
-        embedder = await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2", { token: hfToken }, model_file_name="all-MiniLM-L6-v2.pt");
+        embedder = await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2", { token: hfToken });
         console.log("Embedding model loaded!");
 
         if (CONFIG.generationMode === "groq") {
@@ -474,7 +541,6 @@ async function loadModels() {
 function getAllDocsFromInputJSON(inputFolder) {
     const files = fs.readdirSync(inputFolder).filter(f => f.endsWith(".json"));
     const docs = [];
-
     for (const file of files) {
         const filePath = path.join(inputFolder, file);
         const data = JSON.parse(fs.readFileSync(filePath, "utf-8"));
@@ -560,13 +626,20 @@ async function initialize() {
         throw new error("INITIALIZATION FAILED!!")
     }
 }
+
 // ---------------------------
 // Retrieval
 // ---------------------------
 function retrieveTopK(queryVector, k = 5) {
-    if (!embeddingIndex || embeddingIndex.ntotal() === 0) return [];
+    if (!embeddingIndex) return [];
+    if (!queryVector || queryVector.length === 0) {
+        console.warn("Empty query vector");
+        return [];
+    }
+
+    if (embeddingIndex.ntotal() === 0) return [];
     try {
-        const results = embeddingIndex.search([queryVector], k);
+        const results = embeddingIndex.search(queryVector, k);
         if (!results?.labels) return [];
         return results.labels.map(i => docs[i]).filter(Boolean);
     } catch (err) {
@@ -578,10 +651,30 @@ function retrieveTopK(queryVector, k = 5) {
 // ---------------------------
 // Generation
 // ---------------------------
-async function generateLocal(prompt) {
+/*async function generateLocal(prompt) {
     if(generator == null){
         await loadModels();
     }
+    //CONFIG.tokenKey
+    const result = await generator(prompt, { max_new_tokens: 200, temperature: 0.7 });
+
+    if (!Array.isArray(result) || !result[0]?.generated_text) {
+        console.warn("generateLocal returned invalid output", result);
+        return "Error: LLM did not return text";
+    }
+    return result[0].generated_text;
+}*/
+
+async function generateLocal(prompt) {
+    const pipe = await pipeline(
+        "text-generation",
+        CONFIG.model
+    );
+
+    generator = async function(prompt, options = {}) {
+        return await pipe(prompt, options);
+    };
+
     const result = await generator(prompt, { max_new_tokens: 200, temperature: 0.7 });
 
     if (!Array.isArray(result) || !result[0]?.generated_text) {
@@ -590,12 +683,46 @@ async function generateLocal(prompt) {
     }
     return result[0].generated_text;
 }
-
 
 async function generateVerso(prompt) {
+    generator = async function(prompt, options = {}) {
+        return new Promise((resolve, reject) => {
+
+            const proc = spawn("python", [
+                "saguaro.py",
+                "--prompt",
+                prompt
+            ], {
+                env: {
+                    ...process.env,
+                    HIGHNOON_API_KEY: CONFIG.tokenKey
+                }
+            });
+
+            let output = "";
+
+            proc.stdout.on("data", d => output += d.toString());
+
+            proc.on("close", code => {
+                if (code !== 0) reject("Saguaro failed");
+                else resolve([{ generated_text: output.trim() }]);
+            });
+        });
+    };
+
+    const result = await generator(prompt, { max_new_tokens: 200, temperature: 0.7 });
+    if (!Array.isArray(result) || !result[0]?.generated_text) {
+        console.warn("generateLocal returned invalid output", result);
+        return "Error: LLM did not return text";
+    }
+    return result[0].generated_text;
+}
+
+/*async function generateVerso(prompt) {
     if(generator == null){
         await loadModels();
     }
+    //CONFIG.tokenKey
     const result = await generator(prompt, { max_new_tokens: 200, temperature: 0.7 });
 
     if (!Array.isArray(result) || !result[0]?.generated_text) {
@@ -603,19 +730,20 @@ async function generateVerso(prompt) {
         return "Error: LLM did not return text";
     }
     return result[0].generated_text;
-}
+}*/
 
 async function generateGroq(prompt) {
     try {
-        let client = new OpenAI({
-            apiKey: CONFIG.groqKey,
+        generator = new OpenAI({
+            apiKey: CONFIG.tokenKey,
             baseURL:"https://api.groq.com/openai/v1",
         })
 
-        let response = await client.responses.create({
+        let response = await generator.responses.create({
             input:prompt,
             model:CONFIG.model,
             temperature:CONFIG.temperature//,
+            //tools:[],
             //citation_options: CONFIG.citation_options
         })
 
@@ -630,9 +758,9 @@ async function generateGroq(prompt) {
 
 async function generateGrok(model, query) {
     try {
-        let client = createXai({ apiKey: process.env.XAI_API_KEY });
+        generator = createXai({ apiKey: CONFIG.tokenKey });
         const { text } = await generateText({
-            model:  client.responses(model),
+            model:  generator.responses(model),
             system: 'You are Grok, a highly intelligent, helpful AI assistant.',
             prompt: query,
         });
@@ -684,6 +812,18 @@ function diversify(results, key = "Genre") {
     return output;
 }
 
+function getModelsBySource(source) {
+    return Object.fromEntries(
+        Object.entries(modelRegistry.llm)
+            .filter(([name, model]) => model.source === source)
+    );
+}
+
+
+function setActiveStackLLM(llm) {
+    activeStack.llm = llm;
+}
+
 async function sendMessage(userInput) {
     if (!embeddingIndex) {
         console.log("Initializing vector index...");
@@ -721,15 +861,17 @@ async function sendMessage(userInput) {
         // STEP 2: enrich input with context variables
         const contextVars = {
             time: new Date().toLocaleTimeString(),
-            day: new Date().toLocaleDateString()
+            day:  new Date().toLocaleDateString()
         };
 
-        const fullUserInput = `Time: ${contextVars.time}\nDay: ${contextVars.day}\nUser: ${userInput}`;
+        const fullUserInput   = `Time: ${contextVars.time}\nDay: ${contextVars.day}\nUser: ${userInput}`;
         const embeddingVector = await embedText(fullUserInput);
 
+        console.log("STEP 3: retrieveTopK from FAISS");
         // STEP 3: retrieve docs from FAISS
         let retrievedDocs = retrieveTopK(embeddingVector, 10);
 
+        console.log("STEP 4: applying diversity filter");
         // STEP 4: apply diversity filter
         retrievedDocs = diversify(retrievedDocs, "Genre"); // or another metadata key
 
@@ -829,11 +971,10 @@ async function generateAgentResponse(agent, input, k = 5) {
 // ---------------------------
 
 export  {
-    setGroqKey,
+    setTokenKey,
     setTemperature,
     setContextWindowKey,
     setGenerationMode,
-    updateEngine,
     saveDocument,
     loadDocument,
     deleteDocument,
@@ -847,6 +988,7 @@ export  {
     createGroqClient,
     setEngine, 
     getEngine,
+    updateEngine,
     getEngineInstance,
     authorizeSheets,
     ingestSpreadsheetToFAISS,
@@ -854,5 +996,9 @@ export  {
     ingestSheets,
     resetActiveStack,
     generateAgentResponse,
-    embeddings
+    getHFEmbedding,
+    getOAIEmbedding,
+    embeddings,
+    pushToConversationStack,
+    getConversationHistory
 };

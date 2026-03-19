@@ -200,9 +200,7 @@ def compute_sdf_on_grid(
         sign = occupancy_label(udf, surface_threshold)
 
     _debug_times["occ"] = t.elapsed
-
     sdf = sign * udf
-
     return sdf, grid_xyz
 
 

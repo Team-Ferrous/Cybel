@@ -18,7 +18,8 @@
   "type": "module",
   "devDependencies": {
     "electron": "^40.1.0",
-    "electron-builder": "^23.6.0"
+    "electron-builder": "^23.6.0",
+    "tailwindcss": "^4.2.1"
   },
   "build": {
     "appId": "com.teamferrous.cybel",

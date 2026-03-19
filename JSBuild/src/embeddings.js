@@ -8,13 +8,13 @@ import { fileURLToPath } from 'node:url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = dirname(__filename);
 const require    = createRequire(import.meta.url);
-const { IndexFlatL2, Index, IndexFlatIP } = require(path.resolve(__dirname, './node_modules/faiss-node/build/Release/faiss-node'));
+const { IndexFlatL2, IndexHNSWFlat, Index, IndexFlatIP } = require(path.resolve(__dirname, './node_modules/faiss-node/build/Release/faiss-node'));
 
 // docs array must include embedding with each doc
 // Example: docs = [{ content: 'text', embedding: [0.1, ...] }, ...]
 // Initialize HNSW or Flat index (dims = embedding length)
 const embeddingDim = 384; // match your model embeddings
-let embeddingIndex = new IndexFlatL2({ type: 'HNSW', dims: embeddingDim }); //IndexFlatIP
+let embeddingIndex = new IndexFlatL2(embeddingDim); //new IndexHNSWFlat(embeddingDim, 32); // new IndexFlatL2({ type: 'HNSW', dims: embeddingDim }); //IndexFlatIP
 let docs = [
   { content: "Hello world",     embedding: [0.1, 0.2, 0.3 /* ... match embeddingDim */] },
   { content: "Another example", embedding: [0.4, 0.5, 0.6 /* ... match embeddingDim */] },
@@ -68,21 +68,35 @@ function searchFAISS(query, k = 5) {
     .filter(Boolean);
 }
 
-/**
- * Deterministic local embedding
- * @param {string} doc
- * @param {number} size
- */
 function embedText(doc, size = embeddingDim) {
-  const vec = new Float32Array(size);
-  for (let i = 0; i < doc.length; i++) {
-    vec[i % size] += doc.charCodeAt(i);
-  }
+    const vec = new Float32Array(size);
+
+    const text = doc.toLowerCase();
+
+    for (let i = 0; i < text.length; i++) {
+        const code = text.charCodeAt(i);
+        const index = code % size;
+        vec[index] += 1;
+    }
+
+    // normalize vector (L2)
+    let norm = 0;
+    for (let i = 0; i < size; i++) {
+        norm += vec[i] * vec[i];
+    }
+
+    norm = Math.sqrt(norm);
+
+    if (norm > 0) {
+        for (let i = 0; i < size; i++) {
+            vec[i] /= norm;
+        }
+    }
 
   // Optional: normalize for cosine similarity
-  const norm = Math.sqrt(vec.reduce((sum, val) => sum + val * val, 0));
+  const normC = Math.sqrt(vec.reduce((sum, val) => sum + val * val, 0));
   if (norm > 0) {
-    for (let i = 0; i < size; i++) vec[i] /= norm;
+    for (let i = 0; i < size; i++) vec[i] /= normC;
   }
 
   return vec;

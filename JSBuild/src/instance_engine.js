@@ -1,6 +1,7 @@
-import { embedText }  from "./embeddings.js"; // your embedding function
+import { embedText }      from "./embeddings.js"; // your embedding function
 import { VestAuthClient } from "./vestauth.js";
-const { IndexFlatL2 } = './node_modules/faiss-node/build/Release/faiss-node';
+const  { IndexFlatL2 } = './node_modules/faiss-node/build/Release/faiss-node';
+import { dialog }   from "electron";
 
 //example invocation
 /*const engine = new InstanceEngine();
@@ -13,8 +14,30 @@ engine.spawn({
 
 //This is for the AI Agents Control Only
 class InstanceEngine {
+    defaultAgentConfig = {
+        id: 0,
+        model:        "mistral7b",
+        systemPrompt: "You are a helpful assistant. Use the tools at your disposal to answer the user's query."
+    }
+
   constructor() {
+    this.config    = this.defaultAgentConfig;
     this.instances = new Map();
+  }
+  
+  /**
+   * Ingest a set of documents into an instance's FAISS index
+   */
+  async ingestDocuments(id, documents) {
+    const inst = this.instances.get(id);
+    if (!inst) throw new Error("Instance not found");
+
+    for (const doc of documents) {
+      // convert doc to embeddings
+      const vector = await embedText(doc); // returns Float32Array
+      inst.faissIndex.add([vector]);
+    }
+    return { success: true, count: documents.length };
   }
 
   /**
@@ -40,7 +63,7 @@ class InstanceEngine {
     const instance = {
       id: config.id,
       provider: config.provider,
-      providerToken,
+      secretKey: providerToken,
       tools: config.tools,
       mode: config.mode,
       sessionState: {},
@@ -72,35 +95,35 @@ class InstanceEngine {
 
     return { success:true };
   }
-  
-  /**
-   * Ingest a set of documents into an instance's FAISS index
-   */
-  async ingestDocuments(id, documents) {
-    const inst = this.instances.get(id);
-    if (!inst) throw new Error("Instance not found");
 
-    for (const doc of documents) {
-      // convert doc to embeddings
-      const vector = await embedText(doc); // returns Float32Array
-      inst.faissIndex.add([vector]);
-    }
-    return { success: true, count: documents.length };
-  }
-
-  async spawnAgent(config) {
+  async spawnAgent(config = null) {
     let vstAuth = new VestAuthClient();
-    const agent = {
-        id: config.id,
-        model: config.model || "mistral7b",
-        systemPrompt: config.systemPrompt || ""
-    };
+    const agentConfig = config || this.defaultAgentConfig;
+    if(this.instances.size >= 0) { 
+      const agent = {
+          id:           agentConfig.id, // simple incremental ID
+          model:        agentConfig.model        || "mistral7b",
+          systemPrompt: agentConfig.systemPrompt || ""
+      };
 
-    // Persist settings
-    //await vstAuth.set(`${agent.id}_model`, agent.model);
-    //await vstAuth.set(`${agent.id}_systemPrompt`, agent.systemPrompt);
-    return agent;
-}
+        // Persist settings
+        //await vstAuth.set(`${agent.id}_model`, agent.model);
+        //await vstAuth.set(`${agent.id}_systemPrompt`, agent.systemPrompt);
+        return agent;
+    }
+    else{
+      const agent = {
+          id:           this.instances.size + 1, // simple incremental ID
+          model:        agentConfig.model        || "mistral7b",
+          systemPrompt: agentConfig.systemPrompt || ""
+      };
+
+      // Persist settings
+      //await vstAuth.set(`${agent.id}_model`, agent.model);
+      //await vstAuth.set(`${agent.id}_systemPrompt`, agent.systemPrompt);
+      return agent;
+    }
+  }
 
   /**
    * Attach an agent to an instance
@@ -110,8 +133,70 @@ class InstanceEngine {
     if (!inst) throw new Error("Instance not found");
 
     inst.agent = agent; // agent could be a function or object handling queries
+    return { success:true };
   }
 
+  detachAgent(id) {
+    const inst = this.instances.get(id);
+    inst.agent = null; // Remove the attached agent
+    return { success:true };
+  }
+  
+  async saveConfig(doc) {
+    try {
+      const result = await dialog.showSaveDialog({
+        title: "Save Document",
+        defaultPath: doc.title + ".json",
+        filters: [
+          { name: "JSON Files", extensions: ["json"] }
+        ]
+      });
+
+      if (result.canceled) {
+        return { success: false, canceled: true };
+      }
+
+      const filePath = result.filePath;
+      await fs.promises.writeFile(
+        filePath,
+        JSON.stringify(doc, null, 2),
+        "utf-8"
+      );
+
+      return { success: true, path: filePath };
+    } catch (err) {
+      console.error("Save error:", err);
+      return { success: false, error: err.message };
+    }
+  }
+
+  async loadConfig() {
+  try {
+        const result = await dialog.showOpenDialog({
+            title: "Import Document",
+            defaultPath: "default.json",
+            filters: [
+              {name: "JSON", extensions: [ "json" ]},
+            ]
+        });
+
+        if (result.canceled) {
+            return { success: false, canceled: true };
+        }
+        const importPath = result.filePaths[0];
+        const data       = await fs.readFile(importPath , "utf-8");
+        if (importPath.endsWith(".json")) {
+          this.config = JSON.parse(data);
+          return { success: true, path: importPath, config: this.config };
+        }
+        else {
+          return { success: false, error: "Unsupported file type" };
+        }
+    } catch (err) {
+        return { success: false, error: err.message };
+    }
+}
+ 
   /**
    * Query FAISS index for nearest neighbors
    */

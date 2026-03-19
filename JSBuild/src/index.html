@@ -712,12 +712,11 @@
                         <button id="saveBtn"  class="SaveLoadOption py-3 px-4 border border-green-800/50 hover:bg-green-900/40 text-green-300 font-mono text-xs font-bold transition-all rounded backdrop-blur-sm">SAVE</button>
                         <button id="loadBtn"  class="SaveLoadOption py-3 px-4 border border-green-800/50 hover:bg-green-900/40 text-green-300 font-mono text-xs font-bold transition-all rounded backdrop-blur-sm">LOAD</button>
                         <button id="mergeBtn" class="SaveLoadOption py-3 px-4 border border-green-800/50 hover:bg-green-900/40 text-green-300 font-mono text-xs font-bold transition-all rounded backdrop-blur-sm">MERGE</button>
-
                         <!-- Ingest row -->
-                        <button id="ingestBtn"
+                        <!--<button disabled id="ingestBtn"
                             class="col-span-3 py-3 px-4 border border-green-800/50 hover:bg-green-900/40 text-green-300 font-mono text-xs font-bold transition-all rounded backdrop-blur-sm">
                             INGEST (Google Drive / Sheets)
-                        </button>
+                        </button>-->
                     </div>
                 </div>
                 <br>
@@ -729,7 +728,7 @@
                         </div>
                         <div class="agent-tag">CHARACTER</div>
                         <div class="bot-name">CYBEL</div>
-                        <div class="bot-desc">An archaic intelligence woven from silicon and shadow; a statesman of the void who speaks with the weight of a dying sun and the measured pause of a veteran orator.</div>
+                        <div class="bot-desc">A statesman of the void who speaks with the weight of a dying sun.</div>
                         <div class="card-footer">
                             <button onclick="switchTab('chat')" class="icon-btn">></button>
                             <!--<button class="icon-btn">📋</button>-->
@@ -795,7 +794,7 @@
                 </div>
                 <!-- Agent Config -->
             <template id="agent-template">
-                <div class="agent-config glass-panel agent-instance">
+                <div class="agent-config glass-panel agent-instance" data-agent-id="0">
                     <h2 class="agent-title text-accent font-mono">Agent Configuration</h2>
                     <hr>
                     <div class="agent-form ">
@@ -863,8 +862,9 @@
                         <label class="agent-label text-accent font-mono">System Prompt</label>
                         <textarea class="agent-textarea agent-prompt" placeholder="System Prompt"></textarea>
                         <div class="config-buttons">
-                            <button class="border-accent text-accent font-mono">Import config</button>
-                            <button class="border-accent text-accent font-mono">Export config</button>
+                            <button  class="border-accent text-accent font-mono">Import config</button>
+                            <button  class="border-accent text-accent font-mono">Export config</button>
+                            <button  id="delete-agent-btn" class="border-accent text-accent font-mono">Delete Agent</button>
                         </div>
                 </div>
                 </template>

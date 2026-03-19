@@ -4,7 +4,7 @@ import { Worker }         from 'worker_threads'; // <-- important!
 import { app, BrowserWindow, ipcMain } from "electron";
 import { 
     sendMessage, 
-    setGroqKey, 
+    setTokenKey, 
     setGenerationMode, 
     setTemperature, 
     setContextWindowKey, 
@@ -17,6 +17,7 @@ import {
     exportDocument,
     setEngine,
     getEngineInstance,
+    setGenerationMode,
     ingestSpreadsheetToFAISS,
     ingestSheets,
     authorizeSheets,
@@ -27,16 +28,14 @@ import { spawn } from "child_process";
 import path      from "path";
 import { dirname }       from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { google } from 'googleapis';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = dirname(__filename);
-
 let pythonServer;
-import { google } from 'googleapis';
-import { get } from "node:http";
 
 async function openGDDialog() {
     const auth = await authorizeSheets(); // reuse your OAuth helper
-
     const drive = google.drive({ version: 'v3', auth });
 
     // List files in a folder (optional: folderId for CybelIngest)
@@ -112,13 +111,16 @@ function initializeWorker() {
     });
 }
 
+ipcMain.handle("engine:set-generation-mode", async (genMode) => {
+    setGenerationMode(genMode);
+});
 ipcMain.handle("engine:update", async (_, newConfig) => {
     setEngine(newConfig);
     console.log("Engine config updated:", newConfig);
 });
 
-ipcMain.handle("chat:setGroqKey", async (_, key) => {
-    setGroqKey(key);
+ipcMain.handle("chat:setTokenKey", async (_, key) => {
+    setTokenKey(key);
     return true;
 });
 
@@ -165,6 +167,14 @@ ipcMain.handle("engine:spawn_instance", async (event, config) => {
   return await getEngineInstance().spawn(config);
 });
 
+ipcMain.handle("engine:save_config", async (event, doc) => {
+  return await getEngineInstance().saveConfig(doc);
+});
+
+ipcMain.handle("engine:load_config", async () => {
+  return await getEngineInstance().loadConfig();
+});
+
 ipcMain.handle("chat:setContextWindowKey", async (_, mode) => {
     setContextWindowKey(mode);
     return true;
@@ -183,6 +193,8 @@ ipcMain.handle("rag:ingest", async (event, paths) => {
     for (const file of paths) {
         const raw = fs.readFileSync(file, "utf8");
         const chunks = chunkText(raw);
+        const emb = await embedder(chunks, { pooling: "mean", normalize: true });
+
         embeddings.push(new Float32Array(emb.data));
 
         let eng = getEngineInstance();
@@ -229,13 +241,19 @@ ipcMain.handle("engine:ingest_documents", async (event, { instanceId, files }) =
   }
 });
 
-ipcMain.handle("engine:getEngineInstance", async () => {
-    return getEngineInstance();
+ipcMain.handle("engine:getEngineInstance", () => {
+    let eng = getEngineInstance();
+    return eng ? eng : { success: false, message: "No engine instance available" };
 });
 
 ipcMain.handle("engine:spawnAgent", async (event, config) => {
     let eng = getEngineInstance();
     return await eng.spawnAgent(config);
+});
+
+ipcMain.handle("engine:deleteAgent", async (_, config) => {
+    let eng = getEngineInstance();
+    return await eng.destroy(config.id);
 });
 
 ipcMain.handle("get-local-models", async () => {
@@ -275,7 +293,16 @@ ipcMain.handle("ingest-google-sheet", async (_, spreadsheetId) => {
 
 ipcMain.handle("open-gdrive-dialog", async () => {
     try {
-        const selectedFiles = await openGDDialog(); // [{id, name}, ...]
+        const selectedFiles = await openGDDialog().then(result => {
+            if (!result.success) {
+                alert("Failed to open Google Drive dialog: " + result.error);
+            } else {
+                console.log("Drive files selected:", result.instance);
+            }
+        })
+        .catch(err => {
+            console.error("Agent spawn error:", err);
+        }); // [{id, name}, ...]
         const results = [];
 
         for (const file of selectedFiles) {

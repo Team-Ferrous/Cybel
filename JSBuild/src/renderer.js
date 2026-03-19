@@ -1,5 +1,5 @@
 // renderer.js
-import { hub }               from './model_switcher.js';
+import { AutoTokenizer, AutoModelForCausalLM } from "@xenova/transformers";
 
 document.querySelectorAll("input[type='range']").forEach(slider => {
 slider.addEventListener("input", (e) => {
@@ -78,32 +78,40 @@ const { accent, theme, background } = JSON.parse(stored);
 }
 
 function initModelSelects() {
-    const containers = document.querySelectorAll('.agent-instance');
+    const container = document.querySelector(".agent-instance");
+    if (!container) return;
 
-    containers.forEach(container => {
-        const groqSelect = container.querySelector('#groq-select');
-        const localSelect = container.querySelector('.local-select');
-        const grokSelect = container.querySelector('.grok-select');
-        const versoSelect = container.querySelector('.verso-select');
+    const map = {
+        "groq-model-toggle":  "#groq-select",
+        "local-model-toggle": ".local-select",
+        "grok-model-toggle":  ".grok-select",
+        "verso-model-toggle": ".verso-select"
+    };
 
-        [localSelect, grokSelect, versoSelect].forEach(el => {
-            //if (!el) return;
-            el.style.display = 'none';
-            el.disabled = true;
-        });
-
-        if (groqSelect) {
-            groqSelect.style.display = 'block';
-            groqSelect.disabled = false;
-        }
+    // hide all selects
+    Object.values(map).forEach(sel => {
+        const el = container.querySelector(sel);
+        if (!el) return;
+        el.style.display = "none";
+        el.disabled = true;
     });
+
+    const checked = container.querySelector("input[type='radio']:checked");
+    if (!checked) return;
+
+    const selectId = map[[...checked.classList].find(c => map[c])];
+    const selectEl = container.querySelector(selectId);
+
+    if (selectEl) {
+        selectEl.style.display = "block";
+        selectEl.disabled = false;
+    }
 }
 
 
     // -------------------------------
     // Local Model Selector Manager
     // -------------------------------
-    
     document.querySelector("#saveBtn").addEventListener("click", async () => {
         const files = await window.api.saveDocument(selectedSlot);
         console.log(files);
@@ -121,6 +129,10 @@ function initModelSelects() {
         const files = await window.api.mergeDocument({baseTitle: resA, mergeTitle: resB, outputTitle: (resA.name + "_output")});
         console.log(files);
     });
+
+    //document.getElementById("#delete-agent-btn").addEventListener("click", () => {
+        //    window.api.deleteAgent();
+        //});
 
     const localSelector  = document.getElementById("local-model-selector");
     const localSelectorV = document.getElementById("vs-model-selector");
@@ -173,9 +185,7 @@ function initModelSelects() {
                 loadModel(option.text);
             }
         });
-    }
-
-    
+    }    
 
     // Update option color / status dynamically
     function updateOptionStatus(modelName, isLocal) {
@@ -232,11 +242,12 @@ function initModelSelects() {
     });
 
     // Call this on app startup
-    initLocalSelector();
-    initVSLocalSelector();
-
+ 
     const input  = document.getElementById("groq-key-input");
     const button = document.getElementById("groq-key-confirm");
+    const buttonGK = document.getElementById("grok-key-confirm");
+    const buttonVS = document.getElementById("verso-key-confirm");
+
     const modeSelector = document.getElementById("modeSelector");
 
     const groqPanels      = document.getElementById("groq-panels");
@@ -266,7 +277,6 @@ function initModelSelects() {
         }
     });
 
-
     modeSelector.addEventListener("change", (e) => {
         const mode = e.target.value;
         if (mode === "groq") {
@@ -276,6 +286,7 @@ function initModelSelects() {
             if (grokPanels)  grokPanels.style.display   = "none";
             if (versoPanels) versoPanels.style.display  = "none";
             if(versoOptsPanels) versoOptsPanels.style.display = "none"
+            localStorage.setItem("modeSelector", "groq");
         }
         if(mode === "grok"){
             if (groqPanels)  groqPanels.style.display  = "none";
@@ -284,7 +295,7 @@ function initModelSelects() {
             if (grokPanels)  grokPanels.style.display  = "block";
             if (versoPanels) versoPanels.style.display  = "none";
             if(versoOptsPanels) versoOptsPanels.style.display = "none"
-
+            localStorage.setItem("modeSelector", "grok");
         }
         if (mode === "local") {
             if (groqPanels)  groqPanels.style.display  = "none";
@@ -293,6 +304,7 @@ function initModelSelects() {
             if (grokPanels)  grokPanels.style.display  = "none";
             if (versoPanels) versoPanels.style.display  = "none";
             if(versoOptsPanels) versoOptsPanels.style.display = "none"
+            localStorage.setItem("modeSelector", "local");
         }
         if (mode === "verso") {
             if (groqPanels)  groqPanels.style.display  = "none";
@@ -301,10 +313,15 @@ function initModelSelects() {
             if (grokPanels)  grokPanels.style.display  = "none";
             if (versoPanels) versoPanels.style.display  = "block";
             if(versoOptsPanels) versoOptsPanels.style.display = "block"
-
+            localStorage.setItem("modeSelector", "verso");
         }
+        localStorage.setItem("modeSelector", e.target.value);
+        window.api.setGenerationMode(e.target.value);
     });
 
+    modeSelector.dispatchEvent(new Event('change'));
+    initLocalSelector();
+    initVSLocalSelector();
 
     // Optional: remember last selection
     const savedMode = localStorage.getItem("modeSelector");
@@ -313,40 +330,59 @@ function initModelSelects() {
         modeSelector.dispatchEvent(new Event("change"));
     }
 
-    modeSelector.addEventListener("change", (e) => {
-        localStorage.setItem("modeSelector", e.target.value);
+    function showToast(message) {
+        const toast = document.createElement("div");
+        toast.textContent = message;
+        toast.className = "toast";
+        document.body.appendChild(toast);
+
+        setTimeout(() => {
+            toast.remove();
+        }, 2000);
+    }
+
+    button.addEventListener("click", () => {
+        const key = input.value.trim();
+        if (!key) {
+            showToast("Please enter a Groq key.");
+            return;
+        }
+        window.api.setTokenKey(key);
     });
 
-    modeSelector.addEventListener("change", (e) => {
-        localStorage.setItem("modeSelector", e.target.value);
+    buttonGK.addEventListener("click", () => {
+        const key = input.value.trim();
+        if (!key) {
+            showToast("Please enter a Grok key.");
+            return;
+        }
+        window.api.setTokenKey(key);
     });
 
-function showToast(message) {
-    const toast = document.createElement("div");
-    toast.textContent = message;
-    toast.className = "toast";
-    document.body.appendChild(toast);
+    buttonVS.addEventListener("click", () => {
+        const key = input.value.trim();
+        if (!key) {
+            showToast("Please enter a Verso key.");
+            return;
+        }
+        window.api.setTokenKey(key);
+    });
 
-    setTimeout(() => {
-        toast.remove();
-    }, 2000);
-}
-button.addEventListener("click", () => {
+    button.addEventListener("click", () => {
     const key = input.value.trim();
     if (!key) {
         showToast("Please enter a Groq key.");
         return;
     }
-
     // Example: store in localStorage
     localStorage.setItem("groqKey", key);
 
     // Or send to main process if Electron
-    window.api.setGroqKey(key);
-    showToast("Groq key saved!");
+    window.api.setTokenKey(key);
+    showToast("Token key saved!");
 });
 
-const storedKey = localStorage.getItem("groqKey");
+const storedKey = localStorage.getItem("tokenKey");
 if (storedKey) input.value = storedKey;
 
 
@@ -394,13 +430,13 @@ function initializeAgent(agentEl) {
     const checkboxG = agentEl.querySelector('.grok-model-toggle');
     const checkboxV = agentEl.querySelector('.verso-model-toggle');
     const groqSelect = agentEl.querySelector('#groq-select');
+    initModelSelects();
     if (!checkbox || !checkboxG || !checkboxV || groqSelect.value === "None") return;
 
     // Trigger the toggle once to set initial state
     checkbox.dispatchEvent(new Event('change'));
     checkboxG.dispatchEvent(new Event('change'));
     checkboxV.dispatchEvent(new Event('change'));
-
 }
 
 // Example: spawning a new agent VISUALLY
@@ -408,7 +444,6 @@ function addAgent() {
     const template = document.getElementById('agent-template');
     const clone = template.content.cloneNode(true);
     const container = clone.querySelector('.agent-instance');
-
     document.getElementById('workflow-steps').appendChild(clone);
     initializeAgent(container);
 
@@ -486,8 +521,7 @@ async function runAgent(agent, input) {
 }
 
 let agentCounter = 0;
-
-    function switchBG(type) {
+function switchBG(type) {
     // Clean previous
     var bg = undefined
     if (bg != undefined && currentBG?.cleanup) {
@@ -563,83 +597,113 @@ function loadSavedAppearance() {
 }
 function updateWorkflowDropdowns() {
 const selects = document.querySelectorAll(".workflow-agent");
-selects.forEach(sel => {
-const option = document.createElement("option");
-option.value = agentId;
-option.textContent = agentConfig.id; // or a friendly name
-sel.appendChild(option);
-});
+        selects.forEach(sel => {
+        const option = document.createElement("option");
+        option.value = agentId;
+        option.textContent = agentConfig.id; // or a friendly name
+        sel.appendChild(option);
+    });
 }
 
-function createAgent() {
-    const template = document.getElementById("agent-template");
+async function createAgent(config = {}) {
+    let engine      = window.api.getEngineInstance();
+    const template  = document.getElementById("agent-template");
     const agentList = document.getElementById("agent-list");
+
+    // Clone the template
     const clone = template.content.cloneNode(true);
-    const agentId = "agent_" + (++agentCounter);
     const agentRoot = clone.querySelector(".agent-instance");
+
+    // Assign unique agent ID
+    const agentId = "agent_" + (++agentCounter);
     agentRoot.dataset.agentId = agentId;
-    const modelSelect = clone.querySelector(".agent-model");
-    const localToggle = clone.querySelector(".local-model-toggle");
-    localToggle.addEventListener("change", () => {
-    modelSelect.disabled = localToggle.checked;
-    if(localToggle.checked){
-        modelSelect.style.opacity = "0.5";
-    } else {
-        modelSelect.style.opacity = "1";
-    }
+
+    // Set default values or override from config
+    agentRoot.querySelector(".agent-name").value = config.name || `Agent ${agentCounter}`;
+    agentRoot.querySelector(".agent-prompt").value = config.prompt || "";
+    agentRoot.querySelector(".agent-title").textContent = config.title || "Agent Configuration";
+
+    // Append to DOM
+    agentList.appendChild(clone);
+
+    // Hook up buttons dynamically
+    const buttons = agentRoot.querySelectorAll(".config-buttons button");
+
+    buttons.forEach(btn => {
+        if (btn.textContent.includes("Import")) {
+            btn.addEventListener("click", () => window.api.loadConfig(agentId));
+        } else if (btn.textContent.includes("Export")) {
+            btn.addEventListener("click", () => window.api.saveConfig(agentId));
+        } else if (btn.textContent.includes("Delete")) {
+            btn.addEventListener("click", () => deleteAgent(agentId));
+        }
     });
 
-    agentList.appendChild(clone);
-    setAgentExists(true); // enable + Step once agent exists
+    // Model toggles
+    const localToggle = agentRoot.querySelector(".local-model-toggle");
+    const modelSelects = agentRoot.querySelectorAll(".agent-model");
 
-    const agentConfig = {
-    id: agentId,
-    provider: localToggle.checked ? "local" : modelSelect.value,
-    tools: [], // later: read from Tools checkboxes
-    mode: "active",
-    embeddingDim: 1536, // default or configurable
-    secretKey: null // optional for provider API key
-    };
-    window.api.spawnAgent(agentConfig)
-    .then(result => {
-        if (!result.success) {
-            alert("Agent creation failed: " + result.error);
-        } else {
-            console.log("Agent instance created:", result.instance);
-        }
-    })
-    .catch(err => {
-        console.error("Agent spawn error:", err);
+    localToggle.addEventListener("change", () => {
+        modelSelects.forEach(select => {
+            if (select.id === "local-select") {
+                select.disabled = !localToggle.checked;
+                select.style.display = localToggle.checked ? "inline-block" : "none";
+            } else {
+                select.disabled = localToggle.checked;
+            }
+        });
+    });
+
+    // Spawn agent in engine
+    engine.spawn({
+        id: agentId,
+        provider: config.provider || "local",
+        mode: "active",
+        tools: [],
+        embeddingDim: 1536
+    }).then(result => {
+        if (!result.success) alert("Agent creation failed: " + result.error);
+        else console.log("Agent created:", agentId);
     });
 }
 
+function deleteAgent(agentId) {
+  const agentRoot = document.querySelector(`[data-agent-id="${agentId}"]`);
+  if (!agentRoot) {
+    console.error("Agent element not found for ID:", agentId);
+    return;
+  }
+
+  const confirmed = confirm("Terminate this agent?");
+  if (!confirmed) return;
+
+  agentRoot.remove();
+  engine.destroy(agentId); // also tell backend
+}
 
 async function deleteBot(agentId, agentRoot) {
-
+    let engine = window.api.getEngineInstance();
     const confirmed = confirm("Terminate this bot instance?");
     if (!confirmed) return;
 
     try {
-        engine = window.api.getEngineInstance();
         if (engine && engine.destroy) {
             await engine.destroy(agentId);
         }
 
         agentRoot.remove();
-        console.log("Agent removed:", agentId);
+        console.log("Bot removed:", agentId);
 
         if (document.querySelectorAll(".agent-instance").length === 0) {
             setAgentExists(false);
         }
 
     } catch (err) {
-
-        console.error("Agent deletion failed:", err);
-        alert("Failed to terminate agent.");
+        console.error("Bot deletion failed:", err);
+        alert("Failed to terminate Bot.");
 
     }
 }
-
 
 const addStepBtn = document.querySelector('.workflow-add');
 
@@ -681,6 +745,12 @@ function loadSavedAccent() {
         if (color === saved) el.classList.add('active');
     });
 }
+
+/*document.querySelector("#ingestBtn").addEventListener("click", () => {
+    window.api.openGDDialog();
+});*/
+
+
 
 // --- 2. Chat Background: Holographic Globe ---
 function initMatrixRain() {
@@ -1195,10 +1265,6 @@ async function handleChatSubmit(e) {
     const text    = input.value.trim();
     if (!text) return;
 
-    /*const keyText = groqKeyInput.value.trim();*/
-    /*if(keyText){
-        await window.api.setGroqKey(text);
-    }*/
     // 1. Show user message
     history.insertAdjacentHTML('beforeend', `
         <div class="flex gap-4 justify-end">
@@ -1219,7 +1285,7 @@ async function handleChatSubmit(e) {
             <div class="w-8 h-8 rounded-full overflow-hidden text-accent flex items-center justify-center border border-accent/30">
                 <img
                             id="avatarImage"
-                            src=""${avatarSrc}""
+                            src="${avatarSrc}"
                             alt="AI Avatar"
                             class="w-full h-full object-cover"
                 />
@@ -1232,7 +1298,10 @@ async function handleChatSubmit(e) {
     lucide.createIcons();
     history.scrollTop = history.scrollHeight;
     try {
-        // Send message via IPC
+        if (!window.api || !window.api.sendMessage) {
+            throw new Error("CYBEL API bridge not available");
+        }
+
         const content = await window.api.sendMessage(text);
 
         if (!content) {
@@ -1400,153 +1469,226 @@ function confirmCreateBot() {
     createBotInstance(name, selectedBotType);
 }
 
-// --- 7. Creative Mode Logic (Restored) ---
-let creativeStep = 1;
+    // --- 7. Creative Mode Logic (Restored) ---
+    let creativeStep = 1;
 
-function setCreativeInput(type) {
-    creativeStep = 2;
-    updateCreativeView();
+    function setCreativeInput(type) {
+        creativeStep = 2;
+        updateCreativeView();
+    }
+
+    function setCreativeOutput(type) {
+        creativeStep = 3;
+        updateCreativeView();
+    }
+
+    function prevCreativeStep() {
+        if (creativeStep > 1) creativeStep--;
+        updateCreativeView();
+    }
+
+    function updateCreativeView() {
+        document.getElementById('creative-step-1').classList.add('hidden');
+        document.getElementById('creative-step-2').classList.add('hidden');
+        document.getElementById('creative-step-3').classList.add('hidden');
+        
+        document.getElementById(`creative-step-${creativeStep}`).classList.remove('hidden');
+
+        const ind2 = document.getElementById('step-ind-2');
+        const ind3 = document.getElementById('step-ind-3');
+        
+        if (creativeStep >= 2) {
+            ind2.classList.remove('bg-gray-800', 'text-gray-400');
+            ind2.classList.add('bg-accent', 'text-black');
+        } else {
+            ind2.classList.add('bg-gray-800', 'text-gray-400');
+            ind2.classList.remove('bg-accent', 'text-black');
+        }
+
+        if (creativeStep >= 3) {
+            ind3.classList.remove('bg-gray-800', 'text-gray-400');
+            ind3.classList.add('bg-accent', 'text-black');
+        } else {
+            ind3.classList.add('bg-gray-800', 'text-gray-400');
+            ind3.classList.remove('bg-accent', 'text-black');
+        }
+    }
+
+    function executeCreative() {
+        showModal('Generation Initiated', 'The engine has received the parameters.');
+        creativeStep = 1;
+        updateCreativeView();
+    }
+
+    // --- 9. Stats Loop & Helpers ---
+    setInterval(() => {
+        const tempEl = document.getElementById('stat-temp');
+        if(tempEl) {
+            let t = parseFloat(tempEl.innerText) + (Math.random() * 0.4 - 0.2);
+            tempEl.innerText = t.toFixed(1) + "°C";
+            tempEl.className = t > 45 ? "font-mono text-red-500" : "font-mono text-green-400";
+        }
+        const latEl = document.getElementById('stat-latency');
+        if(latEl) {
+            let l = 3 + Math.random() * 4;
+            latEl.innerText = l.toFixed(1) + "ms";
+        }
+    }, 2000);
+
+    function resizeCanvases() {
+        window.dispatchEvent(new Event('resize'));
+    }
+
+    function getCurrentThemeAvatar() {
+        // Default avatar and color
+        let avatar = "./assets/avatar_blue.png";
+        let color = "#06b6d4"; // default accent color
+
+        const bgSelectS = document.getElementById('bgSelector');
+        if (bgSelectS && bgSelectS.value) {
+                color = bgSelectS.value;
+                    // Map of accent colors to avatars
+                const avatarMap = {
+                "#06b6d4": "./assets/avatar_blue.png",
+                "#3b82f6": "./assets/avatar_blue.png",
+                "#f59e0b": "./assets/avatar_gold.png",
+                "#22c55e": "./assets/avatar_green.png",
+                "#b34639": "./assets/avatar_red.png",
+                "#3C8E38": "./assets/avatar_emerald.png",
+                "#7E4D5D": "./assets/avatar_rose.png",
+                "#B87232": "./assets/avatar_gold.png",
+                "#5F268D": "./assets/avatar_logicgate.png",
+                "#627A5B": "./assets/avatar_emerald.png",
+                "#914D79": "./assets/avatar_pink.png",
+                "#9E8850": "./assets/avatar_yellow.png",
+                "#712925": "./assets/avatar_ultron.png",
+                "#2B2C2B": "./assets/avatar_black.png"
+                };
+
+                // Pick avatar based on color, fallback to default
+                if (avatarMap[color]) {
+                    avatar = avatarMap[color];
+                }
+                return avatar;
+            }
+            return null;
+    }
+
+    const canvas = document.getElementById('bg-bot');
+    const ctx = canvas.getContext('2d');
+
+    // 1. Set actual canvas size (not CSS)
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+
+    // 2. Font & fill style
+    ctx.font = '16px monospace';
+    ctx.fillStyle = 'lime';
+
+    // 3. Initialize drops AFTER width is set
+    const fontSize = 16;
+    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    const columns = Math.floor(canvas.width / fontSize);
+    const drops = Array(columns).fill(0);
+
+    // 4. Draw loop
+    function draw() {
+    ctx.fillStyle = 'rgba(0,0,0,0.05)'; // fade
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = 'lime';
+    for (let i = 0; i < drops.length; i++) {
+        const text = letters[Math.floor(Math.random() * letters.length)];
+        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+        drops[i] = (drops[i] * fontSize > canvas.height && Math.random() > 0.975) ? 0 : drops[i] + 1;
+    }
 }
 
-function setCreativeOutput(type) {
-    creativeStep = 3;
-    updateCreativeView();
-}
+    function reindexWorkflow(){
+        const steps = document.querySelectorAll(".workflow-step");
+        steps.forEach((step,i)=>{
+            step.querySelector(".workflow-index").textContent = i+1;
+        });
+        workflowStepCounter = steps.length;
+    }
 
-function prevCreativeStep() {
-    if (creativeStep > 1) creativeStep--;
-    updateCreativeView();
-}
-
-function updateCreativeView() {
-    document.getElementById('creative-step-1').classList.add('hidden');
-    document.getElementById('creative-step-2').classList.add('hidden');
-    document.getElementById('creative-step-3').classList.add('hidden');
     
-    document.getElementById(`creative-step-${creativeStep}`).classList.remove('hidden');
+    async function downloadHF(modelName){
 
-    const ind2 = document.getElementById('step-ind-2');
-    const ind3 = document.getElementById('step-ind-3');
-    
-    if (creativeStep >= 2) {
-        ind2.classList.remove('bg-gray-800', 'text-gray-400');
-        ind2.classList.add('bg-accent', 'text-black');
-    } else {
-        ind2.classList.add('bg-gray-800', 'text-gray-400');
-        ind2.classList.remove('bg-accent', 'text-black');
+        await AutoTokenizer.from_pretrained(modelName);
+        await AutoModelForCausalLM.from_pretrained(modelName);
+
     }
 
-    if (creativeStep >= 3) {
-        ind3.classList.remove('bg-gray-800', 'text-gray-400');
-        ind3.classList.add('bg-accent', 'text-black');
-    } else {
-        ind3.classList.add('bg-gray-800', 'text-gray-400');
-        ind3.classList.remove('bg-accent', 'text-black');
+    function downloadModelScope(modelName){
+        return new Promise((resolve,reject)=>{
+
+            const proc = spawn("modelscope", [
+                "download",
+                modelName
+            ]);
+
+            proc.on("close", code=>{
+                if(code === 0) resolve();
+                else reject("ModelScope download failed");
+            });
+
+        });
     }
-}
 
-function executeCreative() {
-    showModal('Generation Initiated', 'The engine has received the parameters.');
-    creativeStep = 1;
-    updateCreativeView();
-}
+        function downloadOllama(modelName) {
+            return new Promise((resolve, reject) => {
 
-// --- 9. Stats Loop & Helpers ---
-setInterval(() => {
-    const tempEl = document.getElementById('stat-temp');
-    if(tempEl) {
-        let t = parseFloat(tempEl.innerText) + (Math.random() * 0.4 - 0.2);
-        tempEl.innerText = t.toFixed(1) + "°C";
-        tempEl.className = t > 45 ? "font-mono text-red-500" : "font-mono text-green-400";
+                const proc = spawn("ollama", ["pull", modelName]);
+
+                proc.stdout.on("data", d => {
+                    console.log(d.toString());
+                });
+
+                proc.stderr.on("data", d => {
+                    console.error(d.toString());
+                });
+
+                proc.on("close", code => {
+                    if (code === 0) resolve();
+                    else reject("Ollama pull failed");
+                });
+
+            });
+        }
+ 
+    async function downloadModel(modelName, sources){
+        for(const source of sources){
+
+            try{
+
+                if(source === "huggingface"){
+                    await downloadHF(modelName);
+                    await onModelDownloaded(modelName);
+                    return;
+                }
+
+                if(source === "modelscope"){
+                    await downloadModelScope(modelName);
+                    await onModelDownloaded(modelName);
+                    return;
+                }
+
+                if(source === "verso"){
+                    await downloadOllama(modelName);
+                    await onModelDownloaded(modelName);
+                    return;
+                }
+            }catch(err){
+
+                console.warn(`Download failed from ${source}`, err);
+
+            }
+
+        }
+
+        throw new Error("Model not found in selected sources");
     }
-    const latEl = document.getElementById('stat-latency');
-    if(latEl) {
-        let l = 3 + Math.random() * 4;
-        latEl.innerText = l.toFixed(1) + "ms";
-    }
-}, 2000);
-
-function resizeCanvases() {
-    window.dispatchEvent(new Event('resize'));
-}
-
-function getCurrentThemeAvatar() {
-// Default avatar and color
-let avatar = "./assets/avatar_blue.png";
-let color = "#06b6d4"; // default accent color
-
-const bgSelectS = document.getElementById('bgSelector');
-if (bgSelectS && bgSelectS.value) {
-color = bgSelectS.value;
-    // Map of accent colors to avatars
-const avatarMap = {
-"#06b6d4": "./assets/avatar_blue.png",
-"#3b82f6": "./assets/avatar_blue.png",
-"#f59e0b": "./assets/avatar_gold.png",
-"#22c55e": "./assets/avatar_green.png",
-"#b34639": "./assets/avatar_red.png",
-"#3C8E38": "./assets/avatar_emerald.png",
-"#7E4D5D": "./assets/avatar_rose.png",
-"#B87232": "./assets/avatar_gold.png",
-"#5F268D": "./assets/avatar_logicgate.png",
-"#627A5B": "./assets/avatar_emerald.png",
-"#914D79": "./assets/avatar_pink.png",
-"#9E8850": "./assets/avatar_yellow.png",
-"#712925": "./assets/avatar_ultron.png",
-"#2B2C2B": "./assets/avatar_black.png"
-};
-
-// Pick avatar based on color, fallback to default
-if (avatarMap[color]) {
-avatar = avatarMap[color];
-}
-
-return avatar;
-}
-return null;
-}
-const canvas = document.getElementById('bg-bot');
-const ctx = canvas.getContext('2d');
-
-// 1. Set actual canvas size (not CSS)
-canvas.width = canvas.offsetWidth;
-canvas.height = canvas.offsetHeight;
-
-// 2. Font & fill style
-ctx.font = '16px monospace';
-ctx.fillStyle = 'lime';
-
-// 3. Initialize drops AFTER width is set
-const fontSize = 16;
-const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-const columns = Math.floor(canvas.width / fontSize);
-const drops = Array(columns).fill(0);
-
-// 4. Draw loop
-function draw() {
-ctx.fillStyle = 'rgba(0,0,0,0.05)'; // fade
-ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-ctx.fillStyle = 'lime';
-for (let i = 0; i < drops.length; i++) {
-const text = letters[Math.floor(Math.random() * letters.length)];
-ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-
-drops[i] = (drops[i] * fontSize > canvas.height && Math.random() > 0.975) ? 0 : drops[i] + 1;
-}
-}
-
-function reindexWorkflow(){
-
-    const steps = document.querySelectorAll(".workflow-step");
-
-    steps.forEach((step,i)=>{
-        step.querySelector(".workflow-index").textContent = i+1;
-    });
-
-    workflowStepCounter = steps.length;
-}
-
 
 async function executeWorkflow() {
 
@@ -1639,6 +1781,11 @@ function initAppearance(){
         });
     });
 
+    document.querySelectorAll(
+        ".local-model-toggle, .grok-model-toggle, .verso-model-toggle, .groq-model-toggle"
+    ).forEach(el => {
+        el.addEventListener("change", initModelSelects);
+    });
 }
 
 function initBackground(){
@@ -1702,64 +1849,87 @@ function initWorkflow(){
 
 }
 
-function initDownloads(){
 
-    const button = document.getElementById("model_confirmation");
-    const input  = document.getElementById("model-search-input");
-    const dropdown = document.getElementById("local-model-selector");
+    function initDownloads(){
 
-    if(!button) return;
+        let conf = window.api.getConfig();
+        if(conf.tokenKey != null){
+        const button = document.getElementById("model_confirmation");
+        const input  = document.getElementById("model-search-input");
+        const dropdown = document.getElementById("local-model-selector");
+
+        if(!button) return;
+
+        function getSelectedSources() {
+
+        const sources = [];
+
+        const hf = document.getElementById("hfBox")?.checked;
+        const ms = document.getElementById("msBox")?.checked;
+
+        if (hf) sources.push("huggingface");
+        if (ms) sources.push("modelscope");
+
+        return sources;
+    }
 
     button.addEventListener("click", async ()=>{
+            const modelName =
+                input?.value?.length > 0
+                ? input.value
+                : dropdown?.value;
 
-        const modelName =
-            input?.value?.length > 0
-            ? input.value
-            : dropdown?.value;
+            if(!modelName){
+                alert("Enter a model name");
+                return;
+            }
 
-        if(!modelName){
-            alert("Enter a model name");
-            return;
-        }
+            const sources = getSelectedSources();
 
-        try{
+            if(sources.length === 0){
+                alert("Select at least one model source");
+                return;
+            }
 
-            button.disabled = true;
-            button.innerText = "Downloading...";
+            try{
 
-            await hub.downloadModel(modelName);
+                button.disabled = true;
+                button.innerText = "Downloading...";
 
-            button.innerText = "Downloaded";
+                await downloadModel(modelName, sources);
+
+                button.innerText = "Downloaded";
+
+            }catch(err){
+                console.error("Download failed", err);
+                button.innerText = "Failed";
+            }
+
             button.disabled = false;
-
-        }catch(err){
-            console.error("Download failed", err);
-            button.disabled = false;
-        }
-
-    });
-
+        });
+    }
 }
 
 function initUI() {
+    initModelSelects();
     try { initAppearance(); } catch(e){ console.error("Appearance failed", e); }
     try { initBackground(); } catch(e){ console.error("Background failed", e); }
     try { initModelControls(); } catch(e){ console.error("Model controls failed", e); }
     try { initWorkflow(); } catch(e){ console.error("Workflow failed", e); }
     try { initDownloads(); } catch(e){ console.error("Downloads failed", e); }
-    initModelSelects();
 }
 
 window.openCreateBotModal = openCreateBotModal
 window.selectBotType      = selectBotType
-window.confirmCreateBot = confirmCreateBot
-window.addAgent         = addAgent;
-window.setSelectedSlot  = setSelectedSlot;
-
-window.createAgent      = createAgent;
-window.addWorkflowStep  = addWorkflowStep;
-window.executeWorkflow  = executeWorkflow;
-window.closeModal       = closeModal;
-window.switchTab        = switchTab;
-window.deleteBot        = deleteBot;
-window.handleChatSubmit = handleChatSubmit;
+window.confirmCreateBot   = confirmCreateBot
+window.addAgent           = addAgent;
+window.setSelectedSlot    = setSelectedSlot;
+window.deleteAgent        = deleteAgent;
+window.createAgent        = createAgent;
+window.addWorkflowStep    = addWorkflowStep;
+window.executeWorkflow    = executeWorkflow;
+window.closeModal         = closeModal;
+window.switchTab          = switchTab;
+window.deleteBot          = deleteBot;
+window.handleChatSubmit   = handleChatSubmit;
+window.updateWorkflowDropdowns = updateWorkflowDropdowns;

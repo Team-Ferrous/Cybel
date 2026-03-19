@@ -1,19 +1,25 @@
-#Comm API/Chennel
+# --- API / Communication ---
 flask
+
+# --- Local Agentic RAG ---
 ./agentic-file-search
-#SPARC3D_SDF Requirements
-kaolin 
-#NewBie AI Reqs
-diffusers 
-transformers 
-accelerate 
-safetensors 
 
-#TPU and QPU Adapters
-#pygad
-#thrml
-#oqtopus
+# --- Core ML stack ---
+torch==2.2.0
+diffusers
+transformers
+accelerate
+safetensors
 
-#MAYBE???
-#torch #ugh....
-#jax
+# --- SPARC3D SDF ---
+# Kaolin must match torch + CUDA version
+kaolin @ https://nvidia-kaolin.s3.us-east-2.amazonaws.com/torch-2.8.0_cu129.html
+
+# --- Optional / experimental ---
+# pygad
+# thrml
+# oqtopus
+
+# --- Possible alt frameworks ---
+# jax
+# torch
