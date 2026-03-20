@@ -184,7 +184,7 @@ def build_thrml_graph_from_merkle(title:str, mtree: MerkleTree, edges: List[Tupl
     tgraph.mtree = mtree
     return tgraph
 
-def predict_ga_from_graph(graph, inputs):
+def predict_ga_from_graph(graph: THRMLGraph, inputs: List[float]):
     key = jax.random.PRNGKey(0)
     schedule = SamplingSchedule(n_warmup=5, n_samples=1, steps_per_sample=1)
     init_state = [jnp.zeros((1, len(graph.nodes)))]
