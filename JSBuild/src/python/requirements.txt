@@ -22,6 +22,7 @@ kaolin @ https://nvidia-kaolin.s3.us-east-2.amazonaws.com/torch-2.8.0_cu129.html
 
 # --- Optional / experimental ---
 # jax     # GPU-accelerated computations
+# preswald
 # merkly  # Tree Data Structure Library
 # thrml   # Probablistic Thermal Graph Augmentation
 # oqtopus # Probablistic Quantum Graph Augmentation

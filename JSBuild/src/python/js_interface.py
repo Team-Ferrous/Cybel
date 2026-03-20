@@ -4,13 +4,54 @@ from python.sparc_server import generate_sdf_local
 from thrml_merkle_pygad import build_mtree, run_image as _run_image, run_text as _run_text
 from fast_graphrag import generate_grag
 from oqtopus_graph_generator import QuantumCircuitGraph, QuantumNode, extract_semantic_graph, run
-from thrml_graph_generator import discover_entity_types, discover_relationships, discover_queries, generate_thrml, run_query
+from thrml_graph_generator import generate_thrml, run_query
 from thrml_merkle_pygad import generate_thrml_from_mtree, predict_ga_from_graph
 from oqtopus_merkle_pygad import build_merkle_quantum_graph, run_merkle_quantum_query
 
 import sys
 
 import subprocess
+import subprocess
+import os
+
+
+class PreswaldClient:
+    def __init__(self, project_path="."):
+        self.project_path = project_path
+        self.process = None
+
+    def init(self, name):
+        subprocess.run(
+            ["preswald", "init", name],
+            cwd=self.project_path,
+            check=True
+        )
+
+    def run(self):
+        if self.process:
+            print("Preswald already running.")
+            return
+
+        self.process = subprocess.Popen(
+            ["preswald", "run"],
+            cwd=self.project_path
+        )
+
+        print("Preswald server started.")
+
+    def export(self):
+        subprocess.run(
+            ["preswald", "export"],
+            cwd=self.project_path,
+            check=True
+        )
+
+    def stop(self):
+        if self.process:
+            self.process.terminate()
+            self.process.wait()
+            self.process = None
+            print("Preswald server stopped.")
 
 class SaguaroClient:
     def __init__(self):
@@ -53,25 +94,35 @@ def run_saguaro(working_dir, text):
     results = saguaro.query(text)
     print("Saguaro Query Results:", results)
 
+def run_preswald(working_dir, command):
+    preswald = PreswaldClient()
+    preswald.project_path = working_dir
+    if command == "init":
+        preswald.init()
+    elif command == "run":
+        preswald.run()
+    elif command == "export":
+        preswald.export()
+    elif command == "stop":
+        preswald.stop()
+
 # Only these functions are callable via JS
 _allowed_commands = {
-    "call-sparc":             lambda args:   generate_sdf_local(args[0], args[1], args[2]),
-    "call-newbie":            lambda prompt: run_newbie_pipeline(prompt),
-    "call-saguaro":           lambda working_dir, text: run_saguaro(working_dir, text),
-    "generate-grag":          lambda text: generate_grag(text),
-    "extract-semantic-graph": lambda text: extract_semantic_graph(None, text),  # LLM integration would go here
-    "discover-entity-types":  lambda text: discover_entity_types(text),
-    "discover-relationships": lambda text: discover_relationships(text),
-    "discover-queries":       lambda text: discover_queries(text),
-    "generate-mtree":         lambda inputs: build_mtree(inputs),
-    "generate-thrml-graph":   lambda args: generate_thrml_from_mtree(args[0], args[1]),  # Placeholder for actual graph generation
-    "generate-quantum-graph": lambda _: QuantumCircuitGraph(
+    "call-sparc":                  lambda args:   generate_sdf_local(args[0], args[1], args[2]),
+    "call-newbie":                 lambda prompt: run_newbie_pipeline(prompt),
+    "call-preswald":               lambda args:  run_preswald(args[0], args[1]),
+    "call-saguaro":                lambda working_dir, text: run_saguaro(working_dir, text),
+    "generate-grag":               lambda text: generate_grag(text),
+    "extract-semantic-graph":      lambda text: extract_semantic_graph(None, text),  # LLM integration would go here
+    "generate-mtree":              lambda inputs: build_mtree(inputs),
+    "generate-thrml-graph":        lambda args: generate_thrml_from_mtree(args[0], args[1]),  # Placeholder for actual graph generation
+    "generate-quantum-graph":      lambda _: QuantumCircuitGraph(
         nodes=[QuantumNode(f"q{i}") for i in range(5)],
     ),
-    "run-quantum-query": lambda args: run(args[0], args[1], args[2], args[3]),
-    "run-thrml-query":   lambda args: run_query(args[0], args[1], args[2], args[3]),
-    "run-image-thrml-ga": _run_image,
-    "run-text-thrml-ga":  _run_text,
+    "run-quantum-query":           lambda args: run(args[0], args[1], args[2], args[3]),
+    "run-thrml-query":             lambda args: run_query(args[0], args[1], args[2], args[3]),
+    "run-image-thrml-ga":          lambda args: _run_image(args[0], args[1], args[2]),
+    "run-text-thrml-ga":           lambda args: _run_text(args[0], args[1], args[2]),
     "predict-ga-from-thrml-graph": lambda args: predict_ga_from_graph(args[0], args[1]),
     "build_merkle_quantum_graph":  lambda args: build_merkle_quantum_graph(args[0], args[1]),
     "run-merkle-quantum-query-ga": lambda args: run_merkle_quantum_query(args[0], args[1], args[2])
