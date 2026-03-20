@@ -5,21 +5,21 @@ flask
 ./agentic-file-search
 
 # --- Core ML stack ---
+# --- SPARC3D SDF ---
 torch==2.2.0
+torchvision 
+torchaudio @ https://download.pytorch.org/whl/cu121 #--index-url https://download.pytorch.org/whl/cu121
 diffusers
 transformers
 accelerate
 safetensors
 
-# --- SPARC3D SDF ---
-# Kaolin must match torch + CUDA version
 kaolin @ https://nvidia-kaolin.s3.us-east-2.amazonaws.com/torch-2.8.0_cu129.html
-
+# Kaolin must match torch + CUDA version #pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
 # --- Optional / experimental ---
-# pygad
+# merkly
+# jax
 # thrml
 # oqtopus
+# pygad
 
-# --- Possible alt frameworks ---
-# jax
-# torch

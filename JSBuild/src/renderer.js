@@ -1,5 +1,5 @@
 // renderer.js
-import { AutoTokenizer, AutoModelForCausalLM } from "@xenova/transformers";
+import { AutoTokenizer, AutoModelForCausalLM } from "https://cdn.jsdelivr.net/npm/@xenova/transformers/dist/transformers.min.js"; //"@xenova/transformers";
 
 document.querySelectorAll("input[type='range']").forEach(slider => {
 slider.addEventListener("input", (e) => {
@@ -1612,12 +1612,9 @@ function confirmCreateBot() {
         workflowStepCounter = steps.length;
     }
 
-    
     async function downloadHF(modelName){
-
         await AutoTokenizer.from_pretrained(modelName);
         await AutoModelForCausalLM.from_pretrained(modelName);
-
     }
 
     function downloadModelScope(modelName){
@@ -1636,32 +1633,28 @@ function confirmCreateBot() {
         });
     }
 
-        function downloadOllama(modelName) {
-            return new Promise((resolve, reject) => {
-
-                const proc = spawn("ollama", ["pull", modelName]);
-
-                proc.stdout.on("data", d => {
-                    console.log(d.toString());
-                });
-
-                proc.stderr.on("data", d => {
-                    console.error(d.toString());
-                });
-
-                proc.on("close", code => {
-                    if (code === 0) resolve();
-                    else reject("Ollama pull failed");
-                });
-
+    function downloadOllama(modelName) {
+        return new Promise((resolve, reject) => {
+            const proc = spawn("ollama", ["pull", modelName]);
+            proc.stdout.on("data", d => {
+                console.log(d.toString());
             });
-        }
+
+            proc.stderr.on("data", d => {
+                console.error(d.toString());
+            });
+
+            proc.on("close", code => {
+                if (code === 0) resolve();
+                else reject("Ollama pull failed");
+            });
+
+        });
+    }
  
     async function downloadModel(modelName, sources){
         for(const source of sources){
-
             try{
-
                 if(source === "huggingface"){
                     await downloadHF(modelName);
                     await onModelDownloaded(modelName);
@@ -1680,13 +1673,9 @@ function confirmCreateBot() {
                     return;
                 }
             }catch(err){
-
                 console.warn(`Download failed from ${source}`, err);
-
             }
-
         }
-
         throw new Error("Model not found in selected sources");
     }
 

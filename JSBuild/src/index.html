@@ -12,7 +12,15 @@
     <link   href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link   rel="stylesheet" href="./main.css">
     <script src="./renderer.js"                type="module"></script>
-
+    <meta http-equiv="Content-Security-Policy"
+        content="
+        default-src 'self';
+        script-src 'self' https://cdn.jsdelivr.net https://unpkg.com;
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+        font-src 'self' https://fonts.gstatic.com;
+        connect-src 'self' https://cdn.jsdelivr.net https://unpkg.com;
+        img-src 'self' data:;
+        ">
 </head>
 <body style="background-color: var(--bg-primary); color: var(--text-primary);" class="h-screen w-screen flex flex-col md:flex-row relative">
     <!-- Global Scanline Overlay -->

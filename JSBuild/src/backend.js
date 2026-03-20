@@ -167,7 +167,7 @@ async function getOAIEmbedding(text) {
         return response.data[0].embedding;
     }
     
-    const vector = await embedder("Hello world");
+    const vector = await embedder(text);
 
     return vector;
 }
@@ -221,10 +221,6 @@ function setTemperature(gen){
 
 function setContextWindowKey(key){
     CONFIG.contextWindow = key;
-}
-
-function setGenerationMode(gen){
-    CONFIG.generationMode = gen;
 }
 
 function updateEngine(engine){

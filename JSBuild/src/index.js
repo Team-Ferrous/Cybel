@@ -5,7 +5,6 @@ import { app, BrowserWindow, ipcMain } from "electron";
 import { 
     sendMessage, 
     setTokenKey, 
-    setGenerationMode, 
     setTemperature, 
     setContextWindowKey, 
     updateCharacter,
@@ -94,7 +93,8 @@ async function createWindow() {
         height: 720,
         webPreferences: {
             preload: path.join(__dirname, "preload.js"),
-            contextIsolation: true
+            contextIsolation: true,
+            nodeIntegration: false
         }
     });
     mainWindow.loadFile("index.html");
@@ -111,9 +111,6 @@ function initializeWorker() {
     });
 }
 
-ipcMain.handle("engine:set-generation-mode", async (genMode) => {
-    setGenerationMode(genMode);
-});
 ipcMain.handle("engine:update", async (_, newConfig) => {
     setEngine(newConfig);
     console.log("Engine config updated:", newConfig);
@@ -124,7 +121,7 @@ ipcMain.handle("chat:setTokenKey", async (_, key) => {
     return true;
 });
 
-ipcMain.handle("chat:setMode", async (_, mode) => {
+ipcMain.handle("engine:set-generation-mode", async (_, mode) => {
     setGenerationMode(mode);
     return true;
 });
@@ -173,6 +170,10 @@ ipcMain.handle("engine:save_config", async (event, doc) => {
 
 ipcMain.handle("engine:load_config", async () => {
   return await getEngineInstance().loadConfig();
+});
+
+ipcMain.handle("engine:get_config", async () => {
+  return await getEngineInstance().config;
 });
 
 ipcMain.handle("chat:setContextWindowKey", async (_, mode) => {

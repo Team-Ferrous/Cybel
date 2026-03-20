@@ -84,7 +84,7 @@ def predict_ga_from_graph(graph, inputs):
     return prediction
 
 # --- Deterministic Run ---
-def run(target_image_path):
+def run_image(target_image_path):
     input_image  = []
     target_image = Image.open(target_image_path).convert("L") #"eg: target.jpg"
     num_genes    = len(function_inputs)
@@ -120,4 +120,52 @@ def run(target_image_path):
         # Insert to Supabase or other logging system here
         # insert(iteration, solution, prediction)
 
-run()
+# --- Deterministic Text Run ---
+def run_text(target_text: str):
+    """
+    Deterministic run on text using THRML graph.
+    """
+
+    # Example: convert text to token vector or feature vector
+    # This replaces the 'target_image' in your previous workflow
+    text_tokens = [ord(c) for c in target_text]  # simplistic char-to-int mapping
+    num_genes = len(function_inputs)
+
+    for iteration in range(1, 2):  # single deterministic iteration
+        # Generate THRML graph from mtree
+        graph = generate_thrml_from_mtree(mtree)
+        solution = [int(n.value[0]) for n in graph.nodes]
+        
+        # Fitness relative to text tokens
+        solution_fitness = 1.0 / (1.0 + np.abs(np.sum(np.array(solution) * function_inputs) - sum(text_tokens)))
+        
+        # Predict output using GA-like prediction
+        prediction = predict_ga_from_graph(graph, function_inputs)
+
+        print(f"Iteration {iteration}")
+        print("Parameters of the best solution :", solution)
+        print("Fitness value of the best solution =", solution_fitness)
+        print("Predicted output based on the THRML graph:", prediction)
+
+        # Convert prediction back to text
+        # Example: scale prediction to text length
+        predicted_length = max(1, int(prediction) % len(target_text))
+        predicted_text = ''.join(target_text[i % len(target_text)] for i in range(predicted_length))
+
+        # Save output text
+        with open("out.txt", "w+") as f:
+            f.write(predicted_text)
+
+        # Logging
+        with open("predictions.txt", "w+") as file1:
+            file1.write(f"Iteration: {iteration}\n")
+            file1.write(f"Best Soln. Parameters: {solution}\n")
+            file1.write(f"Best Prediction:       {prediction}\n\n")
+
+        with open("predictions_mtree.txt", "w+") as file1:
+            file1.write(f"Solution Index (mtree): {mtree.raw_leaves}\n")
+
+        # Optional: insert into Supabase or other logging system
+        # insert(iteration, solution, prediction)
+        
+#run()

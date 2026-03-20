@@ -42,8 +42,7 @@ class GeneSampler(AbstractConditionalSampler):
 def generate_thrml_from_mtree(mtree: MerkleTree):
     """Convert a Merkle Tree of genes into a THRML graph."""
     leaves = mtree.leaves
-    nodes = [GeneNode(value=jnp.array([int.from_bytes(leaf, 'little') % 100])) for leaf in leaves]
-    
+    nodes  = [GeneNode(value=jnp.array([int.from_bytes(leaf, 'little') % 100])) for leaf in leaves]
     node_index = {i: i for i in range(len(nodes))}
     
     block = Block(nodes)
@@ -65,11 +64,17 @@ def generate_thrml_from_mtree(mtree: MerkleTree):
     )
 
     class GraphWrapper:
-        nodes = nodes
-        program = program
+        nodes      = nodes
+        program    = program
         node_index = node_index
 
-    return GraphWrapper()
+        def __init__(self, nodes, program, node_index):
+            #super().__init__(node_index)
+            self.program = program
+            self.nodes   = nodes
+            self.node_index = node_index
+
+    return GraphWrapper(nodes, program, node_index)
 
 def predict_ga_from_graph(graph, inputs):
     """Predict what GA would output given THRML-encoded genes."""
@@ -87,9 +92,11 @@ genes = [4, -2, 3.5, 5, -11, -4.7]
 bytes_inputs = [bytes(str(g), 'utf-8') for g in genes]
 mtree = MerkleTree(bytes_inputs, lambda x, y: x + y)
 
-# Convert MerkleTree to THRML graph
-graph = generate_thrml_from_mtree(mtree)
+def run_ga_optimization(mtree, genes):
+    """Run the full demo: Merkle Tree -> THRML graph -> GA prediction."""
+    # Convert MerkleTree to THRML graph
+    graph = generate_thrml_from_mtree(mtree)
 
-# Predict GA output deterministically
-predicted_output = predict_ga_from_graph(graph, genes)
-print("Predicted GA output:", predicted_output)
+    # Predict GA output deterministically
+    predicted_output = predict_ga_from_graph(graph, genes)
+    print("Predicted GA output:", predicted_output)
