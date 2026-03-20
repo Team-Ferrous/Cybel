@@ -1,4 +1,6 @@
 # sparc_server.py
+from python.newbie_pipeline import run_newbie_pipeline
+from python.sparc_server import generate_sdf_local
 from thrml_merkle_pygad import build_mtree, run_image as _run_image, run_text as _run_text
 from fast_graphrag import generate_grag
 from oqtopus_graph_generator import QuantumCircuitGraph, QuantumNode, extract_semantic_graph, run
@@ -53,6 +55,8 @@ def run_saguaro(working_dir, text):
 
 # Only these functions are callable via JS
 _allowed_commands = {
+    "call-sparc":             lambda args:   generate_sdf_local(args[0], args[1], args[2]),
+    "call-newbie":            lambda prompt: run_newbie_pipeline(prompt),
     "call-saguaro":           lambda working_dir, text: run_saguaro(working_dir, text),
     "generate-grag":          lambda text: generate_grag(text),
     "extract-semantic-graph": lambda text: extract_semantic_graph(None, text),  # LLM integration would go here
@@ -79,14 +83,15 @@ def main():
     # Determine which command
     command = None
     param   = None
-
-    if "--run-image" in args:
-        command = "run-image"
-        param = args[args.index("--run-image") + 1]
-
-    elif "--run-text" in args:
-        command = "run-text"
-        param = args[args.index("--run-text") + 1]
+    if "--call-sparc" in args:
+        command = "call-sparc"
+        uid    = args[args.index("--call-sparc") + 1]
+        prompt = args[args.index("--call-sparc") + 2]
+        n      = args[args.index("--call-sparc") + 3]
+        param = (uid, prompt, n)
+    elif "--call-newbie" in args:
+        command = "call-newbie"
+        param = args[args.index("--call-newbie") + 1]
     elif "--call-saguaro" in args:
         command = "call-saguaro"
         working_dir = args[args.index("--call-saguaro") + 1]

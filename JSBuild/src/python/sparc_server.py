@@ -7,13 +7,6 @@ from sparc3d_sdf.scripts.sdf import run
 
 app = Flask(__name__)
 
-MODEL_ID = "NewBie-AI/NewBie-image-Exp0.1"
-
-pipe = None
-DEVICE = "cpu"
-DTYPE = torch.float32
-
-
 # --------------------------------------------------
 # Hardware Detection
 # --------------------------------------------------
@@ -54,83 +47,23 @@ def get_dtype(device):
 
     return torch.float32
 
+def generate_sdf_local(user_id, prompt, n):
+    input_obj = f"assets/{user_id}.obj"
+    output_obj = f"./local_generations/{user_id}_{n}.obj"
+    run(input_obj, n, prompt, output_obj)
+    print(f"SDF Built at Output Path: {output_obj}")
 
-# --------------------------------------------------
-# Pipeline Loader
-# --------------------------------------------------
-
-def load_pipeline():
-    global pipe
-    global DEVICE
-    global DTYPE
-
-    DEVICE = detect_device()
-    DTYPE = get_dtype(DEVICE)
-
-    print("AI Runtime")
-    print("-----------")
-    print("Device:", DEVICE)
-    print("DType:", DTYPE)
-    print("Model:", MODEL_ID)
-
-    pipe = NewbiePipeline.from_pretrained(
-        MODEL_ID,
-        torch_dtype=DTYPE
-    )
-
-    pipe = pipe.to(DEVICE)
-
-    # Diffusers performance tweaks
-    if DEVICE == "cuda":
-        pipe.enable_attention_slicing()
-        pipe.enable_xformers_memory_efficient_attention()
-
-
-load_pipeline()
-
-
-# --------------------------------------------------
-# Image Generation Endpoint
-# --------------------------------------------------
-
-@app.route("/generate_image", methods=["POST"])
-def generate_image():
-
-    data = request.json
-
-    prompt = data["prompt"]
-    height = data.get("height", 1024)
-    width = data.get("width", 1024)
-    steps = data.get("inference_steps", 30)
-
-    result = pipe(
-        prompt,
-        height=height,
-        width=width,
-        num_inference_steps=steps
-    )
-
-    image = result.images[0]
-
-    img_bytes = io.BytesIO()
-    image.save(img_bytes, format="PNG")
-    img_bytes.seek(0)
-
-    return send_file(img_bytes, mimetype="image/png")
-
-
+# WEB API
 # --------------------------------------------------
 # SDF Generation Endpoint
 # --------------------------------------------------
-
 @app.route("/generate_sdf", methods=["POST"])
 def generate_sdf():
 
     data = request.json
-
-    prompt = data["prompt"]
+    prompt  = data["prompt"]
     user_id = data["userID"]
-    n = data.get("n", 1024)
+    n       = data.get("n", 1024)
 
     input_obj = f"assets/{user_id}.obj"
     output_obj = f"./local_generations/{user_id}_{n}.obj"
@@ -149,7 +82,7 @@ def runtime_info():
 
     info = {
         "device": DEVICE,
-        "dtype": str(DTYPE),
+        "dtype": str(get_dtype(DEVICE)),
         "cuda_available": torch.cuda.is_available(),
         "mps_available": hasattr(torch.backends, "mps") and torch.backends.mps.is_available()
     }
