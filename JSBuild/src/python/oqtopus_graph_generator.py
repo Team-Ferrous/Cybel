@@ -1,3 +1,4 @@
+import json
 import os
 from typing import List, Tuple
 #from PyPDF2 import PdfReader
@@ -58,6 +59,54 @@ class QuantumCircuitGraph:
         counts = result.get_counts()
         return counts
 
+def extract_semantic_graph(llm, text):
+
+    prompt = f"""
+        From the following document extract a knowledge graph.
+
+        Return JSON with:
+
+        nodes: list of entity names
+        edges: list of [source, target, weight]
+
+        Weight should be between 0 and 1.
+
+        TEXT:
+        {text[:8000]}
+        """
+
+    result = llm.invoke(prompt).content
+    graph = json.loads(result)
+    return graph["nodes"], graph["edges"]
+
+def extract_entities(llm, text):
+
+    prompt = f"""
+Extract important entity types from this document.
+
+Return a Python list of entity type names.
+
+Document:
+{text[:8000]}
+"""
+
+    result = llm.invoke(prompt).content
+    return eval(result)
+
+def generate_queries(llm, text):
+
+    prompt = f"""
+Generate example knowledge queries someone might ask about this document.
+
+Return a Python list of questions.
+
+Document:
+{text[:8000]}
+"""
+
+    result = llm.invoke(prompt).content
+    return eval(result)
+
 # -----------------------------
 # Example usage
 # -----------------------------
@@ -101,13 +150,8 @@ def run(llm, pdf_path, DOMAIN, shots):
     # -----------------------------
     # Step 2: Discover entity types, relationships, and example queries
     # -----------------------------
-    entity_types    = discover_entity_types(llm,  text_content)
-    relationships   = discover_relationships(llm, text_content)
-    example_queries = discover_queries(llm,       text_content)
-
-    print("Discovered Entity Types:", entity_types)
-    print("Discovered Relationships:", relationships)
-    print("Generated Example Queries:", example_queries)
+    entity_types    = extract_entities(llm, text_content)
+    example_queries = generate_queries(llm, text_content)
 
     # -----------------------------
     # Step 3: Build GraphRAG from the text

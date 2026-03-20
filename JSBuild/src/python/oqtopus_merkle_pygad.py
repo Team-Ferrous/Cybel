@@ -13,11 +13,16 @@ class MerkleQuantumNode(QuantumNode):
 # -----------------------------
 # Build Quantum Graph from Merkle Tree
 # -----------------------------
-def build_merkle_quantum_graph(inputs: List[int], edges: List[Tuple[str, str]]):
+def build_mtree(inputs: List[int]):
     # Convert inputs to bytes
     bytes_inputs = [bytes(str(x), "utf-8") for x in inputs]
     mhash_function = lambda x, y: x + y
     mtree = MerkleTree(bytes_inputs, mhash_function)
+    return mtree
+
+def build_merkle_quantum_graph(inputs: List[int], edges: List[Tuple[str, str]]):
+    # Convert inputs to bytes
+    mtree = build_mtree(inputs)
 
     # Create nodes from Merkle leaves
     nodes = [

@@ -1,5 +1,6 @@
 import os
 import hashlib
+import equinox as eqx
 import jax
 import jax.numpy as jnp
 from thrml.pgm import AbstractNode
@@ -11,6 +12,8 @@ from thrml.block_sampling import (
     sample_states
 )
 from thrml.conditional_samplers import AbstractConditionalSampler
+from thrml.factor import AbstractFactor
+from thrml.interaction import InteractionGroup
 
 # -------------------------------------
 # utility
@@ -67,12 +70,6 @@ def build_simple_graph(text):
 # -------------------------------------
 # Factor creation
 # -------------------------------------
-
-import equinox as eqx
-from thrml.factor import AbstractFactor
-from thrml.interaction import InteractionGroup
-
-
 class SimpleInteraction(eqx.Module):
     weight: float
 
@@ -217,12 +214,11 @@ def run_query(given_pdf_path, DOMAIN, model_name, token):
     # -----------------------------
     # Initialize LLM
     # -----------------------------
-    llm = ChatGroq(
-        temperature=0,
+    llm = ChatGroq(temperature=0,
         model=model_name #"Llama-3.1-70b-Versatile",
         max_tokens=8000,
         api_key=token #os.environ.get("GROQ_API_KEY")  # Or set manually
-    )
+    )   
 
     # -----------------------------
     # Step 1: Load PDF and convert to text

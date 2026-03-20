@@ -1,10 +1,13 @@
+import os
 import jax
 import numpy as np
+from typing import List, Tuple
 from   PIL import Image
 from   merkly.mtree import MerkleTree
 import jax.numpy as jnp
 
 # THRML imports (from our previous GeneNode/GeneFactor setup)
+from python.thrml_graph_generator import EdgeFactor, SimpleSampler, THRMLGraph, ThrmlNode, get_sha256_hash
 from   thrml.block_management     import Block
 from   thrml.block_sampling       import BlockGibbsSpec, FactorSamplingProgram, SamplingSchedule, sample_states
 from   thrml.interaction          import InteractionGroup
@@ -12,13 +15,7 @@ from   thrml.conditional_samplers import AbstractConditionalSampler
 from   thrml.factor               import AbstractFactor
 import equinox as eqx
 
-# Example function inputs and desired output
-function_inputs = [4, -2, 3.5, 5, -11, -4.7]
 
-# Hash function for MerkleTree
-mhash_function = lambda x, y: x + y
-bytes_inputs = [bytes(str(g), "utf-8") for g in function_inputs]
-mtree = MerkleTree(bytes_inputs, mhash_function)
 
 # THRML Graph generator from Merkle Tree
 class GeneNode(eqx.Module):
@@ -47,7 +44,19 @@ class GeneSampler(AbstractConditionalSampler):
     def init(self):
         return None
 
-def generate_thrml_from_mtree(mtree: MerkleTree):
+class GraphWrapper:
+    def __init__(self, nodes, program):
+        self.nodes   = nodes
+        self.program = program
+
+def build_mtree(inputs: List[int]):
+    # Convert inputs to bytes
+    bytes_inputs = [bytes(str(x), "utf-8") for x in inputs]
+    mhash_function = lambda x, y: x + y
+    mtree = MerkleTree(bytes_inputs, mhash_function)
+    return mtree
+
+def generate_thrml_from_mtree(working_dir, mtree: MerkleTree):
     leaves = mtree.leaves
     nodes = [GeneNode(value=jnp.array([int.from_bytes(leaf, "little") % 100])) for leaf in leaves]
     block = Block(nodes)
@@ -66,13 +75,114 @@ def generate_thrml_from_mtree(mtree: MerkleTree):
         factors=factors,
         other_interaction_groups=[]
     )
+    tgraph = THRMLGraph(working_dir, nodes, program)
+    return tgraph #GraphWrapper(nodes, program)
 
-    class GraphWrapper:
-        def __init__(self, nodes, program):
-            self.nodes   = nodes
-            self.program = program
+def build_merkle_thrml_graph(title:str, inputs: List[int], edges: List[Tuple[str, str]]):
+    input_hash = get_sha256_hash(title)
+    working_dir = f"./{input_hash}"
+    os.makedirs(working_dir, exist_ok=True)
 
-    return GraphWrapper(nodes, program)
+    # Convert inputs to bytes
+    mtree = build_mtree(inputs)
+    # Create nodes from Merkle leaves
+    nodes = [
+        ThrmlNode(f"q{i}", leaf)
+        for i, leaf in enumerate(mtree.leaves)
+    ]
+
+    node_list = list(nodes.values())
+
+    block = Block(node_list)
+
+    node_shape_dtypes = {
+        ThrmlNode: jax.ShapeDtypeStruct((), jnp.float32)
+    }
+
+    spec = BlockGibbsSpec(
+        free_blocks=[block],
+        clamped_blocks=[],
+        node_shape_dtypes=node_shape_dtypes
+    )
+
+    # build factors
+    factors = []
+
+    for src, dst in edges:
+
+        factors.append(
+            EdgeFactor(
+                weight=1.0,
+                blocks=(Block([nodes[src]]), Block([nodes[dst]]))
+            )
+        )
+
+    sampler = SimpleSampler()
+
+    program = FactorSamplingProgram(
+        gibbs_spec=spec,
+        samplers=[sampler],
+        factors=factors,
+        other_interaction_groups=[]
+    )
+
+    # Create the graph
+    tgraph = THRMLGraph(working_dir, nodes, program)
+
+    # Optionally attach Merkle tree to the graph for verification
+    tgraph.mtree = mtree
+    return tgraph
+
+def build_thrml_graph_from_merkle(title:str, mtree: MerkleTree, edges: List[Tuple[str, str]]):
+    input_hash = get_sha256_hash(title)
+    working_dir = f"./{input_hash}"
+    os.makedirs(working_dir, exist_ok=True)
+
+    # Create nodes from Merkle leaves
+    nodes = [
+        ThrmlNode(f"q{i}", leaf)
+        for i, leaf in enumerate(mtree.leaves)
+    ]
+
+    node_list = list(nodes.values())
+    block = Block(node_list)
+    node_shape_dtypes = {
+        ThrmlNode: jax.ShapeDtypeStruct((), jnp.float32)
+    }
+
+    spec = BlockGibbsSpec(
+        free_blocks=[block],
+        clamped_blocks=[],
+        node_shape_dtypes=node_shape_dtypes
+    )
+
+    # build factors
+    factors = []
+
+    for src, dst in edges:
+
+        factors.append(
+            EdgeFactor(
+                weight=1.0,
+                blocks=(Block([nodes[src]]), Block([nodes[dst]]))
+            )
+        )
+
+    sampler = SimpleSampler()
+
+    program = FactorSamplingProgram(
+        gibbs_spec=spec,
+        samplers=[sampler],
+        factors=factors,
+        other_interaction_groups=[]
+    )
+
+    # Create the graph
+    tgraph = THRMLGraph(working_dir, nodes, program)
+
+    # Optionally attach Merkle tree to the graph for verification
+    tgraph.mtree = mtree
+    return tgraph
 
 def predict_ga_from_graph(graph, inputs):
     key = jax.random.PRNGKey(0)
@@ -84,13 +194,13 @@ def predict_ga_from_graph(graph, inputs):
     return prediction
 
 # --- Deterministic Run ---
-def run_image(target_image_path):
+def run_image(target_image_path, function_inputs, mtree):
     input_image  = []
     target_image = Image.open(target_image_path).convert("L") #"eg: target.jpg"
     num_genes    = len(function_inputs)
 
     for iteration in range(1, 2):  # single deterministic iteration
-        graph = generate_thrml_from_mtree(mtree)
+        graph = generate_thrml_from_mtree(target_image_path, mtree)
         solution = [int(n.value[0]) for n in graph.nodes]
         solution_fitness = 1.0 / np.abs(np.sum(np.array(solution) * function_inputs) - 44)
         prediction = predict_ga_from_graph(graph, function_inputs)
@@ -121,7 +231,7 @@ def run_image(target_image_path):
         # insert(iteration, solution, prediction)
 
 # --- Deterministic Text Run ---
-def run_text(target_text: str):
+def run_text(target_text: str, function_inputs: List[int], mtree: MerkleTree):
     """
     Deterministic run on text using THRML graph.
     """
@@ -130,10 +240,11 @@ def run_text(target_text: str):
     # This replaces the 'target_image' in your previous workflow
     text_tokens = [ord(c) for c in target_text]  # simplistic char-to-int mapping
     num_genes = len(function_inputs)
-
+    input_hash = get_sha256_hash(target_text)
+    working_dir = f"./{input_hash}"
     for iteration in range(1, 2):  # single deterministic iteration
         # Generate THRML graph from mtree
-        graph = generate_thrml_from_mtree(mtree)
+        graph = generate_thrml_from_mtree(working_dir, mtree)
         solution = [int(n.value[0]) for n in graph.nodes]
         
         # Fitness relative to text tokens
