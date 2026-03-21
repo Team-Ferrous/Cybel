@@ -81,6 +81,96 @@ def tf_to_pytorch(keras_model):
     pytorch_model = ConvertModel(onnx_model)
     return pytorch_model
 
+def pytorch_to_tf(pytorch_model, input_shape):
+    import torch
+    import onnx
+    from onnx_tf.backend import prepare
+
+    dummy_input = torch.randn(*input_shape)
+
+    # Export PyTorch model to ONNX
+    torch.onnx.export(
+        pytorch_model,
+        dummy_input,
+        "model.onnx",
+        input_names=["input"],
+        output_names=["output"],
+        opset_version=17,
+    )
+
+    # Load ONNX model
+    onnx_model = onnx.load("model.onnx")
+
+    # Convert ONNX → TensorFlow
+    tf_rep = prepare(onnx_model)
+
+    # Returns TensorFlow representation
+    return tf_rep
+
+def makeONNX_Model(model):
+    import torch
+    dummy = torch.randn(1, 128)
+    onx_mdl = torch.onnx.export(
+        model,
+        dummy,
+        "model.onnx",
+        opset_version=17
+    )
+
+#Execute in Python
+def run_mlir_runtime():
+    import iree.runtime as ireert
+    import numpy as np
+
+    config = ireert.Config("local-task")
+    vm_module = ireert.load_vm_module("model.vmfb", config)
+    input = np.random.randn(1,128).astype(np.float32)
+    result = vm_module.main(input)
+
+
+import subprocess
+from pathlib import Path
+
+
+def onnx_to_mlir(onnx_path: str, mlir_path: str | None = None):
+    """
+    Convert ONNX model to MLIR using onnx-mlir.
+    """
+    onnx_path = Path(onnx_path)
+
+    if mlir_path is None:
+        mlir_path = onnx_path.with_suffix(".mlir")
+
+    cmd = [
+        "onnx-mlir",
+        str(onnx_path),
+        "-emit-mlir",
+        f"-o={mlir_path}",
+    ]
+
+    subprocess.run(cmd, check=True)
+    return str(mlir_path)
+
+
+def mlir_to_vmfb(mlir_path: str, vmfb_path: str | None = None, backend="llvm-cpu"):
+    """
+    Compile MLIR to an IREE runtime module (.vmfb).
+    """
+    mlir_path = Path(mlir_path)
+
+    if vmfb_path is None:
+        vmfb_path = mlir_path.with_suffix(".vmfb")
+
+    cmd = [
+        "iree-compile",
+        str(mlir_path),
+        f"--iree-hal-target-backends={backend}",
+        "-o",
+        str(vmfb_path),
+    ]
+    subprocess.run(cmd, check=True)
+    return str(vmfb_path)
+
 def run_saguaro(working_dir, text):
     saguaro = SaguaroClient()
     if not saguaro.initialized:
