@@ -25,8 +25,8 @@ from __future__ import annotations
 
 import logging
 
-import tensorflow as tf
-
+#import tensorflow as tf
+import tensor_ops as TEO
 logger = logging.getLogger(__name__)
 
 # =============================================================================
@@ -52,10 +52,10 @@ def _get_circular_conv_op():
 
 
 def circular_convolution_native(
-    tokens_hd: tf.Tensor,
-    position_vectors: tf.Tensor,
+    tokens_hd,#: tf.Tensor,
+    position_vectors,#: tf.Tensor,
     hd_dim: int | None = None,
-) -> tf.Tensor:
+):# -> tf.Tensor:
     """Memory-efficient circular convolution via C++ in-place FFT.
 
     Computes tokens_hd ⊛ position_vectors in Fourier domain using
@@ -83,7 +83,7 @@ def circular_convolution_native(
     if hd_dim is None:
         hd_dim = tokens_hd.shape[-1]
         if hd_dim is None:
-            hd_dim = tf.shape(tokens_hd)[-1]
+            hd_dim = TEO.shape(tokens_hd)[-1]
 
     return op.CircularConvForward(
         tokens_hd=tokens_hd,
@@ -92,7 +92,8 @@ def circular_convolution_native(
     )
 
 
-@tf.RegisterGradient("CircularConvForward")
+#@tf.RegisterGradient("CircularConvForward")
+@TEO.custom_gradient#
 def _circular_conv_forward_grad(op, grad_output):
     """Gradient for CircularConvForward.
 
@@ -130,11 +131,11 @@ def _circular_conv_forward_grad(op, grad_output):
 
 
 def circular_convolution(
-    tokens_hd: tf.Tensor,
-    position_vectors: tf.Tensor,
+    tokens_hd,#: tf.Tensor,
+    position_vectors,#: tf.Tensor,
     hd_dim: int | None = None,
     use_native: bool = True,
-) -> tf.Tensor:
+):# -> tf.Tensor:
     """Auto-dispatching circular convolution.
 
     Uses C++ in-place FFT if compiled, falls back to TensorFlow otherwise.

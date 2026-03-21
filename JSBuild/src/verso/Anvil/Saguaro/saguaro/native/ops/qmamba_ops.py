@@ -28,8 +28,8 @@ Complexity: O(n · K · state_dim) where K is num_superposition_states
 
 import logging
 
-import tensorflow as tf
-
+#import tensorflow as tf
+import tensor_ops as TEO
 from saguaro.native.ops.lib_loader import get_saguaro_core_path
 
 logger = logging.getLogger(__name__)
@@ -40,7 +40,7 @@ _ops_load_error = None
 
 try:
     _lib_path = get_saguaro_core_path()
-    _ops = tf.load_op_library(_lib_path)
+    _ops = TEO.load_custom_op(_lib_path)
 except Exception as e:
     _ops_load_error = str(e)
     logger.warning("QMamba C++ ops not available: %s", e)
@@ -51,19 +51,19 @@ except Exception as e:
 
 
 def qmamba_selective_scan(
-    x: tf.Tensor,
-    a_log: tf.Tensor,
-    b: tf.Tensor,
-    c: tf.Tensor,
-    dt: tf.Tensor,
-    rotation_angles: tf.Tensor,
+    x,
+    a_log,
+    b,
+    c,
+    dt,
+    rotation_angles,
     num_superposition_states: int = 4,
     entanglement_depth: int = 2,
     entanglement_strength: float = 0.5,
     use_amplitude_selection: bool = True,
     gumbel_temperature: float = 1.0,
     seed: int = 42,
-) -> tuple[tf.Tensor, tf.Tensor]:
+):# -> tuple[tf.Tensor, tf.Tensor]:
     """Full QMamba selective scan with quantum superposition.
 
     Extends standard Mamba scan with K parallel state paths:
@@ -114,11 +114,11 @@ def qmamba_selective_scan(
 
 
 def qmamba_entangle(
-    states: tf.Tensor,
-    rotation_angles: tf.Tensor,
+    states,#,
+    rotation_angles,#,
     entanglement_depth: int = 2,
     entanglement_strength: float = 0.5,
-) -> tf.Tensor:
+):# -> tf.Tensor:
     """Apply VQC-inspired entanglement layers to superposition states.
 
     Uses parameterized rotations to create correlations between paths:
@@ -148,12 +148,12 @@ def qmamba_entangle(
 
 
 def qmamba_collapse(
-    h_super: tf.Tensor,
-    path_logits: tf.Tensor,
+    h_super,#,
+    path_logits,#,
     use_born_rule: bool = True,
     gumbel_temperature: float = 1.0,
     seed: int = 42,
-) -> tf.Tensor:
+):# -> tf.Tensor:
     """Collapse superposition states via Born rule or Gumbel-Softmax.
 
     Born rule collapse:

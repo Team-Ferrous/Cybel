@@ -22,8 +22,8 @@ from __future__ import annotations
 
 import logging
 
-import tensorflow as tf
-
+#import tensorflow as tf
+import tensor_ops as TEO
 from saguaro.native import get_op
 
 logger = logging.getLogger(__name__)
@@ -55,9 +55,9 @@ def _tucker_forward_reference(
     u_out: tf.Tensor,
     bias: tf.Tensor | None,
 ) -> tf.Tensor:
-    x_proj = tf.matmul(x, u_in)
-    core_proj = tf.matmul(x_proj, tf.transpose(core))
-    y = tf.matmul(core_proj, tf.transpose(u_out))
+    x_proj = TEO.matmul(x, u_in)
+    core_proj = tf.matmul(x_proj, TEO.transpose(core))
+    y = tf.matmul(core_proj, TEO.transpose(u_out))
     if bias is not None:
         y = tf.nn.bias_add(y, bias)
     return y
@@ -71,18 +71,18 @@ def _tensor_ring_forward_reference(
     local_dims_in: list[int],
     local_dims_out: list[int],
 ) -> tf.Tensor:
-    batch_size = tf.shape(inputs[0])[0]
+    batch_size = TEO.shape(inputs[0])[0]
     num_cores = len(cores)
 
     batch_matrices = []
     for i in range(num_cores):
         d_out_i = local_dims_out[i]
         d_in_i = local_dims_in[i]
-        core = tf.reshape(cores[i], [ring_rank, d_out_i, d_in_i, ring_rank])
-        site = tf.einsum("aoib,ci->caob", core, inputs[i])
+        core = TEO.reshape(cores[i], [ring_rank, d_out_i, d_in_i, ring_rank])
+        site = TEO.einsum("aoib,ci->caob", core, inputs[i])
         batch_matrices.append(site)
 
-    b_sums = [tf.reduce_sum(m, axis=2) for m in batch_matrices]
+    b_sums = [TEO.reduce_sum(m, axis=2) for m in batch_matrices]
 
     eye = tf.eye(ring_rank, batch_shape=[batch_size])
     prefixes = [eye]
@@ -95,12 +95,12 @@ def _tensor_ring_forward_reference(
 
     output_parts = []
     for m in range(num_cores):
-        part = tf.einsum(
+        part = TEO.einsum(
             "bij,bjok,bki->bo", prefixes[m], batch_matrices[m], suffixes[m + 1]
         )
         output_parts.append(part)
 
-    output = tf.concat(output_parts, axis=-1)
+    output = TEO.concat(output_parts, axis=-1)
     if bias is not None:
         output = tf.nn.bias_add(output, bias)
 
@@ -140,9 +140,9 @@ def fused_tucker_forward(
 
     bias_provided = bias is not None
     if bias is None:
-        bias = tf.zeros([tf.shape(u_out)[0]], dtype=x.dtype)
+        bias = TEO.zeros([TEO.shape(u_out)[0]], dtype=x.dtype)
 
-    @tf.custom_gradient
+    @TEO.custom_gradient
     def _fused_tucker_inner(x_in, u_in_in, core_in, u_out_in, bias_in):
         output = ops.fused_tucker_forward(x_in, u_in_in, core_in, u_out_in, bias_in)
 
@@ -211,9 +211,9 @@ def fused_tensor_ring_forward(
     bias_provided = bias is not None
     if bias is None:
         total_D_out = sum(local_dims_out)
-        bias = tf.zeros([total_D_out], dtype=inputs[0].dtype)
+        bias = TEO.zeros([total_D_out], dtype=inputs[0].dtype)
 
-    @tf.custom_gradient
+    @TEO.custom_gradient
     def _fused_tensor_ring_inner(inputs_in, cores_in, bias_in):
         output = ops.fused_tensor_ring_forward(
             inputs=inputs_in,

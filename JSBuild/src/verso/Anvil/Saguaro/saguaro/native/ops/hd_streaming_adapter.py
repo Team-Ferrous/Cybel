@@ -32,8 +32,8 @@ import logging
 import os
 from typing import Any
 
-import tensorflow as tf
-
+#import tensorflow as tf
+import tensor_ops as TEO
 logger = logging.getLogger(__name__)
 
 # --- Load the Custom Operators ---
@@ -59,7 +59,7 @@ def _load_hd_streaming_ops() -> None:
     consolidated_lib_path = resolve_op_library(__file__, "_saguaro_core.so")
     if os.path.exists(consolidated_lib_path):
         try:
-            _hd_streaming_module = tf.load_op_library(consolidated_lib_path)
+            _hd_streaming_module = TEO.load_custom_op((consolidated_lib_path)
             hd_streaming_project_op = getattr(
                 _hd_streaming_module,
                 "hd_streaming_project",
@@ -270,7 +270,7 @@ class HDStreamingAdapter(tf.keras.layers.Layer):
             )
         else:
             # Create zero bias for C++ op (which always expects bias tensor)
-            self.projection_bias = tf.zeros([self.hidden_dim], dtype=tf.float32)
+            self.projection_bias = TEO.zeros([self.hidden_dim], dtype=tf.float32)
 
         super().build(input_shape)
 

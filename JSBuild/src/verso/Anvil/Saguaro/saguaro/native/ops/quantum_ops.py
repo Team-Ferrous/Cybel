@@ -30,7 +30,7 @@ Ops:
 import contextlib
 import logging
 
-import tensorflow as tf
+import tensor_ops as TEO
 
 from saguaro.native.ops.lib_loader import resolve_op_library
 
@@ -53,7 +53,7 @@ def _load_quantum_ops():
         if lib_path is None:
             raise RuntimeError("Could not find _saguaro_core.so")
 
-        _quantum_ops_module = tf.load_op_library(lib_path)
+        _quantum_ops_module = TEO.load_custom_op(lib_path)
         _quantum_ops_available = True
         logger.info(f"Quantum ops loaded from {lib_path}")
 
@@ -82,10 +82,10 @@ def quantum_ops_available() -> bool:
 
 
 def unitary_residual_forward(
-    x: tf.Tensor,
-    f_x: tf.Tensor,
-    angle: tf.Tensor,
-) -> tf.Tensor:
+    x,#: tf.Tensor,
+    f_x,#: tf.Tensor,
+    angle#: tf.Tensor,
+):# -> tf.Tensor:
     """Unitary residual: y = cos(angle)*x + sin(angle)*f_x.
 
     Args:

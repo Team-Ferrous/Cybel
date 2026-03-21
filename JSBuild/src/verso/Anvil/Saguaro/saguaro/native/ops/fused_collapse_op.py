@@ -27,7 +27,7 @@ built with `./build_ops.sh fused_collapse`.
 
 import logging
 
-import tensorflow as tf
+import tensor_ops as TEO
 
 from saguaro.native import get_op
 
@@ -45,8 +45,8 @@ def _load_fused_collapse_op() -> None:
 
     # Check if already registered in tf.raw_ops (from previous load)
     if "FusedCollapse" in dir(tf.raw_ops):
-        fused_collapse_op = tf.raw_ops.FusedCollapse
-        fused_collapse_grad_op = tf.raw_ops.FusedCollapseGrad
+        fused_collapse_op      = TEO.get_op("FusedCollapse") #.raw_ops.FusedCollapse
+        fused_collapse_grad_op = TEO.get_op("FusedCollapseGrad") #tf.raw_ops.FusedCollapseGrad
         return
 
     # Load from consolidated binary via _native loader
@@ -100,22 +100,22 @@ def fused_collapse_available() -> bool:
 
 @tf.custom_gradient
 def fused_collapse(
-    context: tf.Tensor,
-    superposed: tf.Tensor,
-    q_weights: tf.Tensor,
-    k_weights: tf.Tensor,
-    v_weights: tf.Tensor,
-    o_weights: tf.Tensor,
-    q_bias: tf.Tensor,
-    k_bias: tf.Tensor,
-    v_bias: tf.Tensor,
-    o_bias: tf.Tensor,
+    context,#: tf.Tensor,
+    superposed,#: tf.Tensor,
+    q_weights,#: tf.Tensor,
+    k_weights,#: tf.Tensor,
+    v_weights,#: tf.Tensor,
+    o_weights,#: tf.Tensor,
+    q_bias, #: tf.Tensor,
+    k_bias, #: tf.Tensor,
+    v_bias, #: tf.Tensor,
+    o_bias, #: tf.Tensor,
     num_heads: int = 4,
     temperature: float = 1.0,
     training: bool = True,
     use_kernel_attention: bool = False,
     feature_map: int = 0,
-) -> tuple[tf.Tensor, callable]:
+):# -> tuple[tf.Tensor, callable]:
     """Python wrapper for the custom FusedCollapse operator.
 
     Implements multi-head cross-attention collapse for superposition states
@@ -168,7 +168,7 @@ def fused_collapse(
         feature_map=feature_map,
     )
 
-    def grad_fn(dy: tf.Tensor):
+    def grad_fn(dy):#: tf.Tensor):
         """Gradient function for fused collapse."""
         if fused_collapse_grad_op is None:
             raise NotImplementedError(
@@ -222,10 +222,10 @@ def fused_collapse(
 
 
 def gumbel_softmax_tf(
-    logits: tf.Tensor,
+    logits,#: tf.Tensor,
     temperature: float = 1.0,
     hard: bool = False,
-) -> tf.Tensor:
+):# -> tf.Tensor:
     """TensorFlow implementation of Gumbel-Softmax for fallback.
 
     Args:
@@ -237,15 +237,15 @@ def gumbel_softmax_tf(
         Soft or hard samples from Gumbel-Softmax distribution.
     """
     # Generate Gumbel noise: -log(-log(U))
-    u = tf.random.uniform(tf.shape(logits), minval=1e-9, maxval=1.0 - 1e-9)
-    gumbel_noise = -tf.math.log(-tf.math.log(u))
+    u = tf.random.uniform(TEO.shape(logits), minval=1e-9, maxval=1.0 - 1e-9)
+    gumbel_noise = -TEO.log(-TEO.log(u)) #tf.math.log
 
     # Soft Gumbel-Softmax
-    y_soft = tf.nn.softmax((logits + gumbel_noise) / temperature)
+    y_soft = TEO.softmax((logits + gumbel_noise) / temperature)
 
     if hard:
         # Straight-through estimator
-        y_hard = tf.one_hot(tf.argmax(y_soft, axis=-1), tf.shape(logits)[-1])
+        y_hard = tf.one_hot(tf.argmax(y_soft, axis=-1), TEO.shape(logits)[-1])
         return y_hard - tf.stop_gradient(y_soft) + y_soft
 
     return y_soft

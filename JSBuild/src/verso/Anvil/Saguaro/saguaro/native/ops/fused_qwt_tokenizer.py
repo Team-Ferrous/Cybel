@@ -23,7 +23,8 @@ from __future__ import annotations
 
 import logging
 
-import tensorflow as tf
+#import tensorflow as tf
+import tensor_ops as TEO
 from tensorflow.python.framework import ops
 
 logger = logging.getLogger(__name__)
@@ -63,12 +64,12 @@ except (ImportError, AttributeError) as err:  # pragma: no cover - load-time
 
 
 def fused_qwt_tokenizer(
-    input_data: tf.Tensor,
-    low_pass_filter: tf.Tensor,
-    high_pass_filter: tf.Tensor,
-    mask: tf.Tensor,
-    evolution_time: tf.Tensor,
-    ctqw_steps: tf.Tensor,
+    input_data,
+    low_pass_filter,
+    high_pass_filter,
+    mask,
+    evolution_time,
+    ctqw_steps,
     epsilon: float = 1e-5,
     num_levels: int = 1,
     # Phase 17: Enhancement parameters
@@ -77,7 +78,7 @@ def fused_qwt_tokenizer(
     use_jacobi_preconditioner: bool = True,
     skip_stride: int = 0,
     max_skips_per_node: int = 2,
-) -> tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
+):# -> tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
     """Invokes the fused Quantum Wavelet Tokenizer custom op.
 
     This op performs a quantum-inspired wavelet transformation and subsequent

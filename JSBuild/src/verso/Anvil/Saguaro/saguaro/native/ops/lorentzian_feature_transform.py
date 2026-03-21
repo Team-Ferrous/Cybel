@@ -24,7 +24,7 @@ boosts and rotations in hyperbolic space.
 
 import logging
 
-import tensorflow as tf
+import tensor_ops as TEO
 
 from saguaro.native.ops.lib_loader import resolve_op_library
 
@@ -37,7 +37,7 @@ lorentzian_feature_transform_grad_op = None
 
 try:
     _op_lib_path = resolve_op_library(__file__, "_lorentzian_feature_transform_op.so")
-    _lorentzian_module = tf.load_op_library(_op_lib_path)
+    _lorentzian_module = TEO.load_custom_op(_op_lib_path)
 
     if hasattr(_lorentzian_module, "lorentzian_feature_transform"):
         lorentzian_feature_transform_op = (
@@ -61,12 +61,12 @@ def lorentzian_feature_transform_available() -> bool:
     return lorentzian_feature_transform_op is not None
 
 
-@tf.custom_gradient
+@TEO.custom_gradient
 def lorentzian_feature_transform(
-    node_features: tf.Tensor,
-    boost_vector: tf.Tensor,
-    rotation_matrix_param: tf.Tensor,
-) -> tf.Tensor:
+    node_features,
+    boost_vector,
+    rotation_matrix_param,
+):
     """Python wrapper for the LorentzianFeatureTransform custom C++ operator.
 
     Applies a Lorentz transformation (boosts and rotations) to node features
@@ -103,9 +103,9 @@ def lorentzian_feature_transform(
     )
 
     def grad_fn(
-        grad_output: tf.Tensor,
+        grad_output,
         variables: list[tf.Variable] | None = None,
-    ) -> tuple[tuple[tf.Tensor, ...], list[tf.Tensor | None]]:
+    ):# -> tuple[tuple[tf.Tensor, ...], list[tf.Tensor | None]]:
         """Gradient function that calls the custom C++ backward kernel."""
         if lorentzian_feature_transform_grad_op is None:
             raise NotImplementedError(

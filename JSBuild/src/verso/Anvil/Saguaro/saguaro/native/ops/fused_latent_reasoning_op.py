@@ -21,8 +21,8 @@ with automatic gradient support via tf.custom_gradient.
 
 from __future__ import annotations
 
-import tensorflow as tf
-
+#import tensorflow as tf
+import tensor_ops as TEO
 from saguaro import config as hn_config
 from saguaro.native import get_op
 
@@ -37,19 +37,19 @@ _fused_latent_reasoning_grad_op = (
 
 
 def fused_latent_reasoning(
-    x: tf.Tensor,
-    thought_norm_gamma: tf.Tensor,
-    thought_norm_beta: tf.Tensor,
-    thought_up_weight: tf.Tensor,
-    thought_up_bias: tf.Tensor,
-    thought_down_weight: tf.Tensor,
-    thought_down_bias: tf.Tensor,
-    output_norm_gamma: tf.Tensor,
-    output_norm_beta: tf.Tensor,
+    x,#: tf.Tensor,
+    thought_norm_gamma,#: tf.Tensor,
+    thought_norm_beta,#: tf.Tensor,
+    thought_up_weight,
+    thought_up_bias,
+    thought_down_weight,
+    thought_down_bias,
+    output_norm_gamma,
+    output_norm_beta,
     num_thought_steps: int = 4,
     use_entropy_guidance: bool = True,
     uncertainty_threshold: float = 0.5,
-) -> tuple[tf.Tensor, tf.Tensor]:
+):# -> tuple[tf.Tensor, tf.Tensor]:
     """Fused Latent Reasoning Block.
 
     C++-accelerated latent reasoning that fuses multi-step thought refinement,
@@ -84,17 +84,17 @@ def fused_latent_reasoning(
         )
 
     # Ensure float32
-    x = tf.cast(x, tf.float32)
-    thought_norm_gamma = tf.cast(thought_norm_gamma, tf.float32)
-    thought_norm_beta = tf.cast(thought_norm_beta, tf.float32)
-    thought_up_weight = tf.cast(thought_up_weight, tf.float32)
-    thought_up_bias = tf.cast(thought_up_bias, tf.float32)
-    thought_down_weight = tf.cast(thought_down_weight, tf.float32)
-    thought_down_bias = tf.cast(thought_down_bias, tf.float32)
-    output_norm_gamma = tf.cast(output_norm_gamma, tf.float32)
-    output_norm_beta = tf.cast(output_norm_beta, tf.float32)
+    x = TEO.cast(x, TEO.dtype_map(TEO.TEO_FLOAT))
+    thought_norm_gamma = TEO.cast(thought_norm_gamma, TEO.dtype_map(TEO.TEO_FLOAT))
+    thought_norm_beta = TEO.cast(thought_norm_beta, TEO.dtype_map(TEO.TEO_FLOAT))
+    thought_up_weight = TEO.cast(thought_up_weight, TEO.dtype_map(TEO.TEO_FLOAT))
+    thought_up_bias = TEO.cast(thought_up_bias, TEO.dtype_map(TEO.TEO_FLOAT))
+    thought_down_weight = TEO.cast(thought_down_weight, TEO.dtype_map(TEO.TEO_FLOAT))
+    thought_down_bias = TEO.cast(thought_down_bias, TEO.dtype_map(TEO.TEO_FLOAT))
+    output_norm_gamma = TEO.cast(output_norm_gamma, TEO.dtype_map(TEO.TEO_FLOAT))
+    output_norm_beta = TEO.cast(output_norm_beta, TEO.dtype_map(TEO.TEO_FLOAT))
 
-    @tf.custom_gradient
+    @TEO.custom_gradient
     def _fused_latent_reasoning_inner(x_in, tng, tnb, tuw, tub, tdw, tdb, ong, onb):
         """Inner function with tensor-only signature."""
         streaming_chunk_size = (
@@ -142,19 +142,19 @@ def fused_latent_reasoning(
                     grad_ub,
                     grad_dw,
                     grad_db,
-                    tf.zeros_like(ong),
-                    tf.zeros_like(onb),
+                    TEO.zeros_like(ong),
+                    TEO.zeros_like(onb),
                 )
             return (
-                tf.zeros_like(x_in),
-                tf.zeros_like(tng),
-                tf.zeros_like(tnb),
-                tf.zeros_like(tuw),
-                tf.zeros_like(tub),
-                tf.zeros_like(tdw),
-                tf.zeros_like(tdb),
-                tf.zeros_like(ong),
-                tf.zeros_like(onb),
+                TEO.zeros_like(x_in),
+                TEO.zeros_like(tng),
+                TEO.zeros_like(tnb),
+                TEO.zeros_like(tuw),
+                TEO.zeros_like(tub),
+                TEO.zeros_like(tdw),
+                TEO.zeros_like(tdb),
+                TEO.zeros_like(ong),
+                TEO.zeros_like(onb),
             )
 
         return (output, halt_prob), grad

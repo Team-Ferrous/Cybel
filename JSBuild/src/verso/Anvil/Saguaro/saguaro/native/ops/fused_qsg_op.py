@@ -27,8 +27,8 @@ from __future__ import annotations
 
 import logging
 
-import tensorflow as tf
-
+#import tensorflow as tf
+import tensor_ops as TEO
 from saguaro.native.ops.lib_loader import get_saguaro_core_path
 
 logger = logging.getLogger(__name__)
@@ -50,7 +50,7 @@ def _get_native_ops():
 
     try:
         lib_path = get_saguaro_core_path()
-        lib = tf.load_op_library(lib_path)
+        lib = TEO.load_custom_op(lib_path)
         _qsg_ops = lib
         logger.debug("QSG native ops loaded successfully from %s", lib_path)
         return _qsg_ops
@@ -68,10 +68,10 @@ def _get_native_ops():
 
 
 def entangled_coherence(
-    position_states: tf.Tensor,
+    position_states,
     coherence_range: int = -1,
     temperature: float = 1.0,
-) -> tf.Tensor:
+):
     """Compute entangled bidirectional coherence between all positions.
 
     Unlike standard causal attention, this allows each position to see
@@ -102,11 +102,11 @@ def entangled_coherence(
 
 
 def grover_amplify(
-    logits: tf.Tensor,
-    oracle_scores: tf.Tensor,
+    logits,
+    oracle_scores,
     iterations: int = 3,
     amplification_strength: float = 1.5,
-) -> tf.Tensor:
+):
     """Grover-inspired amplitude amplification for token selection.
 
     Amplifies "good" tokens (high oracle score) and suppresses "bad" tokens
@@ -140,9 +140,9 @@ def grover_amplify(
 
 
 def semantic_oracle(
-    vocab_embeddings: tf.Tensor,
-    context_embedding: tf.Tensor,
-) -> tf.Tensor:
+    vocab_embeddings,
+    context_embedding,
+):
     """Compute semantic consistency oracle scores.
 
     Evaluates cosine similarity between each vocabulary token and the
@@ -170,12 +170,12 @@ def semantic_oracle(
 
 
 def jacobi_refine(
-    token_logits: tf.Tensor,
-    context_embedding: tf.Tensor,
-    vocab_embeddings: tf.Tensor,
+    token_logits,
+    context_embedding,
+    vocab_embeddings,
     iterations: int = 2,
     neighbor_window: int = 3,
-) -> tf.Tensor:
+):
     """Jacobi fixed-point iteration for local consistency refinement.
 
     After parallel generation, refines each position based on neighbor

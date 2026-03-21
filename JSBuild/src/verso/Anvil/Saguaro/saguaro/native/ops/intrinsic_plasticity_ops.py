@@ -31,7 +31,8 @@ Ops:
 
 import logging
 
-import tensorflow as tf
+#import tensorflow as tf
+import tensor_ops as TEO
 
 from saguaro import config
 from saguaro.native.ops.lib_loader import resolve_op_library
@@ -52,7 +53,7 @@ def _load_ops():
         lib_path = resolve_op_library(__file__, "_saguaro_core.so")
         if lib_path is None:
             raise RuntimeError("Could not find _saguaro_core.so")
-        _module = tf.load_op_library(lib_path)
+        _module = TEO.load_custom_op(lib_path)
         _available = True
         logger.info(f"Intrinsic plasticity ops loaded from {lib_path}")
     except Exception as e:
@@ -80,9 +81,9 @@ def ops_available() -> bool:
 
 
 def cayley_parameterization(
-    skew_params: tf.Tensor,
+    skew_params,
     dim: int,
-) -> tf.Tensor:
+):
     """Cayley parameterization of unitary matrix.
 
     Converts skew-symmetric parameters to orthogonal/unitary matrix:
@@ -112,8 +113,8 @@ def cayley_parameterization(
 
 
 def enforce_unitary_constraint(
-    weights: tf.Tensor,
-) -> tf.Tensor:
+    weights,
+):
     """Enforce unitary constraint on weight matrix.
 
     Projects weights to nearest orthonormal matrix via
@@ -136,9 +137,9 @@ def enforce_unitary_constraint(
 
 
 def project_gradient_tangent(
-    gradient: tf.Tensor,
-    weights: tf.Tensor,
-) -> tf.Tensor:
+    gradient,
+    weights,
+):
     """Project gradient to tangent space of unitary manifold.
 
     For W ∈ O(n): ∇_tang = ∇ - W * sym(W^T * ∇)
@@ -161,10 +162,10 @@ def project_gradient_tangent(
 
 
 def retract_to_manifold(
-    weights: tf.Tensor,
-    direction: tf.Tensor,
+    weights,
+    direction,
     step_size: float = 1.0,
-) -> tf.Tensor:
+):
     """Retract updated parameters back to unitary manifold.
 
     Uses QR-based retraction: W_new = qr(W + step * direction).Q
@@ -185,8 +186,8 @@ def retract_to_manifold(
 
 
 def compute_plasticity_metric(
-    weight_trajectory: tf.Tensor,
-) -> tf.Tensor:
+    weight_trajectory,
+):
     """Compute plasticity metric from weight trajectory.
 
     Measures capacity to learn new information by tracking
@@ -206,9 +207,9 @@ def compute_plasticity_metric(
 
 
 def measure_layer_plasticity(
-    gradients: tf.Tensor,
-    weights: tf.Tensor,
-) -> tf.Tensor:
+    gradients,
+    weights,
+):
     """Measure layer plasticity using relative gradient norm.
 
     Quick instantaneous measure of plasticity useful for

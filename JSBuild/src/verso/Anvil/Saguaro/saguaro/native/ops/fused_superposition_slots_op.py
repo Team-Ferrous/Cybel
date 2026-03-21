@@ -26,8 +26,8 @@ from __future__ import annotations
 
 import logging
 
-import tensorflow as tf
-
+#import tensorflow as tf
+import tensor_ops as TEO
 logger = logging.getLogger(__name__)
 
 # Attempt to load the C++ operations

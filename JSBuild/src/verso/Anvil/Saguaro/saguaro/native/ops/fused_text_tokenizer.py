@@ -43,8 +43,8 @@ from __future__ import annotations
 import logging
 from collections.abc import Sequence
 
-import tensorflow as tf
-
+#import tensorflow as tf
+import tensor_ops as TEO
 logger = logging.getLogger(__name__)
 
 # Native op module - loaded from consolidated binary
@@ -78,7 +78,7 @@ def _resolve_trie_create_op(module: object) -> object | None:
     return create_op
 
 
-def _create_trie_handle() -> tf.Tensor:
+def _create_trie_handle():# -> tf.Tensor:
     create_op = _resolve_trie_create_op(_text_tok_module)
     if create_op is None:
         raise RuntimeError("Native text tokenizer ops missing trie creation entrypoint.")
@@ -113,7 +113,7 @@ class SuperwordTrieHandle:
         self._num_entries = 0
 
     @property
-    def handle(self) -> tf.Tensor:
+    def handle(self):# -> tf.Tensor:
         """Get the raw resource handle for use in ops."""
         return self._handle
 
@@ -129,8 +129,8 @@ class SuperwordTrieHandle:
             ngram: Sequence of token IDs forming the n-gram.
             superword_id: Superword ID to map to.
         """
-        ngram_tensor = tf.constant(list(ngram), dtype=tf.int32)
-        id_tensor = tf.constant(superword_id, dtype=tf.int32)
+        ngram_tensor = TEO.constant(list(ngram), dtype=tf.int32)
+        id_tensor = TEO.constant(superword_id, dtype=tf.int32)
         _text_tok_module.superword_trie_insert(self._handle, ngram_tensor, id_tensor)
         self._num_entries += 1
 
@@ -163,9 +163,9 @@ class SuperwordTrieHandle:
             tokens.extend(ngram)
             offsets.append(len(tokens))
 
-        offsets_tensor = tf.constant(offsets, dtype=tf.int32)
-        tokens_tensor = tf.constant(tokens, dtype=tf.int32)
-        ids_tensor = tf.constant(list(superword_ids), dtype=tf.int32)
+        offsets_tensor = TEO.constant(offsets, dtype=tf.int32)
+        tokens_tensor = TEO.constant(tokens, dtype=tf.int32)
+        ids_tensor = TEO.constant(list(superword_ids), dtype=tf.int32)
 
         _text_tok_module.superword_trie_build_from_table(
             self._handle, offsets_tensor, tokens_tensor, ids_tensor
@@ -206,7 +206,7 @@ def fused_text_tokenize(
     if isinstance(text, str):
         text = text.encode("utf-8")
 
-    text_tensor = tf.constant(text.decode("utf-8", errors="replace"))
+    text_tensor = TEO.constant(text.decode("utf-8", errors="replace"))
     handle = (
         trie.handle
         if trie is not None
@@ -229,7 +229,7 @@ def fused_text_tokenize_batch(
     add_special_tokens: bool = True,
     max_length: int = 131072,
     num_threads: int = 0,
-) -> tuple[tf.Tensor, tf.Tensor]:
+):# -> tuple[tf.Tensor, tf.Tensor]:
     """Tokenize batch of texts in parallel with SIMD optimization.
 
     Args:
@@ -255,7 +255,7 @@ def fused_text_tokenize_batch(
             t = t.decode("utf-8", errors="replace")
         str_texts.append(t)
 
-    texts_tensor = tf.constant(str_texts)
+    texts_tensor = TEO.constant(str_texts)
     handle = (
         trie.handle
         if trie is not None

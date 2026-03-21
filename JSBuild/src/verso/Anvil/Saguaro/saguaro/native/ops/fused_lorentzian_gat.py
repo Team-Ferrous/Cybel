@@ -21,8 +21,8 @@ hierarchical relationships in language structures.
 
 import logging
 
-import tensorflow as tf
-
+#import tensorflow as tf
+import tensor_ops as TEO
 from saguaro.native.ops.lib_loader import resolve_op_library
 
 logger = logging.getLogger(__name__)
@@ -34,7 +34,7 @@ fused_lorentzian_gat_grad_op = None
 
 try:
     _op_lib_path = resolve_op_library(__file__, "_fused_lorentzian_gat_op.so")
-    _lorentzian_gat_module = tf.load_op_library(_op_lib_path)
+    _lorentzian_gat_module = TEO.load_custom_op(_op_lib_path)
 
     if hasattr(_lorentzian_gat_module, "fused_lorentzian_gat"):
         fused_lorentzian_gat_op = _lorentzian_gat_module.fused_lorentzian_gat
@@ -44,7 +44,7 @@ try:
         logger.info("Successfully loaded custom C++ FusedLorentzianGat operator.")
     else:
         raise AttributeError("fused_lorentzian_gat op not found in library")
-except (tf.errors.NotFoundError, OSError, AttributeError) as e:
+except (TEO.map_backend_error(OSError)) as e:
     logger.warning(f"Could not load the custom C++ FusedLorentzianGat op: {e}")
     fused_lorentzian_gat_op = None
 
@@ -124,13 +124,13 @@ class LorentzianGATLayer(tf.keras.layers.Layer):
 
     def call(
         self,
-        node_features: tf.Tensor,
-        adj_indices: tf.Tensor,
-        adj_values: tf.Tensor,
-        adj_dense_shape: tf.Tensor,
-        attention_weights: tf.Tensor,
+        node_features,
+        adj_indices,
+        adj_values,
+        adj_dense_shape,
+        attention_weights,
         training: bool = False,
-    ) -> tf.Tensor:
+    ): #-> tf.Tensor:
         """Apply Lorentzian Graph Attention.
 
         Args:

@@ -30,7 +30,7 @@ from __future__ import annotations
 
 import logging
 
-import tensorflow as tf
+import tensor_ops as TEO
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +50,7 @@ def _load_native_ops() -> bool:
 
         lib_path = get_consolidated_library()
         if lib_path is not None:
-            _lib = tf.load_op_library(lib_path)
+            _lib = TEO.load_custom_op((lib_path)
             if _lib is not None:
                 _native_available = True
                 logger.debug("[HDFisherCompression] Native C++ ops available")

@@ -17,7 +17,8 @@
 
 import logging
 
-import tensorflow as tf
+#import tensorflow as tf
+import tensor_ops as TEO
 from tensorflow.python.framework import ops
 
 from saguaro.native.ops.lib_loader import resolve_op_library
@@ -33,7 +34,7 @@ qbm_sample_grad_op = None
 try:
     # lib_loader.resolve_op_library now returns _saguaro_core.so path
     _op_lib_path = resolve_op_library(__file__, "_qbm_sample_op.so")
-    _qbm_sample_module = tf.load_op_library(_op_lib_path)
+    _qbm_sample_module = TEO.load_custom_op(_op_lib_path)
     # Check if the ops exist in the consolidated binary (TF converts to snake_case)
     if hasattr(_qbm_sample_module, "qbm_sample"):
         qbm_sample_op = _qbm_sample_module.qbm_sample
@@ -52,11 +53,11 @@ except (tf.errors.NotFoundError, OSError, AttributeError) as e:
 
 @ops.RegisterGradient("QBMSample")
 def _qbm_sample_gradient(
-    op: tf.Operation,
-    grad_expert_assignments: tf.Tensor,
-    grad_sample_log_probs: tf.Tensor,
-    grad_annealing_energies: tf.Tensor,
-) -> tuple[tf.Tensor, ...]:
+    op,#: tf.Operation,
+    grad_expert_assignments,
+    grad_sample_log_probs,
+    grad_annealing_energies,
+):# -> tuple[tf.Tensor, ...]:
     """Custom gradient for QBMSample using REINFORCE (policy gradient).
 
     REINFORCE gradient: ∇_θ J = E[∇_θ log π(a|s) * (R - baseline)]
@@ -83,14 +84,14 @@ def _qbm_sample_gradient(
     # Baseline for variance reduction: moving average of rewards
     # In practice, this would be a trainable variable updated during training
     # For now, use the mean of the incoming gradient as a simple baseline
-    baseline = tf.reduce_mean(tf.stop_gradient(grad_sample_log_probs))
+    baseline = TEO.reduce_mean(tf.stop_gradient(grad_sample_log_probs))
 
     if qbm_sample_grad_op is None:
         # Fallback: return zero gradients (shouldn't happen if op loaded successfully)
         return (
-            tf.zeros_like(energy_matrix),
-            tf.zeros_like(temp_init),
-            tf.zeros_like(temp_final),
+            TEO.zeros_like(energy_matrix),
+            TEO.zeros_like(temp_init),
+            TEO.zeros_like(temp_final),
             None,  # num_steps (integer, no gradient)
             None,  # seed (integer, no gradient)
         )
@@ -117,12 +118,12 @@ def _qbm_sample_gradient(
 
 
 def qbm_sample(
-    energy_matrix: tf.Tensor,
+    energy_matrix,
     temperature_init: float = 1.0,
     temperature_final: float = 0.1,
     num_annealing_steps: int = 100,
     seed: int = 42,
-) -> tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
+):# -> tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
     """Quantum Boltzmann Machine sampling with simulated quantum annealing.
 
     Implements the annealing schedule:
@@ -162,16 +163,16 @@ def qbm_sample(
         )
 
     # Convert scalar inputs to tensors
-    temp_init_tensor = tf.constant(temperature_init, dtype=tf.float32)
-    temp_final_tensor = tf.constant(temperature_final, dtype=tf.float32)
-    num_steps_tensor = tf.constant(num_annealing_steps, dtype=tf.int32)
+    temp_init_tensor = TEO.constant(temperature_init, dtype=TEO.dtype_map(TEO.TEO_FLOAT))
+    temp_final_tensor = TEO.constant(temperature_final, dtype=TEO.dtype_map(TEO.TEO_FLOAT))
+    num_steps_tensor = TEO.constant(num_annealing_steps, dtype=TEO.dtype_map(TEO.TEO_INT))
 
     # Handle seed: if it's already a tensor (e.g., tf.Variable in graph mode), cast it
     # Otherwise convert Python value to tensor
-    if isinstance(seed, (tf.Tensor, tf.Variable)):
-        seed_tensor = tf.cast(seed, dtype=tf.int32)
+    if isinstance(seed, (TEO.dtype_map(TEO.TEO_TENSOR), TEO.variable)):
+        seed_tensor = TEO.cast(seed, dtype=TEO.dtype_map(TEO.TEO_INT))
     else:
-        seed_tensor = tf.constant(seed, dtype=tf.int32)
+        seed_tensor = TEO.constant(seed, dtype=TEO.dtype_map(TEO.TEO_INT))
 
     # Call forward op
     expert_assignments, sample_log_probs, annealing_energies = qbm_sample_op(
@@ -189,8 +190,8 @@ def qbm_sample(
 
 
 def compute_expert_entropy(
-    expert_assignments: tf.Tensor, num_experts: int
-) -> tf.Tensor:
+    expert_assignments, num_experts: int
+):# -> tf.Tensor:
     """Compute Shannon entropy of expert distribution for monitoring exploration.
 
     Entropy = -sum_e p(e) * log p(e)
@@ -206,21 +207,21 @@ def compute_expert_entropy(
         entropy: Scalar entropy value.
     """
     # Compute empirical distribution
-    counts = tf.cast(
-        tf.math.bincount(expert_assignments, minlength=num_experts), tf.float32
+    counts = TEO.cast(
+        tf.math.bincount(expert_assignments, minlength=num_experts), TEO.dtype_map(TEO.TEO_FLOAT)
     )
-    probs = counts / tf.reduce_sum(counts)
+    probs = counts / TEO.reduce_sum(counts)
 
     # Entropy: -sum p * log(p)
     # Add epsilon to avoid log(0)
-    log_probs = tf.math.log(probs + 1e-10)
-    return -tf.reduce_sum(probs * log_probs)
+    log_probs = TEO.log(probs + 1e-10)
+    return -TEO.reduce_sum(probs * log_probs)
 
 
 
 def compute_exploration_ratio(
-    expert_assignments: tf.Tensor, num_experts: int
-) -> tf.Tensor:
+    expert_assignments, num_experts: int
+):# -> tf.Tensor:
     """Compute the fraction of experts that receive at least one token.
 
     This is a simpler metric than entropy for monitoring expert collapse.
@@ -233,7 +234,7 @@ def compute_exploration_ratio(
         exploration_ratio: Scalar in [0, 1] indicating fraction of active experts.
     """
     unique_experts = tf.unique(expert_assignments)[0]
-    num_active_experts = tf.cast(tf.size(unique_experts), tf.float32)
-    total_experts = tf.cast(num_experts, tf.float32)
+    num_active_experts = TEO.cast(TEO.size(unique_experts), TEO.dtype_map(TEO.TEO_FLOAT))
+    total_experts = TEO.cast(num_experts, TEO.dtype_map(TEO.TEO_FLOAT))
 
     return num_active_experts / total_experts

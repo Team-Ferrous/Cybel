@@ -17,8 +17,8 @@
 
 from __future__ import annotations
 
-import tensorflow as tf
-
+#import tensorflow as tf
+import tensor_ops as TEO
 from saguaro.native import get_op
 
 _lib = get_op("fused_state_bus")
@@ -32,19 +32,19 @@ def fused_state_bus_available() -> bool:
 
 
 def fused_state_bus(
-    query: tf.Tensor,
-    write_value: tf.Tensor,
-    slots: tf.Tensor,
-    read_query_weight: tf.Tensor,
-    read_query_bias: tf.Tensor,
-    write_gate_weight: tf.Tensor,
-    write_gate_bias: tf.Tensor,
-    write_value_weight: tf.Tensor,
-    write_value_bias: tf.Tensor,
+    query,
+    write_value,
+    slots,
+    read_query_weight,
+    read_query_bias,
+    write_gate_weight,
+    write_gate_bias,
+    write_value_weight,
+    write_value_bias,#: tf.Tensor,
     num_slots: int,
     bus_dim: int,
     write_enabled: bool = True,
-) -> tuple[tf.Tensor, tf.Tensor]:
+):# -> tuple[tf.Tensor, tf.Tensor]:
     """Fused State Bus read + (optional) write.
 
     Args:
@@ -70,17 +70,17 @@ def fused_state_bus(
             "cd saguaro.native && ./build_ops.sh fused_state_bus"
         )
 
-    query = tf.cast(query, tf.float32)
-    write_value = tf.cast(write_value, tf.float32)
-    slots = tf.cast(slots, tf.float32)
-    read_query_weight = tf.cast(read_query_weight, tf.float32)
-    read_query_bias = tf.cast(read_query_bias, tf.float32)
-    write_gate_weight = tf.cast(write_gate_weight, tf.float32)
-    write_gate_bias = tf.cast(write_gate_bias, tf.float32)
-    write_value_weight = tf.cast(write_value_weight, tf.float32)
-    write_value_bias = tf.cast(write_value_bias, tf.float32)
+    query = TEO.cast(query, TEO.dtype_map(TEO.TEO_FLOAT))
+    write_value = TEO.cast(write_value, TEO.dtype_map(TEO.TEO_FLOAT))
+    slots = TEO.cast(slots, TEO.dtype_map(TEO.TEO_FLOAT))
+    read_query_weight = TEO.cast(read_query_weight, TEO.dtype_map(TEO.TEO_FLOAT))
+    read_query_bias = TEO.cast(read_query_bias, TEO.dtype_map(TEO.TEO_FLOAT))
+    write_gate_weight = TEO.cast(write_gate_weight, TEO.dtype_map(TEO.TEO_FLOAT))
+    write_gate_bias = TEO.cast(write_gate_bias, TEO.dtype_map(TEO.TEO_FLOAT))
+    write_value_weight = TEO.cast(write_value_weight, TEO.dtype_map(TEO.TEO_FLOAT))
+    write_value_bias = TEO.cast(write_value_bias, TEO.dtype_map(TEO.TEO_FLOAT))
 
-    @tf.custom_gradient
+    @TEO.custom_gradient
     def _fused_state_bus_inner(
         q_in,
         w_in,
@@ -126,15 +126,15 @@ def fused_state_bus(
                     write_enabled=write_enabled,
                 )
             return (
-                tf.zeros_like(q_in),
-                tf.zeros_like(w_in),
-                tf.zeros_like(slots_in),
-                tf.zeros_like(rq_w),
-                tf.zeros_like(rq_b),
-                tf.zeros_like(wg_w),
-                tf.zeros_like(wg_b),
-                tf.zeros_like(wv_w),
-                tf.zeros_like(wv_b),
+                TEO.zeros_like(q_in),
+                TEO.zeros_like(w_in),
+                TEO.zeros_like(slots_in),
+                TEO.zeros_like(rq_w),
+                TEO.zeros_like(rq_b),
+                TEO.zeros_like(wg_w),
+                TEO.zeros_like(wg_b),
+                TEO.zeros_like(wv_w),
+                TEO.zeros_like(wv_b),
             )
 
         return (context, slots_new), grad

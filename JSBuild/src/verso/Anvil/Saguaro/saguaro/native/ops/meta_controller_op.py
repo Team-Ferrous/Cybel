@@ -34,8 +34,8 @@ from __future__ import annotations
 
 import logging
 
-import tensorflow as tf
-
+#import tensorflow as tf
+import tensor_ops as TEO
 from saguaro.native.ops.lib_loader import get_saguaro_core_path
 
 logger = logging.getLogger(__name__)
@@ -55,7 +55,7 @@ def _get_native_ops():
                 "Run 'cd saguaro.native && ./build_secure.sh' to compile."
             )
         try:
-            _ops = tf.load_op_library(lib_path)
+            _ops = TEO.load_custom_op(lib_path)
             logger.debug(f"Loaded meta_controller_op from {lib_path}")
         except Exception as e:
             raise ImportError(f"Failed to load saguaro_core: {e}") from e
@@ -63,13 +63,13 @@ def _get_native_ops():
 
 
 def trigger_meta_controller(
-    metric_values: tf.Tensor,
-    metric_names: tf.Tensor,
+    metric_values,
+    metric_names,
     control_input_names: tf.Tensor | None = None,
     trigger_autotune: tf.Tensor | bool = False,
     trigger_system_id: tf.Tensor | bool = False,
     config_path: tf.Tensor | str = "",
-) -> tuple[tf.Tensor, tf.Tensor]:
+):# -> tuple[tf.Tensor, tf.Tensor]:
     """Trigger the Hamiltonian Meta-Controller with current training metrics.
 
     The meta-controller uses quantum-enhanced algorithms to dynamically adjust
@@ -102,24 +102,24 @@ def trigger_meta_controller(
 
     # Ensure inputs are tensors with correct types
     if not isinstance(metric_values, tf.Tensor):
-        metric_values = tf.constant(metric_values, dtype=tf.float32)
+        metric_values = TEO.constant(metric_values, dtype=tf.float32)
 
     if not isinstance(metric_names, tf.Tensor):
-        metric_names = tf.constant(metric_names, dtype=tf.string)
+        metric_names = TEO.constant(metric_names, dtype=tf.string)
 
     if control_input_names is None:
-        control_input_names = tf.constant([], dtype=tf.string)
+        control_input_names = TEO.constant([], dtype=tf.string)
     elif not isinstance(control_input_names, tf.Tensor):
-        control_input_names = tf.constant(control_input_names, dtype=tf.string)
+        control_input_names = TEO.constant(control_input_names, dtype=tf.string)
 
     if not isinstance(trigger_autotune, tf.Tensor):
-        trigger_autotune = tf.constant(trigger_autotune, dtype=tf.bool)
+        trigger_autotune = TEO.constant(trigger_autotune, dtype=tf.bool)
 
     if not isinstance(trigger_system_id, tf.Tensor):
-        trigger_system_id = tf.constant(trigger_system_id, dtype=tf.bool)
+        trigger_system_id = TEO.constant(trigger_system_id, dtype=tf.bool)
 
     if not isinstance(config_path, tf.Tensor):
-        config_path = tf.constant(config_path, dtype=tf.string)
+        config_path = TEO.constant(config_path, dtype=tf.string)
 
     # Call the C++ op
     block_names, evolution_times = ops.trigger_meta_controller(

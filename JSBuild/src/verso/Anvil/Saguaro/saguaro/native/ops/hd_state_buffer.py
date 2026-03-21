@@ -26,8 +26,8 @@ from __future__ import annotations
 
 import logging
 
-import tensorflow as tf
-
+#import tensorflow as tf
+import tensor_ops as TEO
 logger = logging.getLogger(__name__)
 
 # Load native ops
@@ -243,7 +243,7 @@ class HDStateBuffer:
             maxval=param_size,
             dtype=tf.int32,
         )
-        signs = tf.cast(
+        signs = TEO.cast(
             tf.random.stateless_uniform(
                 shape=[compressed_size, sparse_density],
                 seed=signs_seed,

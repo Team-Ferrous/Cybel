@@ -24,7 +24,7 @@ from __future__ import annotations
 
 import logging
 
-import tensorflow as tf
+import tensor_ops as TEO
 
 from saguaro.native.ops.lib_loader import get_saguaro_core_path
 
@@ -36,7 +36,7 @@ _ops_available = False
 
 try:
     _lib_path = get_saguaro_core_path()
-    _lib = tf.load_op_library(_lib_path)
+    _lib = TEO.load_custom_op(_lib_path)
     if hasattr(_lib, "CayleyDenseForward"):
         _ops_available = True
         logger.info("CayleyDense C++ ops loaded successfully from %s", _lib_path)
@@ -58,7 +58,7 @@ def cayley_dense_ops_available() -> bool:
 
 if _ops_available:
 
-    @tf.RegisterGradient("CayleyDenseForward")
+    @TEO.custom_gradient #@tf.RegisterGradient("CayleyDenseForward")
     def _cayley_dense_forward_grad(op, grad_output):
         """Gradient function for CayleyDenseForward.
 
@@ -85,10 +85,10 @@ if _ops_available:
         # Call C++ backward pass
         grad_input, grad_skew_params, grad_proj_weight, grad_bias = (
             _lib.CayleyDenseBackward(
-                grad_output=tf.cast(grad_output, tf.float32),
-                input=tf.cast(inputs, tf.float32),
-                skew_params=tf.cast(skew_params, tf.float32),
-                proj_weight=tf.cast(proj_weight, tf.float32),
+                grad_output=TEO.cast(grad_output, TEO.dtype_map(TEO.TEO_FLOAT)),
+                input=TEO.cast(inputs, TEO.dtype_map(TEO.TEO_FLOAT)),
+                skew_params=TEO.cast(skew_params, TEO.dtype_map(TEO.TEO_FLOAT)),
+                proj_weight=TEO.cast(proj_weight, TEO.dtype_map(TEO.TEO_FLOAT)),
                 input_dim=input_dim,
                 output_dim=output_dim,
                 use_bias=use_bias,
@@ -101,14 +101,14 @@ if _ops_available:
 
 
 def cayley_dense_forward(
-    inputs: tf.Tensor,
-    skew_params: tf.Tensor,
-    proj_weight: tf.Tensor | None,
-    bias: tf.Tensor | None,
+    inputs,#: tf.Tensor,
+    skew_params,#: tf.Tensor,
+    proj_weight,#: tf.Tensor | None,
+    bias,#:# tf.Tensor | None,
     input_dim: int,
     output_dim: int,
     training: bool = False,
-) -> tf.Tensor:
+):# -> tf.Tensor:
     """Forward pass for CayleyDense using native C++ ops.
 
     Args:
@@ -133,19 +133,19 @@ def cayley_dense_forward(
         )
 
     # Ensure tensors are the right type
-    inputs = tf.cast(inputs, tf.float32)
-    skew_params = tf.cast(skew_params, tf.float32)
+    inputs = TEO.cast(inputs, TEO.dtype_map(TEO.TEO_FLOAT))
+    skew_params = TEO.cast(skew_params, TEO.dtype_map(TEO.TEO_FLOAT))
 
     # Handle optional tensors
     if proj_weight is None:
-        proj_weight = tf.zeros([0], dtype=tf.float32)
+        proj_weight = TEO.zeros([0], dtype=TEO.dtype_map(TEO.TEO_FLOAT))
     else:
-        proj_weight = tf.cast(proj_weight, tf.float32)
+        proj_weight = TEO.cast(proj_weight, TEO.dtype_map(TEO.TEO_FLOAT))
 
     if bias is None:
-        bias = tf.zeros([0], dtype=tf.float32)
+        bias = TEO.zeros([0], dtype=TEO.dtype_map(TEO.TEO_FLOAT))
     else:
-        bias = tf.cast(bias, tf.float32)
+        bias = TEO.cast(bias, TEO.dtype_map(TEO.TEO_FLOAT))
 
     return _lib.CayleyDenseForward(
         input=inputs,
@@ -160,14 +160,14 @@ def cayley_dense_forward(
 
 
 def cayley_dense_backward(
-    grad_output: tf.Tensor,
-    inputs: tf.Tensor,
-    skew_params: tf.Tensor,
-    proj_weight: tf.Tensor | None,
+    grad_output,#: tf.Tensor,
+    inputs,#: tf.Tensor,
+    skew_params,#: tf.Tensor,
+    proj_weight,#: tf.Tensor | None,
     input_dim: int,
     output_dim: int,
     use_bias: bool = True,
-) -> tuple[tf.Tensor, tf.Tensor, tf.Tensor, tf.Tensor]:
+):# -> tuple[tf.Tensor, tf.Tensor, tf.Tensor, tf.Tensor]:
     """Backward pass for CayleyDense using native C++ ops.
 
     Args:
@@ -192,13 +192,13 @@ def cayley_dense_backward(
         )
 
     if proj_weight is None:
-        proj_weight = tf.zeros([0], dtype=tf.float32)
+        proj_weight = TEO.zeros([0], dtype=TEO.dtype_map(TEO.TEO_FLOAT))
 
     return _lib.CayleyDenseBackward(
-        grad_output=tf.cast(grad_output, tf.float32),
-        input=tf.cast(inputs, tf.float32),
-        skew_params=tf.cast(skew_params, tf.float32),
-        proj_weight=tf.cast(proj_weight, tf.float32),
+        grad_output=TEO.cast(grad_output, TEO.dtype_map(TEO.TEO_FLOAT)),
+        input=TEO.cast(inputs, TEO.dtype_map(TEO.TEO_FLOAT)),
+        skew_params=TEO.cast(skew_params, TEO.dtype_map(TEO.TEO_FLOAT)),
+        proj_weight=TEO.cast(proj_weight, TEO.dtype_map(TEO.TEO_FLOAT)),
         input_dim=input_dim,
         output_dim=output_dim,
         use_bias=use_bias,

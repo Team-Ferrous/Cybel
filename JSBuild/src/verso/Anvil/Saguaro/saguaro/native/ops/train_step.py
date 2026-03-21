@@ -29,7 +29,7 @@ import os
 import platform
 from copy import deepcopy
 
-import tensorflow as tf
+import tensor_ops as TEO
 
 from saguaro.native.ops.lib_loader import resolve_op_library
 
@@ -43,7 +43,7 @@ _train_step_diagnostics: dict[str, object] = {
     "mtime": None,
     "target_arch": os.getenv("VERSO_TARGET_ARCH"),
     "python_version": platform.python_version(),
-    "tensorflow_version": tf.__version__,
+    "tensorflow_version": TEO.backend_version(),
     "load_error": None,
     "loaded": False,
     "available_symbols": [],
@@ -63,7 +63,7 @@ try:
         except OSError as stat_exc:  # pragma: no cover - informational only
             logger.debug("Unable to stat TrainStep op: %s", stat_exc)
 
-        _train_step_module = tf.load_op_library(_op_lib_path)
+        _train_step_module = TEO.load_custom_op(_op_lib_path)
         # Check if the specific op exists in the consolidated binary
         if hasattr(_train_step_module, "train_step"):
             logger.info(
@@ -98,15 +98,15 @@ def train_step_available() -> bool:
 
 
 def fused_train_step(
-    model_weights: tf.Tensor,
-    gradients: tf.Tensor,
-    optimizer_state: tf.Tensor,
+    model_weights,#:   TEO.dtype_map(TEO.TEO_TENSOR),
+    gradients,#:       TEO.dtype_map(TEO.TEO_TENSOR),
+    optimizer_state,#: TEO.dtype_map(TEO.TEO_TENSOR),
     learning_rate: float,
     beta1: float = 0.9,
     beta2: float = 0.999,
     epsilon: float = 1e-8,
     weight_decay: float = 0.0,
-) -> tf.Tensor:
+): #-> tf.Tensor:
     """Execute a fused training step using the native C++ operation.
 
     Args:

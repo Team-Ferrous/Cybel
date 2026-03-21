@@ -26,7 +26,7 @@ from __future__ import annotations
 
 import logging
 
-import tensorflow as tf
+import tensor_ops as TEO
 
 from saguaro.native import get_op
 
@@ -48,26 +48,26 @@ def fused_continuous_thought_available() -> bool:
 
 
 def fused_continuous_thought(
-    x: tf.Tensor,
-    input_norm_gamma: tf.Tensor,
-    input_norm_beta: tf.Tensor,
-    aggregator_weight: tf.Tensor,
-    aggregator_bias: tf.Tensor,
-    projector_norm_gamma: tf.Tensor,
-    projector_norm_beta: tf.Tensor,
-    projector_dense1_weight: tf.Tensor,
-    projector_dense1_bias: tf.Tensor,
-    projector_dense2_weight: tf.Tensor,
-    projector_dense2_bias: tf.Tensor,
-    broadcast_weight: tf.Tensor,
-    broadcast_bias: tf.Tensor,
-    gate_weight: tf.Tensor,
-    gate_bias: tf.Tensor,
-    output_norm_gamma: tf.Tensor,
-    output_norm_beta: tf.Tensor,
+    x,#: tf.Tensor,
+    input_norm_gamma,#: tf.Tensor,
+    input_norm_beta,#: tf.Tensor,
+    aggregator_weight,#: tf.Tensor,
+    aggregator_bias,#: tf.Tensor,
+    projector_norm_gamma,#: tf.Tensor,
+    projector_norm_beta,#: tf.Tensor,
+    projector_dense1_weight,#: tf.Tensor,
+    projector_dense1_bias,#: tf.Tensor,
+    projector_dense2_weight,#: tf.Tensor,
+    projector_dense2_bias,#: tf.Tensor,
+    broadcast_weight,#: tf.Tensor,
+    broadcast_bias,#: tf.Tensor,
+    gate_weight,#: tf.Tensor,
+    gate_bias,#: tf.Tensor,
+    output_norm_gamma,#: tf.Tensor,
+    output_norm_beta,#: tf.Tensor,
     num_thought_steps: int = 4,
     use_gating: bool = True,
-) -> tuple[tf.Tensor, tf.Tensor]:
+):# -> tuple[tf.Tensor, tf.Tensor]:
     """Fused Continuous Thought Block.
 
     C++-accelerated COCONUT-style continuous thought reasoning that fuses:
@@ -115,25 +115,25 @@ def fused_continuous_thought(
         )
 
     # Ensure float32
-    x = tf.cast(x, tf.float32)
-    input_norm_gamma = tf.cast(input_norm_gamma, tf.float32)
-    input_norm_beta = tf.cast(input_norm_beta, tf.float32)
-    aggregator_weight = tf.cast(aggregator_weight, tf.float32)
-    aggregator_bias = tf.cast(aggregator_bias, tf.float32)
-    projector_norm_gamma = tf.cast(projector_norm_gamma, tf.float32)
-    projector_norm_beta = tf.cast(projector_norm_beta, tf.float32)
-    projector_dense1_weight = tf.cast(projector_dense1_weight, tf.float32)
-    projector_dense1_bias = tf.cast(projector_dense1_bias, tf.float32)
-    projector_dense2_weight = tf.cast(projector_dense2_weight, tf.float32)
-    projector_dense2_bias = tf.cast(projector_dense2_bias, tf.float32)
-    broadcast_weight = tf.cast(broadcast_weight, tf.float32)
-    broadcast_bias = tf.cast(broadcast_bias, tf.float32)
-    gate_weight = tf.cast(gate_weight, tf.float32)
-    gate_bias = tf.cast(gate_bias, tf.float32)
-    output_norm_gamma = tf.cast(output_norm_gamma, tf.float32)
-    output_norm_beta = tf.cast(output_norm_beta, tf.float32)
+    x = TEO.cast(x, TEO.dtype_map(TEO.TEO_FLOAT))
+    input_norm_gamma = TEO.cast(input_norm_gamma, TEO.dtype_map(TEO.TEO_FLOAT))
+    input_norm_beta = TEO.cast(input_norm_beta,  TEO.dtype_map(TEO.TEO_FLOAT))
+    aggregator_weight = TEO.cast(aggregator_weight, TEO.dtype_map(TEO.TEO_FLOAT))
+    aggregator_bias = TEO.cast(aggregator_bias, TEO.dtype_map(TEO.TEO_FLOAT))
+    projector_norm_gamma = TEO.cast(projector_norm_gamma, TEO.dtype_map(TEO.TEO_FLOAT))
+    projector_norm_beta = TEO.cast(projector_norm_beta, TEO.dtype_map(TEO.TEO_FLOAT))
+    projector_dense1_weight = TEO.cast(projector_dense1_weight, TEO.dtype_map(TEO.TEO_FLOAT))
+    projector_dense1_bias = TEO.cast(projector_dense1_bias, TEO.dtype_map(TEO.TEO_FLOAT))
+    projector_dense2_weight = TEO.cast(projector_dense2_weight, TEO.dtype_map(TEO.TEO_FLOAT))
+    projector_dense2_bias = TEO.cast(projector_dense2_bias, TEO.dtype_map(TEO.TEO_FLOAT))
+    broadcast_weight = TEO.cast(broadcast_weight, TEO.dtype_map(TEO.TEO_FLOAT))
+    broadcast_bias = TEO.cast(broadcast_bias, TEO.dtype_map(TEO.TEO_FLOAT))
+    gate_weight = TEO.cast(gate_weight, TEO.dtype_map(TEO.TEO_FLOAT))
+    gate_bias = TEO.cast(gate_bias, TEO.dtype_map(TEO.TEO_FLOAT))
+    output_norm_gamma = TEO.cast(output_norm_gamma, TEO.dtype_map(TEO.TEO_FLOAT))
+    output_norm_beta = TEO.cast(output_norm_beta, TEO.dtype_map(TEO.TEO_FLOAT))
 
-    @tf.custom_gradient
+    @TEO.custom_gradient
     def _fused_continuous_thought_inner(
         x_in,
         ing,

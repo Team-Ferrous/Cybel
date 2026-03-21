@@ -32,8 +32,8 @@ Complexity: O(N × D × vqc_layers)
 
 import logging
 
-import tensorflow as tf
-
+#import tensorflow as tf
+import tensor_ops as TEO
 from saguaro.native.ops.lib_loader import get_saguaro_core_path
 
 logger = logging.getLogger(__name__)
@@ -44,7 +44,7 @@ _ops_load_error = None
 
 try:
     _lib_path = get_saguaro_core_path()
-    _ops = tf.load_op_library(_lib_path)
+    _ops = TEO.load_custom_op((_lib_path)
 except Exception as e:
     _ops_load_error = str(e)
     logger.debug(f"Failed to load Q-SSM ops: {e}")

@@ -29,7 +29,7 @@ D. Born Rule Sampling
 
 import logging
 
-import tensorflow as tf
+import tensor_ops as TEO
 
 logger = logging.getLogger(__name__)
 
@@ -131,10 +131,10 @@ def quantum_interference_routing(
         )
 
     # Ensure float64 for quantum precision
-    tokens = tf.cast(tokens, tf.float64)
-    w_real = tf.cast(w_real, tf.float64)
-    w_imag = tf.cast(w_imag, tf.float64)
-    phase_bias = tf.cast(phase_bias, tf.float64)
+    tokens = TEO.cast(tokens, tf.float64)
+    w_real = TEO.cast(w_real, tf.float64)
+    w_imag = TEO.cast(w_imag, tf.float64)
+    phase_bias = TEO.cast(phase_bias, tf.float64)
 
     return quantum_interference_routing_op(
         tokens=tokens,

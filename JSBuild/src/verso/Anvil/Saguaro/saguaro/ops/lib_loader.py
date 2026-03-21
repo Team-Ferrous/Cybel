@@ -44,7 +44,7 @@ def load_saguaro_library():
         return None
 
     try:
-        return tf.load_op_library(str(lib_path))
+        return TEO.load_custom_op((str(lib_path))
     except Exception as e:
         logger.error(f"Failed to load Saguaro Core library from {lib_path}: {e}")
         raise

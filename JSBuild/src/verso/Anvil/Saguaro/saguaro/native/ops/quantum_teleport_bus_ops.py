@@ -27,7 +27,7 @@ Ops:
 
 import logging
 
-import tensorflow as tf
+import tensor_ops as TEO
 
 from saguaro import config
 from saguaro.native.ops.lib_loader import resolve_op_library
@@ -48,7 +48,7 @@ def _load_ops():
         lib_path = resolve_op_library(__file__, "_saguaro_core.so")
         if lib_path is None:
             raise RuntimeError("Could not find _saguaro_core.so")
-        _module = tf.load_op_library(lib_path)
+        _module = TEO.load_custom_op(lib_path)
         _available = True
         logger.info(f"Quantum Teleport Bus ops loaded from {lib_path}")
     except Exception as e:
@@ -76,12 +76,12 @@ def ops_available() -> bool:
 
 
 def quantum_teleport_state(
-    input_state: tf.Tensor,
+    input_state,#: tf.Tensor,
     entanglement_dim: int | None = None,
     fidelity_threshold: float | None = None,
     use_error_correction: bool | None = None,
     seed: int = 42,
-) -> tuple[tf.Tensor, tf.Tensor]:
+):# -> tuple[tf.Tensor, tf.Tensor]:
     """Quantum state teleportation for cross-block communication.
 
     Implements quantum teleportation protocol:
@@ -112,8 +112,8 @@ def quantum_teleport_state(
     """
     if not config.USE_QUANTUM_TELEPORT_BUS:
         # Pass through if disabled, with perfect fidelity
-        batch_size = tf.shape(input_state)[0]
-        return input_state, tf.ones([batch_size], dtype=tf.float32)
+        batch_size = TEO.shape(input_state)[0]
+        return input_state, TEO.ones([batch_size], dtype=TEO.dtype_map(TEO.TEO_FLOAT))
 
     _load_ops()
     entanglement_dim = entanglement_dim or config.TELEPORT_ENTANGLEMENT_DIM
@@ -134,10 +134,10 @@ def quantum_teleport_state(
 
 
 def bell_measurement(
-    state_a: tf.Tensor,
-    state_b: tf.Tensor,
+    state_a,#: tf.Tensor,
+    state_b,#: tf.Tensor,
     seed: int = 42,
-) -> tf.Tensor:
+):# -> tf.Tensor:
     """Perform Bell measurement on two states.
 
     The Bell measurement projects the two-qubit state onto one of

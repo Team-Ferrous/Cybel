@@ -26,7 +26,7 @@ from __future__ import annotations
 import logging
 import warnings
 
-import tensorflow as tf
+import tensor_ops as TEO
 
 # Phase 4.2: Suppress false-positive complex casting warnings
 # The FFT->real extraction is mathematically correct but triggers TF warnings
@@ -48,7 +48,7 @@ def _load_native_ops():
         from saguaro.native.ops.lib_loader import get_saguaro_core_path
 
         lib_path = get_saguaro_core_path()
-        _native_ops = tf.load_op_library(lib_path)
+        _native_ops = TEO.load_custom_op((lib_path)
         _native_available = hasattr(
             _native_ops, "holographic_attention_scores"
         ) or hasattr(_native_ops, "HolographicAttentionScores")

@@ -30,8 +30,8 @@ from __future__ import annotations
 
 import logging
 
-import tensorflow as tf
-
+#import tensorflow as tf
+import tensor_ops as TEO
 logger = logging.getLogger(__name__)
 
 # =============================================================================
@@ -52,7 +52,7 @@ def _ensure_lib_loaded():
         from saguaro.native.ops.lib_loader import get_saguaro_core_path
 
         lib_path = get_saguaro_core_path()
-        _lib = tf.load_op_library(lib_path)
+        _lib = TEO.load_custom_op(lib_path)
         _ops_available = True
         logger.debug("Unified quantum ops loaded from %s", lib_path)
     except Exception as e:
@@ -73,8 +73,8 @@ def unified_quantum_ops_available() -> bool:
 
 
 def holographic_bind(
-    a: tf.Tensor, b: tf.Tensor, name: str = "holographic_bind"
-) -> tf.Tensor:
+    a, b, name: str = "holographic_bind"
+):
     """Holographic binding via circular convolution (FFT-based).
 
     Binds two vectors using circular convolution:
@@ -108,8 +108,8 @@ def _holographic_bind_grad(op, grad):
 
 
 def holographic_unbind(
-    composite: tf.Tensor, key: tf.Tensor, name: str = "holographic_unbind"
-) -> tf.Tensor:
+    composite, key, name: str = "holographic_unbind"
+):
     """Holographic unbinding (inverse of bind).
 
     unbind(c, a) = ifft(fft(c) * conj(fft(a)))
@@ -140,14 +140,14 @@ def holographic_unbind(
 
 
 def port_hamiltonian_step(
-    state: tf.Tensor,
-    j_matrix: tf.Tensor,
-    r_matrix: tf.Tensor,
-    grad_h: tf.Tensor,
+    state,
+    j_matrix,
+    r_matrix,
+    grad_h,
     external_input: tf.Tensor | None = None,
     dt: float = 0.01,
     name: str = "port_hamiltonian_step",
-) -> tf.Tensor:
+):
     """Port-Hamiltonian integration step with dissipation.
 
     Implements: ẋ = [J(x) - R(x)]∇H(x) + g(x)u
@@ -171,7 +171,7 @@ def port_hamiltonian_step(
         )
 
     if external_input is None:
-        external_input = tf.zeros_like(state)
+        external_input = TEO.zeros_like(state)
 
     return _lib.high_noon_port_hamiltonian_step(
         state, j_matrix, r_matrix, grad_h, external_input, dt=dt, name=name
@@ -184,8 +184,8 @@ def port_hamiltonian_step(
 
 
 def thermodynamic_route(
-    logits: tf.Tensor, temperature: float = 1.0, name: str = "thermodynamic_route"
-) -> tuple[tf.Tensor, tf.Tensor]:
+    logits, temperature: float = 1.0, name: str = "thermodynamic_route"
+):
     """Boltzmann-distributed routing with temperature.
 
     P(expert) ∝ exp(logits / T)
@@ -215,8 +215,8 @@ def thermodynamic_route(
 
 
 def orthogonalize_keys(
-    keys: tf.Tensor, name: str = "orthogonalize_keys"
-) -> tuple[tf.Tensor, tf.Tensor]:
+    keys, name: str = "orthogonalize_keys"
+):
     """Gram-Schmidt orthogonalization for attention keys.
 
     Prevents attention collapse by ensuring key distinctness.
@@ -243,11 +243,11 @@ def orthogonalize_keys(
 
 
 def qsvt_activation(
-    x: tf.Tensor,
-    coefficients: tf.Tensor,
+    x,
+    coefficients,
     degree: int = 8,
     name: str = "qsvt_activation",
-) -> tf.Tensor:
+):
     """QSVT-inspired activation via Chebyshev polynomial approximation.
 
     σ(x) = Σ_i c_i T_i(x) where T_i are Chebyshev polynomials.
@@ -270,7 +270,7 @@ def qsvt_activation(
     return _lib.high_noon_qsvt_activation(x, coefficients, degree=degree, name=name)
 
 
-def get_gelu_chebyshev_coefficients(degree: int = 8) -> tf.Tensor:
+def get_gelu_chebyshev_coefficients(degree: int = 8):
     """Get Chebyshev coefficients approximating GELU activation.
 
     GELU(x) = x * Φ(x) where Φ is the CDF of standard normal.
@@ -284,7 +284,7 @@ def get_gelu_chebyshev_coefficients(degree: int = 8) -> tf.Tensor:
     # Pre-computed coefficients for GELU approximation on [-1, 1]
     # These approximate GELU scaled to the Chebyshev domain
     if degree >= 8:
-        return tf.constant(
+        return TEO.constant(
             [
                 0.5,  # c_0
                 0.5,  # c_1
@@ -302,7 +302,7 @@ def get_gelu_chebyshev_coefficients(degree: int = 8) -> tf.Tensor:
     coeffs = [0.5, 0.5, 0.0, -0.044]
     while len(coeffs) <= degree:
         coeffs.append(0.0)
-    return tf.constant(coeffs[: degree + 1], dtype=tf.float32)
+    return TEO.constant(coeffs[: degree + 1], dtype=tf.float32)
 
 
 # =============================================================================
@@ -311,14 +311,14 @@ def get_gelu_chebyshev_coefficients(degree: int = 8) -> tf.Tensor:
 
 
 def quantum_reservoir(
-    x: tf.Tensor,
-    reservoir_state: tf.Tensor,
-    reservoir_weights: tf.Tensor,
-    readout_weights: tf.Tensor,
+    x,
+    reservoir_state,
+    reservoir_weights,
+    readout_weights,
     reservoir_dim: int = 64,
     evolution_steps: int = 4,
     name: str = "quantum_reservoir",
-) -> tuple[tf.Tensor, tf.Tensor]:
+):
     """Quantum reservoir with fixed dynamics and trainable readout.
 
     Args:
@@ -356,11 +356,11 @@ def quantum_reservoir(
 
 
 def entanglement_loss(
-    bond_entropies: tf.Tensor,
+    bond_entropies,
     min_entropy: float = 0.1,
     weight: float = 0.01,
     name: str = "entanglement_loss",
-) -> tf.Tensor:
+):
     """Entanglement Preservation Loss (Phase 7).
 
     Computes loss based on bond entropies.
@@ -391,11 +391,11 @@ def entanglement_loss(
 
 
 def quantum_memory_replay(
-    inputs: tf.Tensor,
-    weights: list[tf.Tensor],
+    inputs,
+    weights,#: list[tf.Tensor],
     checkpoint_interval: int = 1,
     name: str = "quantum_memory_replay",
-) -> tuple[tf.Tensor, tf.Tensor]:
+):
     """Quantum Memory Replay (Phase 6).
 
     Recomputes gradients using logarithmic checkpointing and unitary reconstruction.
@@ -429,14 +429,14 @@ def quantum_memory_replay(
 
 
 def quantum_holographic_memory(
-    query: tf.Tensor,
-    keys: tf.Tensor,
-    values: tf.Tensor,
+    query,
+    keys,
+    values,
     capacity: int = 1000,
     decay: float = 0.99,
     crystallize_threshold: float = 0.8,
     name: str = "quantum_holographic_memory",
-) -> tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
+):# -> tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
     """Quantum Holographic Memory (Phase 25).
 
     Associative retrieval using holographic binding and Modern Hopfield energy.
@@ -457,7 +457,7 @@ def quantum_holographic_memory(
     if len(keys.shape) == 2:
         keys = tf.expand_dims(keys, 0)
         values = tf.expand_dims(values, 0)
-        batch_size = tf.shape(query)[0]
+        batch_size = TEO.shape(query)[0]
         keys = tf.tile(keys, [batch_size, 1, 1])
         values = tf.tile(values, [batch_size, 1, 1])
 
@@ -594,7 +594,7 @@ class UnifiedQuantumEnhancements(tf.keras.layers.Layer):
 
         super().build(input_shape)
 
-    def call(self, inputs: tf.Tensor, training: bool = False, return_aux: bool = False):
+    def call(self, inputs, training: bool = False, return_aux: bool = False):
         """Apply quantum enhancements.
 
         Args:
@@ -611,14 +611,14 @@ class UnifiedQuantumEnhancements(tf.keras.layers.Layer):
         # Port-Hamiltonian dynamics
         if self.use_port_hamiltonian:
             # Make J skew-symmetric
-            j_matrix = self.j_upper - tf.transpose(self.j_upper)
+            j_matrix = self.j_upper - TEO.transpose(self.j_upper)
             # Make R positive semi-definite (diagonal)
             r_matrix = tf.linalg.diag(tf.nn.softplus(self.r_diag))
             # Compute gradient of Hamiltonian
-            grad_h = tf.einsum("ij,blj->bli", self.h_proj, x)
+            grad_h = TEO.einsum("ij,blj->bli", self.h_proj, x)
             # Average over sequence for dynamics
-            x_mean = tf.reduce_mean(x, axis=1)
-            grad_h_mean = tf.reduce_mean(grad_h, axis=1)
+            x_mean = TEO.reduce_mean(x, axis=1)
+            grad_h_mean = TEO.reduce_mean(grad_h, axis=1)
             x_evolved = port_hamiltonian_step(
                 x_mean, j_matrix, r_matrix, grad_h_mean, dt=0.01
             )

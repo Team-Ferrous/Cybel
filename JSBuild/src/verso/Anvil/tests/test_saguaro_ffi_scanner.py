@@ -109,7 +109,7 @@ def test_trace_perception_ffi_surface_exposes_rich_metadata(tmp_path: Path) -> N
 def test_scanner_detects_tensorflow_custom_op_loader(tmp_path: Path) -> None:
     source = (
         "import tensorflow as tf\n"
-        "module = tf.load_op_library('libcustom_kernel.so')\n"
+        "module = tf.load_op_   library('libcustom_kernel.so')\n"
     )
     scanner = FFIScanner(repo_path=str(tmp_path))
     findings = scanner.scan_file("bridge.py", source)

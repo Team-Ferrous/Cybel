@@ -32,7 +32,7 @@ from __future__ import annotations
 import logging
 
 import numpy as np
-import tensorflow as tf
+import tensor_ops as TEO
 
 logger = logging.getLogger(__name__)
 
@@ -274,7 +274,7 @@ def quantum_galore_deproject(
         compressed=compressed,
         rotation_matrix=rotation_matrix,
         bias=bias,
-        original_shape=tf.constant(list(original_shape), dtype=tf.int32),
+        original_shape=TEO.constant(list(original_shape), dtype=TEO.dtype_map(TEO.TEO_INT)),
         row_projection=row_projection,
     )
 
@@ -284,7 +284,7 @@ def init_quantum_random_features(
     dim: int,
     seed: int = 42,
     scale: float | None = None,
-) -> tuple[tf.Variable, tf.Variable]:
+):# -> tuple[tf.Variable, tf.Variable]:
     """Initialize quantum random feature parameters.
 
     Creates rotation matrix and bias values for quantum feature map.
@@ -305,13 +305,13 @@ def init_quantum_random_features(
 
     tf.random.set_seed(seed)
 
-    rotation_matrix = tf.Variable(
-        tf.random.normal([rank, dim], stddev=scale),
+    rotation_matrix = TEO.variable(
+        TEO.random_normal([rank, dim], stddev=scale),
         trainable=False,
         name="quantum_galore_rotation",
     )
 
-    bias = tf.Variable(
+    bias = TEO.variable(
         tf.random.uniform([rank], 0, 2 * np.pi),
         trainable=False,
         name="quantum_galore_bias",

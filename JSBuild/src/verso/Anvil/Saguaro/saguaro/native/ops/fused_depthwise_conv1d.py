@@ -16,7 +16,7 @@
 import logging
 import os
 
-import tensorflow as tf
+import tensor_ops as TEO
 
 from saguaro.native.ops.lib_loader import resolve_op_library
 
@@ -37,7 +37,7 @@ def _load_op() -> None:
     consolidated_lib_path = resolve_op_library(__file__, "_saguaro_core.so")
     if os.path.exists(consolidated_lib_path):
         try:
-            _op_module = tf.load_op_library(consolidated_lib_path)
+            _op_module = TEO.load_custom_op(consolidated_lib_path)
             # Access the ops directly from the loaded module
             fused_depthwise_conv1d_op = _op_module.FusedDepthwiseConv1D
             fused_depthwise_conv1d_grad_op = _op_module.FusedDepthwiseConv1DGrad
@@ -45,19 +45,19 @@ def _load_op() -> None:
                 "Loaded FusedDepthwiseConv1D from consolidated _saguaro_core.so"
             )
             return
-        except (tf.errors.NotFoundError, OSError, AttributeError) as e:
+        except (TEO.map_backend_error(OSError)) as e:
             logger.debug(f"Could not load from consolidated library: {e}")
 
     # Fallback: try individual .so file (legacy path)
     _op_lib_path = resolve_op_library(__file__, "_fused_depthwise_conv1d.so")
     if os.path.exists(_op_lib_path):
         try:
-            _op_module = tf.load_op_library(_op_lib_path)
+            _op_module = TEO.load_custom_op(_op_lib_path)
             fused_depthwise_conv1d_op = _op_module.FusedDepthwiseConv1D
             fused_depthwise_conv1d_grad_op = _op_module.FusedDepthwiseConv1DGrad
             logger.info("Loaded FusedDepthwiseConv1D from individual .so file")
             return
-        except (tf.errors.NotFoundError, OSError, AttributeError) as e:
+        except (TEO.map_backend_error(OSError)) as e:
             logger.error(f"Failed to load FusedDepthwiseConv1D: {e}")
     else:
         logger.warning(
@@ -68,7 +68,8 @@ def _load_op() -> None:
 _load_op()
 
 
-@tf.autograph.experimental.do_not_convert
+#@tf.autograph.experimental.do_not_convert
+@TEO.do_not_convert
 def fused_depthwise_conv1d(input_tensor, filter_tensor, bias_tensor, stride, padding):
     """Python wrapper for the FusedDepthwiseConv1D custom C++ operator.
     This function mimics a 1D depthwise convolution with 'causal' padding.
@@ -148,7 +149,7 @@ def fused_depthwise_conv1d(input_tensor, filter_tensor, bias_tensor, stride, pad
 
     # Use a closure to pass stride_val and padding_val to the custom gradient function
     # This avoids counting them as differentiable parameters
-    @tf.custom_gradient
+    @TEO.custom_gradient
     def _compute_with_grad(input_t, filter_t, bias_t):
         """Internal function with custom gradient that closes over stride_val and padding_val.
         Only the 3 tensor inputs (input, filter, bias) are tracked for differentiation.
@@ -177,8 +178,8 @@ def fused_depthwise_conv1d(input_tensor, filter_tensor, bias_tensor, stride, pad
                 grad_output=grad_output,
                 input=input_t,
                 filter=filter_t,
-                stride=tf.convert_to_tensor(stride_val, dtype=tf.int32),
-                padding=tf.convert_to_tensor(padding_val),
+                stride=TEO.to_tensor(stride_val, dtype=TEO.dtype_map(TEO.TEO_INT)),
+                padding=TEO.to_tensor(padding_val),
             )
 
             # Return gradients for the 3 differentiable tensor inputs

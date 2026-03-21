@@ -10,8 +10,7 @@ Part of TensorStreamPool C++ Enhancement Roadmap Phase 0.
 import logging
 from typing import Any
 
-import tensorflow as tf
-
+import tensor_ops as TEO
 from saguaro.config import TENSOR_STREAM_DEBUG
 from saguaro.native import get_op
 
@@ -59,7 +58,7 @@ def tensor_stream_acquire(size_bytes: int, producer_hint: str = "") -> int:
     """
     ops = _get_ops()
     result = ops.tensor_stream_acquire(
-        tf.constant(size_bytes, dtype=tf.int64), producer_hint=producer_hint
+        TEO.constant(size_bytes, dtype=TEO.TEO_INT64), producer_hint=producer_hint
     )
     ptr = int(result.numpy())
 
@@ -93,8 +92,8 @@ def tensor_stream_handoff(buffer_ptr: int, consumer_hint: str = "") -> None:
 
     ops = _get_ops()
     ops.tensor_stream_handoff(
-        tf.constant(buffer_ptr, dtype=tf.int64), consumer_hint=consumer_hint
-    )
+        TEO.constant(buffer_ptr, dtype=TEO.TEO_INT64), consumer_hint=consumer_hint
+    )# tf.int64)
 
 
 def tensor_stream_release(buffer_ptr: int) -> None:
@@ -110,7 +109,7 @@ def tensor_stream_release(buffer_ptr: int) -> None:
         logger.debug("[TensorStreamPool] RELEASE: ptr=0x%x", buffer_ptr)
 
     ops = _get_ops()
-    ops.tensor_stream_release(tf.constant(buffer_ptr, dtype=tf.int64))
+    ops.tensor_stream_release(TEO.constant(buffer_ptr, dtype=TEO.TEO_INT64))#tf.int64))
 
 
 def tensor_stream_get_stats() -> dict[str, Any]:

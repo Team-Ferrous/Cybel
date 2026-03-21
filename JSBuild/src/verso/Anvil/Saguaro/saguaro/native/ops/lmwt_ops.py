@@ -36,7 +36,7 @@ logger = logging.getLogger(__name__)
 
 # Load the native ops library
 _lib_path = get_saguaro_core_path()
-_ops_lib = tf.load_op_library(_lib_path)
+_ops_lib = TEO.load_custom_op((_lib_path)
 
 # Track gradient warnings
 _dwt_grad_warning_issued = False

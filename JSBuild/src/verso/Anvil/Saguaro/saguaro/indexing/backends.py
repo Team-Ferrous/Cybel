@@ -5,6 +5,8 @@ from __future__ import annotations
 import hashlib
 import os
 import re
+import io
+
 from abc import ABC, abstractmethod
 from typing import Any
 
@@ -25,10 +27,14 @@ except Exception:
 _TF_MODULE = None
 _HAS_TF: bool | None = None
 
+_PYT_MODULE = None
+_HAS_PYT: bool | None = None
+
+_JAX_MODULE = None
+_HAS_JAX: bool | None = None
 
 _TOKEN_RE = re.compile(r"[A-Za-z_][A-Za-z0-9_]*|\d+|\S")
 _TOKEN_BUCKETS = 2**31 - 1
-
 
 def _load_tensorflow() -> Any | None:
     global _TF_MODULE, _HAS_TF
@@ -46,15 +52,48 @@ def _load_tensorflow() -> Any | None:
         _HAS_TF = False
         return None
 
+def _load_pyt() -> Any | None:
+    global _PYT_MODULE, _HAS_PYT
+    if _PYT_MODULE is not None:
+        return _PYT_MODULE
+    if _HAS_PYT is False:
+        return None
+    try:
+        import torch as pyt_module  # type: ignore
+        _PYT_MODULE = pyt_module
+        _HAS_PYT = True
+        return _PYT_MODULE
+    except Exception:
+        _HAS_PYT = False
+        return None
+
+def _load_jax() -> Any | None:
+    global _JAX_MODULE, _HAS_JAX
+    if _JAX_MODULE is not None:
+        return _JAX_MODULE
+    if _HAS_JAX is False:
+        return None
+    try:
+        import torch as pyt_module  # type: ignore
+        _JAX_MODULE = pyt_module
+        _HAS_JAX = True
+        return _JAX_MODULE
+    except Exception:
+        _HAS_JAX = False
+        return None
+
+def _jax_available() -> bool:
+    return _load_jax() is not None
+
+def _pytorch_available() -> bool:
+    return _load_pyt() is not None
 
 def _tensorflow_available() -> bool:
     return _load_tensorflow() is not None
 
-
 def _stable_token_id(token: str) -> int:
     digest = hashlib.blake2b(token.encode("utf-8"), digest_size=8).digest()
     return int.from_bytes(digest, byteorder="little", signed=False) % _TOKEN_BUCKETS
-
 
 class EmbeddingBackend(ABC):
     """Abstract backend for embedding/token operations."""
@@ -288,7 +327,195 @@ class TensorFlowBackend(EmbeddingBackend):
         return tf.cast(tensor, tf.as_dtype(dtype)).numpy()
 
 
-def get_backend(prefer_tensorflow: bool = True) -> EmbeddingBackend:
+class PyTorchBackend(EmbeddingBackend):
+    """PyTorch-backed embedding operations with NumPy outputs."""
+    def __init__(self) -> None:
+        import torch as pyt
+        self._prepared_projection_cache: dict[
+            tuple[int, tuple[int, ...], str], pyt.Tensor
+        ] = {}
+
+    def tokenize(self, text: str, max_length: int = 512) -> np.ndarray:
+        """Handle tokenize."""
+        text = text if text else ""
+        words = re.sub(r"([^A-Za-z0-9_])", r" \1 ", text).split()
+
+        tokens = np.array(
+            [hash(w) % _TOKEN_BUCKETS for w in words[:max(1, int(max_length))]],
+            dtype=np.int32,
+        )
+
+        if tokens.size == 0:
+            return np.asarray([0], dtype=np.int32)
+
+        return tokens
+
+    def projection(self, vocab_size: int, dim: int, seed: int = 42) -> np.ndarray:
+        """Handle projection."""
+        torch = _load_pyt()
+        torch.manual_seed(seed)
+
+        init_range = 1.0 / np.sqrt(max(dim, 1))
+
+        tensor = (torch.rand(vocab_size, dim) * 2 - 1) * init_range
+
+        return tensor.numpy()
+
+    def prepare_projection(self, projection: Any): #-> torch.Tensor:
+        """Handle prepare projection."""
+        torch = _load_pyt()
+        if isinstance(projection, torch.Tensor):
+            return projection
+
+        array = np.asarray(projection, dtype=np.float32)
+
+        key = (
+            int(array.__array_interface__["data"][0]),
+            tuple(int(v) for v in array.shape),
+            str(array.dtype),
+        )
+
+        cached = self._prepared_projection_cache.get(key)
+
+        if cached is None:
+            cached = torch.from_numpy(array)
+            self._prepared_projection_cache[key] = cached
+
+        return cached
+
+    def embed(self, tokens: np.ndarray, projection: np.ndarray) -> np.ndarray:
+        """Handle embed."""
+        torch = _load_pyt()
+        proj = self.prepare_projection(projection)
+        toks = torch.tensor(tokens, dtype=torch.long)
+        vocab_size = proj.shape[0]
+        clipped = toks % vocab_size
+        return proj[clipped].numpy()
+
+    def bundle(self, vectors: np.ndarray) -> np.ndarray:
+        """Handle bundle."""
+        torch = _load_pyt()
+        vec = torch.from_numpy(np.asarray(vectors, dtype=np.float32))
+        if vec.ndim == 1:
+            return vec.numpy()
+        return torch.mean(vec, dim=0).numpy()
+
+    def serialize(self, vector: np.ndarray) -> bytes:
+        """Handle serialize."""
+        vec = np.asarray(vector, dtype=np.float32)
+        buf = io.BytesIO()
+        np.save(buf, vec)
+        return buf.getvalue()
+
+    def deserialize(self, blob: bytes, dtype: Any = np.float32) -> np.ndarray:
+        """Handle deserialize."""
+        if not blob:
+            return np.zeros((0,), dtype=dtype)
+        buf = io.BytesIO(blob)
+        arr = np.load(buf)
+        return arr.astype(dtype, copy=False)
+
+class JAXBackend(EmbeddingBackend):
+    """JAX-backed embedding operations with NumPy outputs."""
+
+    def __init__(self) -> None:
+        import jax.numpy as jnp
+
+        self._prepared_projection_cache: dict[
+            tuple[int, tuple[int, ...], str], jnp.ndarray
+        ] = {}
+
+    def tokenize(self, text: str, max_length: int = 512) -> np.ndarray:
+        """Handle tokenize."""
+        text = text if text else ""
+        words = re.sub(r"([^A-Za-z0-9_])", r" \1 ", text).split()
+
+        tokens = np.array(
+            [hash(w) % _TOKEN_BUCKETS for w in words[: max(1, int(max_length))]],
+            dtype=np.int32,
+        )
+
+        if tokens.size == 0:
+            return np.asarray([0], dtype=np.int32)
+
+        return tokens
+
+    def projection(self, vocab_size: int, dim: int, seed: int = 42) -> np.ndarray:
+        """Handle projection."""
+        import jax
+        import jax.numpy as jnp
+
+        key = jax.random.PRNGKey(seed)
+
+        init_range = 1.0 / np.sqrt(max(dim, 1))
+
+        tensor = jax.random.uniform(
+            key,
+            shape=(vocab_size, dim),
+            minval=-init_range,
+            maxval=init_range,
+            dtype=jnp.float32,
+        )
+
+        return np.asarray(tensor)
+
+    def prepare_projection(self, projection: Any):
+        """Handle prepare projection."""
+        import jax.numpy as jnp
+
+        if isinstance(projection, jnp.ndarray):
+            return projection
+
+        array = np.asarray(projection, dtype=np.float32)
+
+        key = (
+            int(array.__array_interface__["data"][0]),
+            tuple(int(v) for v in array.shape),
+            str(array.dtype),
+        )
+
+        cached = self._prepared_projection_cache.get(key)
+
+        if cached is None:
+            cached = jnp.asarray(array)
+            self._prepared_projection_cache[key] = cached
+
+        return cached
+
+    def embed(self, tokens: np.ndarray, projection: np.ndarray) -> np.ndarray:
+        """Handle embed."""
+        import jax.numpy as jnp
+        proj = self.prepare_projection(projection)
+        toks = jnp.asarray(tokens, dtype=jnp.int32)
+        vocab_size = proj.shape[0]
+        clipped = toks % vocab_size
+        result = proj[clipped]
+        return np.asarray(result)
+
+    def bundle(self, vectors: np.ndarray) -> np.ndarray:
+        """Handle bundle."""
+        import jax.numpy as jnp
+        vec = jnp.asarray(vectors, dtype=jnp.float32)
+        if vec.ndim == 1:
+            return np.asarray(vec)
+        return np.asarray(jnp.mean(vec, axis=0))
+
+    def serialize(self, vector: np.ndarray) -> bytes:
+        """Handle serialize."""
+        vec = np.asarray(vector, dtype=np.float32)
+        buf = io.BytesIO()
+        np.save(buf, vec)
+        return buf.getvalue()
+
+    def deserialize(self, blob: bytes, dtype: Any = np.float32) -> np.ndarray:
+        """Handle deserialize."""
+        if not blob:
+            return np.zeros((0,), dtype=dtype)
+        buf = io.BytesIO(blob)
+        arr = np.load(buf)
+        return arr.astype(dtype, copy=False)
+    
+def get_backend(prefer_pyt: bool = False, prefer_jax:bool = False, prefer_tf:bool = False ) -> EmbeddingBackend:
     """Return an embedding backend instance.
 
     Args:
@@ -309,6 +536,18 @@ def get_backend(prefer_tensorflow: bool = True) -> EmbeddingBackend:
         raise RuntimeError(
             "TensorFlow backend requested but TensorFlow is unavailable."
         )
+    if forced == "jax":
+        if _HAS_JAX:
+            return JAXBackend()
+        raise RuntimeError(
+            "JAX backend requested but JAX is unavailable."
+        )
+    if forced == "pytorch":
+        if _HAS_PYT:
+            return PyTorchBackend()
+        raise RuntimeError(
+            "PyTorch backend requested but PyTorch is unavailable."
+        )
     if forced == "numpy":
         return NumPyBackend()
 
@@ -320,8 +559,13 @@ def get_backend(prefer_tensorflow: bool = True) -> EmbeddingBackend:
         except RuntimeError:
             pass
 
-    if _tensorflow_available() and prefer_tensorflow:
+    if _tensorflow_available() and prefer_tf:
         return TensorFlowBackend()
+    if _jax_available()        and prefer_jax:
+        return JAXBackend()
+    if _pytorch_available()    and prefer_pyt:
+        return PyTorchBackend()
+    
     if _HAS_NATIVE:
         try:
             return NativeIndexerBackend()

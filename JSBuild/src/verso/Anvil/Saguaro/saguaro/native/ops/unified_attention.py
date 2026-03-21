@@ -14,7 +14,7 @@ from __future__ import annotations
 import enum
 from dataclasses import dataclass
 
-import tensorflow as tf
+import tensor_ops as TEO
 
 # Attempt to load the native op, with fallback for development
 try:
@@ -157,14 +157,14 @@ class UnifiedAttentionConfig:
 
 
 def unified_attention(
-    query: tf.Tensor,
-    key: tf.Tensor,
-    value: tf.Tensor,
+    query,#: tf.Tensor,
+    key,#:# tf.Tensor,
+    value,#: tf.Tensor,
     config: UnifiedAttentionConfig,
-    extra_inputs: tf.Tensor | None = None,
+    extra_inputs,#: tf.Tensor | None = None,
     training: bool = False,
     name: str = "unified_attention",
-) -> tf.Tensor:
+): #-> tf.Tensor:
     """Unified attention forward pass.
 
     Routes to the appropriate kernel based on config.mode. All inputs
@@ -189,19 +189,19 @@ def unified_attention(
         ValueError: If configuration is invalid
         RuntimeError: If native ops are not available and no fallback exists
     """
-    with tf.name_scope(name):
+    with TEO.name_scope(name):
         # Validate config
         if not config.validate():
             raise ValueError(f"Invalid attention config: {config}")
 
         # Get tensor shapes
-        batch_size = tf.shape(query)[0]
-        seq_len = tf.shape(query)[2]
-        kv_seq_len = tf.shape(key)[2]
+        batch_size  = TEO.shape(query)[0]
+        seq_len     = TEO.shape(query)[2]
+        kv_seq_len  = TEO.shape(key)[2]
 
         # Prepare extra inputs (empty tensor if None)
         if extra_inputs is None:
-            extra_inputs = tf.zeros([1], dtype=tf.float32)
+            extra_inputs = TEO.zeros([1], dtype=TEO.dtype_map(TEO.TEO_FLOAT))
 
         # Use native op if available
         if _NATIVE_AVAILABLE:
@@ -240,13 +240,13 @@ def unified_attention(
 
 
 def _python_unified_attention(
-    query: tf.Tensor,
-    key: tf.Tensor,
-    value: tf.Tensor,
+    query,#: tf.Tensor,
+    key,#: tf.Tensor,
+    value,#: tf.Tensor,
     config: UnifiedAttentionConfig,
-    extra_inputs: tf.Tensor,
+    extra_inputs,#: tf.Tensor,
     training: bool,
-) -> tf.Tensor:
+): # -> tf.Tensor:
     """Python fallback implementation of unified attention.
 
     This provides a reference implementation when native ops are not available.
@@ -284,77 +284,75 @@ def _python_unified_attention(
     return _flash_attention_fallback(query, key, value, config)
 
 
-def _flash_attention_fallback(
-    query: tf.Tensor, key: tf.Tensor, value: tf.Tensor, config: UnifiedAttentionConfig
-) -> tf.Tensor:
+def _flash_attention_fallback(query, key, value, config: UnifiedAttentionConfig):
+    #query: tf.Tensor, key: tf.Tensor, value: tf.Tensor, config: UnifiedAttentionConfig
+#) -> tf.Tensor:
     """Standard scaled dot-product attention (Python fallback)."""
     scale = config.compute_scale()
 
     # Expand KV heads if needed (GQA)
     if config.num_kv_heads < config.num_heads:
         repeat = config.queries_per_kv_head()
-        key = tf.repeat(key, repeats=repeat, axis=1)
-        value = tf.repeat(value, repeats=repeat, axis=1)
+        key   = TEO.repeat(key, repeats=repeat, axis=1)
+        value = TEO.repeat(value, repeats=repeat, axis=1)
 
     # Compute attention scores: [batch, heads, seq_q, seq_k]
-    scores = tf.einsum("bhqd,bhkd->bhqk", query, key) * scale
+    scores = TEO.einsum("bhqd,bhkd->bhqk", query, key) * scale
 
     # Apply causal mask
     if config.causal:
-        seq_q = tf.shape(query)[2]
-        seq_k = tf.shape(key)[2]
-        mask = tf.linalg.band_part(tf.ones([seq_q, seq_k]), -1, 0)
-        mask = tf.cast(mask, tf.float32)
+        seq_q = TEO.shape(query)[2]
+        seq_k = TEO.shape(key)[2]
+        mask = TEO.band_part(TEO.ones([seq_q, seq_k]), -1, 0)
+        mask = TEO.cast(mask, TEO.dtype_map(TEO.TEO_FLOAT)) #tf.float32)
         scores = scores * mask + (1.0 - mask) * (-1e9)
 
     # Softmax
-    attention_weights = tf.nn.softmax(scores, axis=-1)
+    attention_weights = TEO.softmax(scores, axis=-1)
 
     # Weighted sum of values
-    return tf.einsum("bhqk,bhkd->bhqd", attention_weights, value)
+    return TEO.einsum("bhqk,bhkd->bhqd", attention_weights, value)
 
 
 
-def _linear_attention_fallback(
-    query: tf.Tensor, key: tf.Tensor, value: tf.Tensor, config: UnifiedAttentionConfig
-) -> tf.Tensor:
+def _linear_attention_fallback(query, key, value, config):
+#    query: tf.Tensor, key: tf.Tensor, value: tf.Tensor, config: UnifiedAttentionConfig
+#) -> tf.Tensor:
     """Linear attention with ELU+1 feature map (Python fallback)."""
 
     # ELU+1 feature map: φ(x) = elu(x) + 1
     def feature_map(x):
-        return tf.nn.elu(x) + 1.0
+        return TEO.elu(x) + 1.0
 
     # Expand KV heads if needed
     if config.num_kv_heads < config.num_heads:
         repeat = config.queries_per_kv_head()
-        key = tf.repeat(key, repeats=repeat, axis=1)
-        value = tf.repeat(value, repeats=repeat, axis=1)
+        key    = TEO.repeat(key, repeats=repeat, axis=1)
+        value  = TEO.repeat(value, repeats=repeat, axis=1)
 
     # Apply feature maps
     phi_q = feature_map(query)
     phi_k = feature_map(key)
 
     # Compute KV state: [batch, heads, head_dim, head_dim]
-    kv_state = tf.einsum("bhkd,bhkv->bhdv", phi_k, value)
+    kv_state = TEO.einsum("bhkd,bhkv->bhdv", phi_k, value)
 
     # Compute K sum: [batch, heads, head_dim]
-    k_sum = tf.reduce_sum(phi_k, axis=2)
+    k_sum = TEO.reduce_sum(phi_k, axis=2)
 
     # Numerator: [batch, heads, seq_q, head_dim]
-    numerator = tf.einsum("bhqd,bhdv->bhqv", phi_q, kv_state)
+    numerator = TEO.einsum("bhqd,bhdv->bhqv", phi_q, kv_state)
 
     # Denominator: [batch, heads, seq_q]
-    denominator = tf.einsum("bhqd,bhd->bhq", phi_q, k_sum)
-    denominator = tf.maximum(denominator, config.epsilon)
+    denominator = TEO.einsum("bhqd,bhd->bhq", phi_q, k_sum)
+    denominator = TEO.maximum(denominator, config.epsilon)
 
     # Normalize
-    return numerator / denominator[..., tf.newaxis]
+    return numerator / denominator[..., TEO.newaxis]
 
 
 
-def _local_windowed_attention_fallback(
-    query: tf.Tensor, key: tf.Tensor, value: tf.Tensor, config: UnifiedAttentionConfig
-) -> tf.Tensor:
+def _local_windowed_attention_fallback(query, key, value, config: UnifiedAttentionConfig):
     """Local windowed attention (Python fallback).
 
     Falls back to flash attention with local masking for simplicity.
@@ -365,47 +363,45 @@ def _local_windowed_attention_fallback(
     # Expand KV heads if needed
     if config.num_kv_heads < config.num_heads:
         repeat = config.queries_per_kv_head()
-        key = tf.repeat(key, repeats=repeat, axis=1)
-        value = tf.repeat(value, repeats=repeat, axis=1)
+        key    = TEO.repeat(key, repeats=repeat, axis=1)
+        value  = TEO.repeat(value, repeats=repeat, axis=1)
 
     # Compute full attention scores
-    scores = tf.einsum("bhqd,bhkd->bhqk", query, key) * scale
+    scores = TEO.einsum("bhqd,bhkd->bhqk", query, key) * scale
 
-    seq_q = tf.shape(query)[2]
-    seq_k = tf.shape(key)[2]
+    seq_q = TEO.shape(query)[2]
+    seq_k = TEO.shape(key)[2]
 
     # Create local window mask
-    q_pos = tf.range(seq_q)[:, tf.newaxis]
-    k_pos = tf.range(seq_k)[tf.newaxis, :]
+    q_pos = TEO.range(seq_q)[:, TEO.newaxis]
+    k_pos = TEO.range(seq_k)[TEO.newaxis, :]
 
     # Within window: |q_pos - k_pos| <= window/2
-    within_window = tf.abs(q_pos - k_pos) <= (window // 2)
+    within_window = TEO.abs(q_pos - k_pos) <= (window // 2)
 
     if config.causal:
-        within_window = tf.logical_and(within_window, k_pos <= q_pos)
+        within_window = TEO.logical_and(within_window, k_pos <= q_pos)
 
-    mask = tf.cast(within_window, tf.float32)
+    mask = TEO.cast(within_window, TEO.dtype_map(TEO.TEO_FLOAT))
     scores = scores * mask + (1.0 - mask) * (-1e9)
 
-    attention_weights = tf.nn.softmax(scores, axis=-1)
-    return tf.einsum("bhqk,bhkd->bhqd", attention_weights, value)
+    attention_weights = TEO.softmax(scores, axis=-1)
+    return TEO.einsum("bhqk,bhkd->bhqd", attention_weights, value)
 
 
 
-def _differential_attention_fallback(
-    query: tf.Tensor, key: tf.Tensor, value: tf.Tensor, config: UnifiedAttentionConfig
-) -> tf.Tensor:
+def _differential_attention_fallback(query, key, value, config: UnifiedAttentionConfig):
     """Differential attention: A1 - λ*A2 (Python fallback)."""
     scale = 1.0 / (config.head_dim // 2) ** 0.5
-    lambda_val = tf.clip_by_value(
+    lambda_val = TEO.clip_by_value(
         config.lambda_init, config.lambda_min, config.lambda_max
     )
 
     # Expand KV heads if needed
     if config.num_kv_heads < config.num_heads:
         repeat = config.queries_per_kv_head()
-        key = tf.repeat(key, repeats=repeat, axis=1)
-        value = tf.repeat(value, repeats=repeat, axis=1)
+        key = TEO.repeat(key, repeats=repeat, axis=1)
+        value = TEO.repeat(value, repeats=repeat, axis=1)
 
     # Split Q and K into two halves
     head_dim = config.head_dim
@@ -415,27 +411,27 @@ def _differential_attention_fallback(
     k1, k2 = key[..., :half_dim], key[..., half_dim:]
 
     # Compute two sets of attention scores
-    scores1 = tf.einsum("bhqd,bhkd->bhqk", q1, k1) * scale
-    scores2 = tf.einsum("bhqd,bhkd->bhqk", q2, k2) * scale
+    scores1 = TEO.einsum("bhqd,bhkd->bhqk", q1, k1) * scale
+    scores2 = TEO.einsum("bhqd,bhkd->bhqk", q2, k2) * scale
 
     # Apply causal mask
     if config.causal:
-        seq_q = tf.shape(query)[2]
-        seq_k = tf.shape(key)[2]
-        mask = tf.linalg.band_part(tf.ones([seq_q, seq_k]), -1, 0)
-        mask = tf.cast(mask, tf.float32)
+        seq_q = TEO.shape(query)[2]
+        seq_k = TEO.shape(key)[2]
+        mask = TEO.band_part(TEO.ones([seq_q, seq_k]), -1, 0)
+        mask = TEO.cast(mask, TEO.dtype_map(TEO.TEO_FLOAT))
         scores1 = scores1 * mask + (1.0 - mask) * (-1e9)
         scores2 = scores2 * mask + (1.0 - mask) * (-1e9)
 
     # Softmax both
-    attn1 = tf.nn.softmax(scores1, axis=-1)
-    attn2 = tf.nn.softmax(scores2, axis=-1)
+    attn1 = TEO.softmax(scores1, axis=-1)
+    attn2 = TEO.softmax(scores2, axis=-1)
 
     # Differential attention
     diff_attn = attn1 - lambda_val * attn2
 
     # Weighted sum
-    output = tf.einsum("bhqk,bhkd->bhqd", diff_attn, value)
+    output = TEO.einsum("bhqk,bhkd->bhqd", diff_attn, value)
 
     # Optional normalization
     if config.normalize_diff:
@@ -444,9 +440,7 @@ def _differential_attention_fallback(
     return output
 
 
-def _latent_kv_attention_fallback(
-    query: tf.Tensor, config: UnifiedAttentionConfig, extra_inputs: tf.Tensor
-) -> tf.Tensor:
+def _latent_kv_attention_fallback(query, config: UnifiedAttentionConfig, extra_inputs):
     """Latent KV attention (Python fallback)."""
     scale = config.compute_scale()
     num_latents = config.num_latents
@@ -454,25 +448,25 @@ def _latent_kv_attention_fallback(
 
     # Extract latent keys and values from extra_inputs
     latent_keys = extra_inputs[: num_latents * head_dim]
-    latent_keys = tf.reshape(latent_keys, [num_latents, head_dim])
+    latent_keys = TEO.reshape(latent_keys, [num_latents, head_dim])
 
     latent_values = extra_inputs[num_latents * head_dim :]
-    latent_values = tf.reshape(latent_values, [num_latents, head_dim])
+    latent_values = TEO.reshape(latent_values, [num_latents, head_dim])
 
     # Cross-attention to latents
-    scores = tf.einsum("bhqd,ld->bhql", query, latent_keys) * scale
-    attention_weights = tf.nn.softmax(scores, axis=-1)
-    return tf.einsum("bhql,ld->bhqd", attention_weights, latent_values)
+    scores = TEO.einsum("bhqd,ld->bhql", query, latent_keys) * scale
+    attention_weights = TEO.softmax(scores, axis=-1)
+    return TEO.einsum("bhql,ld->bhqd", attention_weights, latent_values)
 
 
 
 def _qasa_attention_fallback(
-    query: tf.Tensor,
-    key: tf.Tensor,
-    value: tf.Tensor,
+    query,
+    key,
+    value,
     config: UnifiedAttentionConfig,
-    extra_inputs: tf.Tensor,
-) -> tf.Tensor:
+    extra_inputs,
+):
     """Quantum Adaptive Self-Attention (Python fallback).
 
     Simplified VQC-based attention computation.
@@ -484,37 +478,36 @@ def _qasa_attention_fallback(
     # Expand KV heads if needed
     if config.num_kv_heads < config.num_heads:
         repeat = config.queries_per_kv_head()
-        key = tf.repeat(key, repeats=repeat, axis=1)
-        value = tf.repeat(value, repeats=repeat, axis=1)
+        key = TEO.repeat(key, repeats=repeat, axis=1)
+        value = TEO.repeat(value, repeats=repeat, axis=1)
 
     # VQC parameters
     extra_inputs[: 2 * num_params]
 
     # Simple VQC score approximation: use cosine similarity with phase rotation
     # This is a simplified approximation of the full VQC computation
-    scores = tf.einsum("bhqd,bhkd->bhqk", query, key)
-    scores = tf.cos(scores * 0.1)  # Phase-based scoring
+    scores = TEO.einsum("bhqd,bhkd->bhqk", query, key)
+    scores = TEO.cos(scores * 0.1)  # Phase-based scoring
 
     # Apply causal mask
     if config.causal:
-        seq_q = tf.shape(query)[2]
-        seq_k = tf.shape(key)[2]
-        mask = tf.linalg.band_part(tf.ones([seq_q, seq_k]), -1, 0)
-        mask = tf.cast(mask, tf.float32)
+        seq_q = TEO.shape(query)[2]
+        seq_k = TEO.shape(key)[2]
+        mask = TEO.band_part(TEO.ones([seq_q, seq_k]), -1, 0)
+        mask = TEO.cast(mask, TEO.dtype_map(TEO.TEO_FLOAT))
         scores = scores * mask + (1.0 - mask) * (-1e9)
-
-    attention_weights = tf.nn.softmax(scores, axis=-1)
-    return tf.einsum("bhqk,bhkd->bhqd", attention_weights, value)
+    attention_weights = TEO.softmax(scores, axis=-1)
+    return TEO.einsum("bhqk,bhkd->bhqd", attention_weights, value)
 
 
 
 def _lmwt_attention_fallback(
-    query: tf.Tensor,
-    key: tf.Tensor,
-    value: tf.Tensor,
+    query,
+    key,
+    value,
     config: UnifiedAttentionConfig,
-    extra_inputs: tf.Tensor,
-) -> tf.Tensor:
+    extra_inputs,
+):
     """Learnable Multi-Scale Wavelet Transformer (Python fallback).
 
     Multi-scale attention with wavelet-style decomposition.
@@ -525,15 +518,15 @@ def _lmwt_attention_fallback(
     # Expand KV heads if needed
     if config.num_kv_heads < config.num_heads:
         repeat = config.queries_per_kv_head()
-        key = tf.repeat(key, repeats=repeat, axis=1)
-        value = tf.repeat(value, repeats=repeat, axis=1)
+        key = TEO.repeat(key, repeats=repeat, axis=1)
+        value = TEO.repeat(value, repeats=repeat, axis=1)
 
     # Extract alpha and beta from extra_inputs
     alpha = extra_inputs[:num_scales]
     beta = extra_inputs[num_scales : 2 * num_scales]
 
     # Accumulate multi-scale attention
-    output = tf.zeros_like(query)
+    output = TEO.zeros_like(query)
 
     for s in range(num_scales):
         stride = 2**s
@@ -543,17 +536,17 @@ def _lmwt_attention_fallback(
         value_s = value[:, :, ::stride, :]
 
         # Compute attention at this scale
-        scores = tf.einsum("bhqd,bhkd->bhqk", query, key_s) * scale
+        scores = TEO.einsum("bhqd,bhkd->bhqk", query, key_s) * scale
 
         if config.causal:
-            seq_q = tf.shape(query)[2]
-            seq_k = tf.shape(key_s)[2]
-            mask = tf.linalg.band_part(tf.ones([seq_q, seq_k]), -1, 0)
-            mask = tf.cast(mask, tf.float32)
+            seq_q = TEO.shape(query)[2]
+            seq_k = TEO.shape(key_s)[2]
+            mask = TEO.band_part(TEO.ones([seq_q, seq_k]), -1, 0)
+            mask = TEO.cast(mask, TEO.dtype_map(TEO.TEO_FLOAT))
             scores = scores * mask + (1.0 - mask) * (-1e9)
 
-        attn_weights = tf.nn.softmax(scores, axis=-1)
-        scale_output = tf.einsum("bhqk,bhkd->bhqd", attn_weights, value_s)
+        attn_weights = TEO.softmax(scores, axis=-1)
+        scale_output = TEO.einsum("bhqk,bhkd->bhqd", attn_weights, value_s)
 
         # Weight by wavelet coefficients
         weight = alpha[s] if s == 0 else beta[s]
@@ -567,9 +560,34 @@ def _lmwt_attention_fallback(
 # =============================================================================
 # HIGH-LEVEL API
 # =============================================================================
+class TorchUnifiedAttention(torch.nn.Module):
 
+    def __init__(self, config):
+        super().__init__()
+        self.config = config
 
-class UnifiedAttention(tf.keras.layers.Layer):
+    def forward(self, query, key, value):
+        return unified_attention(
+            query=query,
+            key=key,
+            value=value,
+            config=self.config,
+        )
+
+class JAXUnifiedAttention:
+
+    def __init__(self, config):
+        self.config = config
+
+    def __call__(self, query, key, value):
+        return unified_attention(
+            query=query,
+            key=key,
+            value=value,
+            config=self.config,
+        )
+    
+class TFUnifiedAttention(tf.keras.layers.Layer):
     """Keras layer for unified attention.
 
     This layer wraps the unified attention operations for easy integration
@@ -598,7 +616,7 @@ class UnifiedAttention(tf.keras.layers.Layer):
             self.lambda_param = self.add_weight(
                 name="lambda",
                 shape=[],
-                initializer=tf.constant_initializer(config.lambda_init),
+                initializer=TEO.constant_initializer(config.lambda_init),
                 trainable=True,
             )
 
@@ -615,19 +633,17 @@ class UnifiedAttention(tf.keras.layers.Layer):
             self.alpha = self.add_weight(
                 name="alpha",
                 shape=[config.num_wavelet_scales],
-                initializer=tf.constant_initializer(config.alpha_init),
+                initializer=TEO.constant_initializer(config.alpha_init),
                 trainable=config.learn_wavelet_filters,
             )
             self.beta = self.add_weight(
                 name="beta",
                 shape=[config.num_wavelet_scales],
-                initializer=tf.constant_initializer(config.beta_init),
+                initializer=TEO.constant_initializer(config.beta_init),
                 trainable=config.learn_wavelet_filters,
             )
 
-    def call(
-        self, query: tf.Tensor, key: tf.Tensor, value: tf.Tensor, training: bool = False
-    ) -> tf.Tensor:
+    def call(self, query, key, value, training: bool = False):
         """Forward pass.
 
         Args:
@@ -645,7 +661,7 @@ class UnifiedAttention(tf.keras.layers.Layer):
         if self.config.mode == AttentionMode.QASA:
             extra_inputs = self.vqc_params
         elif self.config.mode == AttentionMode.LMWT:
-            extra_inputs = tf.concat([self.alpha, self.beta], axis=0)
+            extra_inputs = TEO.concat([self.alpha, self.beta], axis=0)
 
         return unified_attention(
             query=query,
@@ -677,13 +693,12 @@ class UnifiedAttention(tf.keras.layers.Layer):
 
 
 def flash_attention(
-    query: tf.Tensor,
-    key: tf.Tensor,
-    value: tf.Tensor,
+    query,
+    key,
+    value,
     num_heads: int = 8,
     causal: bool = True,
-    training: bool = False,
-) -> tf.Tensor:
+    training: bool = False):
     """Standard flash attention (O(n²)).
 
     Args:
@@ -707,13 +722,13 @@ def flash_attention(
 
 
 def linear_attention(
-    query: tf.Tensor,
-    key: tf.Tensor,
-    value: tf.Tensor,
+    query,
+    key,
+    value,
     num_heads: int = 8,
     causal: bool = True,
     training: bool = False,
-) -> tf.Tensor:
+):
     """Linear attention via ELU+1 feature maps (O(n)).
 
     Args:
@@ -737,14 +752,14 @@ def linear_attention(
 
 
 def gqa_attention(
-    query: tf.Tensor,
-    key: tf.Tensor,
-    value: tf.Tensor,
+    query,
+    key,
+    value,
     num_heads: int = 8,
     num_kv_heads: int = 2,
     causal: bool = True,
     training: bool = False,
-) -> tf.Tensor:
+):
     """Grouped-Query Attention with KV head sharing.
 
     Args:
@@ -769,14 +784,14 @@ def gqa_attention(
 
 
 def local_attention(
-    query: tf.Tensor,
-    key: tf.Tensor,
-    value: tf.Tensor,
+    query,
+    key,
+    value,
     num_heads: int = 8,
     window_size: int = 256,
     causal: bool = True,
     training: bool = False,
-) -> tf.Tensor:
+):
     """Local windowed attention (O(n×w)).
 
     Args:
@@ -802,14 +817,14 @@ def local_attention(
 
 
 def differential_attention(
-    query: tf.Tensor,
-    key: tf.Tensor,
-    value: tf.Tensor,
+    query,
+    key,
+    value,
     num_heads: int = 8,
     lambda_init: float = 0.8,
     causal: bool = True,
     training: bool = False,
-) -> tf.Tensor:
+):
     """Differential Transformer attention: A1 - λ*A2.
 
     Args:

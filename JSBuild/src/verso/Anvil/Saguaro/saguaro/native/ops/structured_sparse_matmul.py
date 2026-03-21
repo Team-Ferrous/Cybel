@@ -20,9 +20,7 @@ useful for local attention patterns and structured sparsity.
 """
 
 import logging
-
-import tensorflow as tf
-
+import tensor_ops as TEO
 from saguaro.native.ops.lib_loader import resolve_op_library
 
 logger = logging.getLogger(__name__)
@@ -34,7 +32,7 @@ structured_sparse_matmul_grad_op = None
 
 try:
     _op_lib_path = resolve_op_library(__file__, "_structured_sparse_matmul_op.so")
-    _sparse_matmul_module = tf.load_op_library(_op_lib_path)
+    _sparse_matmul_module = TEO.load_custom_op(_op_lib_path)
 
     if hasattr(_sparse_matmul_module, "structured_sparse_matmul"):
         structured_sparse_matmul_op = _sparse_matmul_module.structured_sparse_matmul
@@ -44,7 +42,7 @@ try:
         logger.info("Successfully loaded custom C++ StructuredSparseMatmul operator.")
     else:
         raise AttributeError("structured_sparse_matmul op not found in library")
-except (tf.errors.NotFoundError, OSError, AttributeError) as e:
+except TEO.map_backend_error(OSError) as e: #(tf.errors.NotFoundError, OSError, AttributeError) as e:
     logger.warning(f"Could not load the custom C++ StructuredSparseMatmul op: {e}")
     structured_sparse_matmul_op = None
 
@@ -54,14 +52,14 @@ def structured_sparse_matmul_available() -> bool:
     return structured_sparse_matmul_op is not None
 
 
-@tf.custom_gradient
+@TEO.custom_gradient
 def structured_sparse_matmul(
-    matrix_diagonals: tf.Tensor,
-    vector: tf.Tensor,
+    matrix_diagonals,#: tf.Tensor,
+    vector,#: tf.Tensor,
     structure: str = "band_diagonal",
     lower_bands: int = 64,
     upper_bands: int = 64,
-) -> tf.Tensor:
+):# -> tf.Tensor:
     """Python wrapper for the StructuredSparseMatmul custom C++ operator.
 
     Performs efficient band-diagonal sparse matrix-vector multiplication.
@@ -92,9 +90,9 @@ def structured_sparse_matmul(
         )
 
     # Convert string and int arguments to tensors for the C++ op
-    structure_tensor = tf.constant(structure, dtype=tf.string)
-    lower_bands_tensor = tf.constant(lower_bands, dtype=tf.int32)
-    upper_bands_tensor = tf.constant(upper_bands, dtype=tf.int32)
+    structure_tensor = TEO.constant(structure, dtype=TEO.dtype_map(TEO.TEO_STRING))
+    lower_bands_tensor = TEO.constant(lower_bands, dtype=TEO.dtype_map(TEO.TEO_INT))
+    upper_bands_tensor = TEO.constant(upper_bands, dtype=TEO.dtype_map(TEO.TEO_INT))
 
     result = structured_sparse_matmul_op(
         matrix_diagonals,
@@ -105,9 +103,9 @@ def structured_sparse_matmul(
     )
 
     def grad_fn(
-        grad_output: tf.Tensor,
-        variables: list[tf.Variable] | None = None,
-    ) -> tuple[tuple[tf.Tensor, ...], list[tf.Tensor | None]]:
+        grad_output,#: tf.Tensor,
+        variables,#: list[tf.Variable] | None = None,
+    ):# -> tuple[tuple[tf.Tensor, ...], list[tf.Tensor | None]]:
         """Gradient function that calls the custom C++ backward kernel."""
         if structured_sparse_matmul_grad_op is None:
             raise NotImplementedError(

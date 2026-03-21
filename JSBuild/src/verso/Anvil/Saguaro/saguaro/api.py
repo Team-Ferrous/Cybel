@@ -115,14 +115,13 @@ _STOPWORDS = {
 
 def _load_backend_helpers():
     from saguaro.indexing.backends import backend_name, get_backend
-
     return backend_name, get_backend
 
 
-def get_backend(*, prefer_tensorflow: bool = True):
+def get_backend(*, prefer_tensorflow: bool = True, prefer_pyt: bool = False, prefer_jax:bool = False):
     """Compatibility wrapper for tests and legacy callers."""
     _, backend_getter = _load_backend_helpers()
-    return backend_getter(prefer_tensorflow=prefer_tensorflow)
+    return backend_getter(prefer_tensorflow=prefer_tensorflow, prefer_pyt=prefer_pyt, prefer_jax=prefer_jax)
 
 
 def backend_name(backend: Any) -> str:
@@ -183,7 +182,19 @@ class SaguaroAPI:
             "true",
             "yes",
         }
-        self._prefer_tf_backend = prefer_tf
+        prefer_pyt = os.getenv("SAGUARO_PREFER_PYT_BACKEND", "1").lower() in {
+            "1",
+            "true",
+            "yes",
+        }
+        prefer_jax = os.getenv("SAGUARO_PREFER_JAX_BACKEND", "1").lower() in {
+            "1",
+            "true",
+            "yes",
+        }
+        self._prefer_tf_backend  = prefer_tf
+        self._prefer_pyt_backend = prefer_pyt
+        self._prefer_jax_backend = prefer_jax
         self._backend = None
         self._vocab_size = int(os.getenv("SAGUARO_EMBED_VOCAB_SIZE", "16384"))
         self._projection_cache: dict[tuple[int, int], Any] = {}
@@ -236,7 +247,7 @@ class SaguaroAPI:
 
     def _embedding_backend(self) -> Any:
         if self._backend is None:
-            self._backend = get_backend(prefer_tensorflow=self._prefer_tf_backend)
+            self._backend = get_backend(prefer_tensorflow=self._prefer_tf_backend, prefer_pytorch=self._prefer_pyt_backend, prefer_jax=self._prefer_jax_backend)
         return self._backend
 
     def _backend_label(self, *, require_loaded: bool = False) -> str:

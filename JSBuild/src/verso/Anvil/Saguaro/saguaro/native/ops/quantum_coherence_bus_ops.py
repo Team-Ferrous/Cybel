@@ -35,8 +35,7 @@ Ops:
 
 import logging
 
-import tensorflow as tf
-
+import tensor_ops as TEO
 from saguaro import config
 from saguaro.native.ops.lib_loader import resolve_op_library
 
@@ -56,7 +55,7 @@ def _load_ops():
         lib_path = resolve_op_library(__file__, "_saguaro_core.so")
         if lib_path is None:
             raise RuntimeError("Could not find _saguaro_core.so")
-        _module = tf.load_op_library(lib_path)
+        _module = TEO.load_custom_op((lib_path)
         _available = True
         logger.info(f"Quantum Coherence Bus ops loaded from {lib_path}")
     except Exception as e:

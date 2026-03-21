@@ -31,7 +31,8 @@ from __future__ import annotations
 import logging
 import warnings
 
-import tensorflow as tf
+#import tensorflow as tf
+import tensor_ops as TEO
 
 # Phase 4.2: Suppress false-positive complex casting warnings
 # The FFT->real extraction is mathematically correct but triggers TF warnings

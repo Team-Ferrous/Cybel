@@ -39,8 +39,8 @@ from __future__ import annotations
 
 import logging
 
-import tensorflow as tf
-
+#import tensorflow as tf
+import tensor_ops as TEO
 from saguaro.native import get_op
 
 logger = logging.getLogger(__name__)
@@ -57,19 +57,19 @@ def fused_mamba_core_available() -> bool:
 
 
 def fused_mamba_core(
-    x_c: tf.Tensor,
-    z: tf.Tensor,
-    conv_filter: tf.Tensor,
-    conv_bias: tf.Tensor,
-    dt: tf.Tensor,
-    a_log: tf.Tensor,
-    b_proj: tf.Tensor,
-    c_proj: tf.Tensor,
-    d_skip: tf.Tensor,
+    x_c,
+    z,
+    conv_filter,
+    conv_bias,
+    dt,
+    a_log,
+    b_proj,
+    c_proj,
+    d_skip,
     conv_dim: int = 4,
     # Enhancement 1: VQC-Gated Selective Scan
     use_vqc_gate: bool = False,
-    vqc_angles: tf.Tensor | None = None,
+    vqc_angles: TEO.Tensor | None = None,
     vqc_num_layers: int = 2,
     # Enhancement 2: Parallel SIMD Scan
     use_parallel_scan: bool = True,
@@ -84,7 +84,7 @@ def fused_mamba_core(
     use_superposition: bool = False,
     superposition_dim: int = 4,
     superposition_temperature: float = 1.0,
-) -> tuple[tf.Tensor, tf.Tensor]:
+):# -> tuple[tf.Tensor, tf.Tensor]:
     """C++-accelerated Mamba SSM core operation with enhancements.
 
     Implements the full Mamba forward pass as a single fused kernel:
@@ -131,23 +131,23 @@ def fused_mamba_core(
         )
 
     # Ensure float32 for C++ kernel
-    x_c = tf.cast(x_c, tf.float32)
-    z = tf.cast(z, tf.float32)
-    conv_filter = tf.cast(conv_filter, tf.float32)
-    conv_bias = tf.cast(conv_bias, tf.float32)
-    dt = tf.cast(dt, tf.float32)
-    a_log = tf.cast(a_log, tf.float32)
-    b_proj = tf.cast(b_proj, tf.float32)
-    c_proj = tf.cast(c_proj, tf.float32)
-    d_skip = tf.cast(d_skip, tf.float32)
+    x_c = TEO.cast(x_c, TEO.dtype_map(TEO.TEO_FLOAT))
+    z = TEO.cast(z, TEO.dtype_map(TEO.TEO_FLOAT))
+    conv_filter = TEO.cast(conv_filter, TEO.dtype_map(TEO.TEO_FLOAT))
+    conv_bias = TEO.cast(conv_bias, TEO.dtype_map(TEO.TEO_FLOAT))
+    dt = TEO.cast(dt, TEO.dtype_map(TEO.TEO_FLOAT))
+    a_log = TEO.cast(a_log,   TEO.dtype_map(TEO.TEO_FLOAT))
+    b_proj = TEO.cast(b_proj, TEO.dtype_map(TEO.TEO_FLOAT))
+    c_proj = TEO.cast(c_proj, TEO.dtype_map(TEO.TEO_FLOAT))
+    d_skip = TEO.cast(d_skip, TEO.dtype_map(TEO.TEO_FLOAT))
 
     # VQC angles - provide empty tensor if not using VQC gate
     if vqc_angles is None:
-        vqc_angles = tf.zeros([vqc_num_layers, 2], dtype=tf.float32)
+        vqc_angles = TEO.zeros([vqc_num_layers, 2], dtype=TEO.dtype_map(TEO.TEO_FLOAT))
     else:
-        vqc_angles = tf.cast(vqc_angles, tf.float32)
+        vqc_angles = TEO.cast(vqc_angles, TEO.dtype_map(TEO.TEO_FLOAT))
 
-    @tf.custom_gradient
+    @TEO.custom_gradient
     def _fused_mamba_core_inner(
         x_c_t, z_t, conv_f, conv_b, dt_t, a_log_t, b_p, c_p, d_s, vqc_a
     ):

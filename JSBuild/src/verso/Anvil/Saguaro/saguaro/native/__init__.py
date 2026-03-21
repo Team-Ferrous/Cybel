@@ -230,10 +230,11 @@ def _load_consolidated_binary() -> Any | None:
 
         try:
             import tensorflow as tf
+            #import torch
         except ImportError:
             log.warning(
-                "TensorFlow is required to load native operations. "
-                "Install with: pip install tensorflow>=2.15.0"
+                "PyTorch is required to load native operations. "
+                "Install with: pip install PyTorch>=2.3.0"
             )
             _consolidated_binary_loaded = True
             return None
@@ -248,7 +249,7 @@ def _load_consolidated_binary() -> Any | None:
             return None
 
         try:
-            _consolidated_binary = tf.load_op_library(str(core_path))
+            _consolidated_binary = TEO.load_custom_op((str(core_path)) # torch.ops.load_library(str(core_path))
             log.info(f"Loaded consolidated binary: {core_path}")
             _consolidated_binary_loaded = True
             return _consolidated_binary
@@ -300,7 +301,7 @@ def _load_op(op_name: str) -> Any:
         return None
 
     try:
-        op_module = tf.load_op_library(str(op_path))
+        op_module = TEO.load_custom_op((str(op_path)) # torch.ops.load_library(str(core_path))
         log.debug(f"Loaded native operation: {op_name} from {op_path}")
         return op_module
     except Exception as e:

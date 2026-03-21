@@ -31,7 +31,7 @@ Memory: O(d²) for Floquet Hamiltonian
 
 import logging
 
-import tensorflow as tf
+import tensor_ops as TEO
 
 from saguaro.native.ops.lib_loader import get_saguaro_core_path
 
@@ -43,7 +43,7 @@ _ops_load_error = None
 
 try:
     _lib_path = get_saguaro_core_path()
-    _ops = tf.load_op_library(_lib_path)
+    _ops = TEO.load_custom_op(_lib_path)
 except Exception as e:
     _ops_load_error = str(e)
     logger.warning("DTC C++ ops not available: %s", e)
@@ -54,8 +54,8 @@ except Exception as e:
 
 
 def dtc_stabilized_evolution(
-    hidden_state: tf.Tensor,
-    h_evolution: tf.Tensor,
+    hidden_state,#: tf.Tensor,
+    h_evolution,#: tf.Tensor,
     floquet_period: int = 4,
     coupling_j: float = 1.0,
     disorder_w: float = 0.5,
@@ -63,7 +63,7 @@ def dtc_stabilized_evolution(
     use_prethermal: bool = True,
     num_cycles: int = 1,
     seed: int = 42,
-) -> tf.Tensor:
+):# -> tf.Tensor:
     """Apply DTC-stabilized evolution to hidden states.
 
     Implements the Floquet operator:
@@ -106,9 +106,9 @@ def dtc_stabilized_evolution(
 
 
 def dtc_order_parameter(
-    state: tf.Tensor,
+    state,#: tf.Tensor,
     floquet_period: int = 4,
-) -> tuple[tf.Tensor, tf.Tensor]:
+):# -> tuple[tf.Tensor, tf.Tensor]:
     """Compute DTC order parameter from hidden state magnetization.
 
     The DTC phase is characterized by period-doubled oscillations:
@@ -138,9 +138,9 @@ def dtc_order_parameter(
 
 
 def apply_pi_pulse(
-    state: tf.Tensor,
+    state,#: tf.Tensor,
     error: float = 0.01,
-) -> tf.Tensor:
+):# -> tf.Tensor:
     """Apply π-pulse rotation for DTC dynamics.
 
     The π-pulse creates the period-doubling characteristic of DTCs:

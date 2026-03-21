@@ -22,16 +22,13 @@ power iteration with O(d log d) FFT-based spectral analysis.
 """
 
 from __future__ import annotations
-
 import logging
 
-import tensorflow as tf
-
+import tensor_ops as TEO
 logger = logging.getLogger(__name__)
 
 _native_ops = None
 _native_available = False
-
 
 def _load_native_ops():
     """Load native HD spectral entropy ops."""
@@ -91,41 +88,41 @@ def _tf_spectral_entropy(
 
     if rank == 3:
         # [batch, seq, dim] -> average over seq
-        batch_size = tf.shape(hidden_states)[0]
-        seq_len = tf.shape(hidden_states)[1]
+        batch_size = TEO.shape(hidden_states)[0]
+        seq_len = TEO.shape(hidden_states)[1]
         dim = hidden_states.shape[2] or tf.shape(hidden_states)[2]
 
         # Flatten to [batch * seq, dim]
-        flat = tf.reshape(hidden_states, [-1, dim])
+        flat = TEO.reshape(hidden_states, [-1, dim])
         entropies = _compute_single_entropy(flat, epsilon)
         # Reshape and average
-        entropies = tf.reshape(entropies, [batch_size, seq_len])
-        return tf.reduce_mean(entropies, axis=1)
+        entropies = TEO.reshape(entropies, [batch_size, seq_len])
+        return TEO.reduce_mean(entropies, axis=1)
     return _compute_single_entropy(hidden_states, epsilon)
 
 
 def _compute_single_entropy(x: tf.Tensor, epsilon: float) -> tf.Tensor:
     """Compute spectral entropy for 2D tensor [batch, dim]."""
     # Phase 1.5: Cast to complex128 for quantum precision per GRADIENT_CONNECTIVITY_ROADMAP
-    x_complex = tf.cast(x, tf.complex128)
+    x_complex = TEO.cast(x, tf.complex128)
 
     # FFT along last dimension
-    x_fft = tf.signal.fft(x_complex)
+    x_fft = TEO.fft(x_complex) #tf.signal.fft(x_complex)
 
     # Power spectrum: |FFT(x)|², cast back to float32
-    power = tf.cast(tf.abs(x_fft) ** 2, tf.float32)
+    power = TEO.cast(tf.abs(x_fft) ** 2, tf.float32)
 
     # Normalize to probability
-    total = tf.reduce_sum(power, axis=-1, keepdims=True) + epsilon
+    total = TEO.reduce_sum(power, axis=-1, keepdims=True) + epsilon
     p = power / total
 
     # Entropy: -Σ p log p
-    log_p = tf.math.log(p + epsilon)
-    entropy = -tf.reduce_sum(p * log_p, axis=-1)
+    log_p = TEO.log(p + epsilon)
+    entropy = -TEO.reduce_sum(p * log_p, axis=-1)
 
     # Normalize by max entropy
-    dim = tf.cast(tf.shape(x)[-1], tf.float32)
-    max_entropy = tf.math.log(dim)
+    dim = TEO.cast(TEO.shape(x)[-1], tf.float32)
+    max_entropy = TEO.log(dim)
 
     return entropy / (max_entropy + epsilon)
 
@@ -150,16 +147,16 @@ def hd_spectral_flatness(
         return _native_ops.HDSpectralFlatness(hidden_states, epsilon=epsilon)
 
     # Phase 1.5: TensorFlow fallback with complex128 precision
-    x_complex = tf.cast(hidden_states, tf.complex128)
-    x_fft = tf.signal.fft(x_complex)
-    power = tf.cast(tf.abs(x_fft) ** 2, tf.float32) + epsilon
+    x_complex = TEO.cast(hidden_states, tf.complex128)
+    x_fft     = TEO.fft(x_complex) #tf.signal.fft(x_complex)
+    power     = TEO.cast(tf.abs(x_fft) ** 2, tf.float32) + epsilon
 
     # Geometric mean: exp(mean(log(power)))
-    log_power = tf.math.log(power)
-    geometric_mean = tf.exp(tf.reduce_mean(log_power, axis=-1))
+    log_power = TEO.log(power) #tf.math.
+    geometric_mean = TEO.exp(TEO.reduce_mean(log_power, axis=-1))
 
     # Arithmetic mean
-    arithmetic_mean = tf.reduce_mean(power, axis=-1)
+    arithmetic_mean = TEO.reduce_mean(power, axis=-1)
 
     return geometric_mean / arithmetic_mean
 

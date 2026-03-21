@@ -603,7 +603,7 @@ esac
 echo ""
 
 echo "To test the binary:"
-echo "   python3 -c \"import tensorflow as tf; tf.load_op_library('${BINARY}')\""
+echo "   python3 -c \"import tensorflow as tf; TEO.load_custom_op(('${BINARY}')\""
 echo ""
 
 if [ "${PRODUCTION_BUILD}" = "ON" ]; then

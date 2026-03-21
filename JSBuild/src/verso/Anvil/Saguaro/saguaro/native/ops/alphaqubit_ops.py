@@ -26,7 +26,7 @@ Ops:
 
 import logging
 
-import tensorflow as tf
+import tensor_ops as TEO
 
 from saguaro import config
 from saguaro.native.ops.lib_loader import resolve_op_library
@@ -47,7 +47,7 @@ def _load_ops():
         lib_path = resolve_op_library(__file__, "_saguaro_core.so")
         if lib_path is None:
             raise RuntimeError("Could not find _saguaro_core.so")
-        _module = tf.load_op_library(lib_path)
+        _module = TEO.load_custom_op(lib_path)
         _available = True
         logger.info(f"AlphaQubit ops loaded from {lib_path}")
     except Exception as e:
@@ -74,14 +74,14 @@ def ops_available() -> bool:
 
 
 def alphaqubit_decode(
-    syndrome: tf.Tensor,
-    embed_weights: tf.Tensor,
-    attention_weights: tf.Tensor,
-    output_weights: tf.Tensor,
+    syndrome,
+    embed_weights,
+    attention_weights,
+    output_weights,
     syndrome_dim: int | None = None,
     hidden_dim: int = 128,
     num_layers: int | None = None,
-) -> tf.Tensor:
+):
     """AlphaQubit-2 neural syndrome decoder for error classification.
 
     Uses a transformer-like architecture to decode error syndromes
@@ -114,8 +114,8 @@ def alphaqubit_decode(
     """
     if not config.USE_ALPHAQUBIT_DECODER:
         # Return uniform distribution if disabled
-        batch_size = tf.shape(syndrome)[0]
-        return tf.ones([batch_size, 4], dtype=tf.float32) * 0.25
+        batch_size = TEO.shape(syndrome)[0]
+        return TEO.ones([batch_size, 4], dtype=TEO.dtype_map(TEO.TEO_FLOAT)) * 0.25
 
     _load_ops()
     syndrome_dim = syndrome_dim or 64
@@ -136,7 +136,7 @@ def create_alphaqubit_weights(
     syndrome_dim: int = 64,
     hidden_dim: int = 128,
     num_layers: int | None = None,
-) -> tuple[tf.Variable, tf.Variable, tf.Variable]:
+):# -> tuple[tf.Variable, tf.Variable, tf.Variable]:
     """Create initialized AlphaQubit decoder weights.
 
     Args:
@@ -149,21 +149,21 @@ def create_alphaqubit_weights(
     """
     num_layers = num_layers or config.ALPHAQUBIT_NUM_LAYERS
 
-    embed_w = tf.Variable(
-        tf.random.normal([syndrome_dim, hidden_dim], stddev=0.02),
+    embed_w = TEO.variable(
+        TEO.random_normal([syndrome_dim, hidden_dim], stddev=0.02),
         trainable=True,
         name="alphaqubit_embed",
     )
 
     # Attention weights: [num_layers, 3, hidden_dim, hidden_dim] for Q, K, V
-    attn_w = tf.Variable(
-        tf.random.normal([num_layers, 3, hidden_dim, hidden_dim], stddev=0.02),
+    attn_w = TEO.variable(
+        TEO.random_normal([num_layers, 3, hidden_dim, hidden_dim], stddev=0.02),
         trainable=True,
         name="alphaqubit_attention",
     )
 
-    out_w = tf.Variable(
-        tf.random.normal([hidden_dim, 4], stddev=0.02),
+    out_w = TEO.variable(
+        TEO.random_normal([hidden_dim, 4], stddev=0.02),
         trainable=True,
         name="alphaqubit_output",
     )
@@ -177,18 +177,18 @@ def create_alphaqubit_weights(
 
 
 def alphaqubit_correct(
-    quantum_output: tf.Tensor,
-    qkv_weights: tf.Tensor,
-    proj_weights: tf.Tensor,
-    corr_w1: tf.Tensor,
-    corr_w2: tf.Tensor,
-    gate_w: tf.Tensor,
-    gate_b: tf.Tensor,
+    quantum_output,#: tf.Tensor,
+    qkv_weights,#: tf.Tensor,
+    proj_weights,#: tf.Tensor,
+    corr_w1,#: tf.Tensor,
+    corr_w2,#: tf.Tensor,
+    gate_w,#: tf.Tensor,
+    gate_b,#: tf.Tensor,
     feature_dim: int | None = None,
     hidden_dim: int = 64,
     num_attn_layers: int | None = None,
     num_heads: int = 4,
-) -> tf.Tensor:
+):# -> tf.Tensor:
     """S11: Apply AlphaQubit-style error correction to quantum layer outputs.
 
     Uses syndrome detection (self-attention) and learned correction with
@@ -244,7 +244,7 @@ def create_alphaqubit_correct_weights(
     feature_dim: int = 256,
     hidden_dim: int = 64,
     num_attn_layers: int | None = None,
-) -> dict[str, tf.Variable]:
+):# -> dict[str, tf.Variable]:
     """Create initialized weights for AlphaQubitCorrect op.
 
     Args:
@@ -265,35 +265,35 @@ def create_alphaqubit_correct_weights(
     stddev = 0.02
 
     return {
-        "qkv_weights": tf.Variable(
-            tf.random.normal(
+        "qkv_weights": TEO.variable(
+            TEO.random_normal(
                 [num_attn_layers, 3, feature_dim, hidden_dim], stddev=stddev
             ),
             trainable=True,
             name="alphaqubit_correct_qkv",
         ),
-        "proj_weights": tf.Variable(
-            tf.random.normal([num_attn_layers, hidden_dim, feature_dim], stddev=stddev),
+        "proj_weights": TEO.variable(
+            TEO.random_normal([num_attn_layers, hidden_dim, feature_dim], stddev=stddev),
             trainable=True,
             name="alphaqubit_correct_proj",
         ),
-        "corr_w1": tf.Variable(
-            tf.random.normal([feature_dim, hidden_dim], stddev=stddev),
+        "corr_w1": TEO.variable(
+            TEO.random_normal([feature_dim, hidden_dim], stddev=stddev),
             trainable=True,
             name="alphaqubit_correct_corr1",
         ),
-        "corr_w2": tf.Variable(
-            tf.random.normal([hidden_dim, feature_dim], stddev=stddev),
+        "corr_w2": TEO.variable(
+            TEO.random_normal([hidden_dim, feature_dim], stddev=stddev),
             trainable=True,
             name="alphaqubit_correct_corr2",
         ),
-        "gate_w": tf.Variable(
-            tf.random.normal([feature_dim, feature_dim], stddev=stddev),
+        "gate_w": TEO.variable(
+            TEO.random_normal([feature_dim, feature_dim], stddev=stddev),
             trainable=True,
             name="alphaqubit_correct_gate_w",
         ),
-        "gate_b": tf.Variable(
-            tf.zeros([feature_dim]),
+        "gate_b": TEO.variable(
+            TEO.zeros([feature_dim]),
             trainable=True,
             name="alphaqubit_correct_gate_b",
         ),

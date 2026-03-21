@@ -38,8 +38,8 @@ from __future__ import annotations
 
 import logging
 
-import tensorflow as tf
-
+#import tensorflow as tf
+import tensor_ops as TEO
 from saguaro.native import get_op
 
 logger = logging.getLogger(__name__)
@@ -66,22 +66,22 @@ _fused_multi_position_token_shift_op = _lib.fused_multi_position_token_shift
 _fused_multi_position_token_shift_grad_op = _lib.fused_multi_position_token_shift_grad
 
 
-@tf.custom_gradient
+@TEO.custom_gradient
 def _fused_token_shift_internal(
-    input_tensor: tf.Tensor,
-    prev_input: tf.Tensor,
-    gate_kernel: tf.Tensor,
-    gate_bias: tf.Tensor,
-    decay_weights: tf.Tensor,
+    input_tensor,
+    prev_input,
+    gate_kernel,
+    gate_bias,
+    decay_weights,
     use_learned_decay: bool = True,
-) -> tf.Tensor:
+) :
     """Internal token shift with custom gradient covering entire computation.
 
     This function wraps the entire computation including gate_proj to ensure
     TensorFlow's autodiff properly tracks all gradient paths.
     """
     # Compute gate projection in Python using TensorFlow's optimized einsum
-    gate_proj = tf.einsum("bld,de->ble", input_tensor, gate_kernel) + gate_bias
+    gate_proj = TEO.einsum("bld,de->ble", input_tensor, gate_kernel) + gate_bias
 
     # Call C++ kernel
     output, gate = _fused_token_shift_op(
@@ -92,7 +92,7 @@ def _fused_token_shift_internal(
         use_learned_decay=use_learned_decay,
     )
 
-    def grad(grad_output: tf.Tensor) -> tuple[tf.Tensor, ...]:
+    def grad(grad_output):# tf.Tensor) -> tuple[tf.Tensor, ...]:
         """Compute gradients using C++ backward kernel + Python chain rule."""
         # Get gradients from C++ kernel
         grad_input_direct, grad_prev, grad_gate_proj, grad_decay = (
@@ -108,9 +108,9 @@ def _fused_token_shift_internal(
         )
 
         # Backprop through gate_proj = einsum('bld,de->ble', x, kernel) + bias
-        grad_kernel = tf.einsum("bld,ble->de", input_tensor, grad_gate_proj)
-        grad_bias = tf.reduce_sum(grad_gate_proj, axis=[0, 1])
-        grad_input_via_proj = tf.einsum("ble,ed->bld", grad_gate_proj, gate_kernel)
+        grad_kernel = TEO.einsum("bld,ble->de", input_tensor, grad_gate_proj)
+        grad_bias = TEO.reduce_sum(grad_gate_proj, axis=[0, 1])
+        grad_input_via_proj = TEO.einsum("ble,ed->bld", grad_gate_proj, gate_kernel)
 
         total_grad_input = grad_input_direct + grad_input_via_proj
         return total_grad_input, grad_prev, grad_kernel, grad_bias, grad_decay, None
@@ -119,20 +119,20 @@ def _fused_token_shift_internal(
 
 
 def fused_token_shift(
-    input_tensor: tf.Tensor,
-    prev_input: tf.Tensor,
-    gate_kernel: tf.Tensor,
-    gate_bias: tf.Tensor,
-    decay_weights: tf.Tensor,
+    input_tensor,
+    prev_input,
+    gate_kernel,
+    gate_bias,
+    decay_weights,
     use_learned_decay: bool = True,
-) -> tf.Tensor:
+):# -> tf.Tensor:
     """C++-accelerated data-dependent token shift operation."""
     # Ensure float32 precision
-    input_tensor = tf.cast(input_tensor, tf.float32)
-    prev_input = tf.cast(prev_input, tf.float32)
-    gate_kernel = tf.cast(gate_kernel, tf.float32)
-    gate_bias = tf.cast(gate_bias, tf.float32)
-    decay_weights = tf.cast(decay_weights, tf.float32)
+    input_tensor = TEO.cast(input_tensor, TEO.dtype_map(TEO.TEO_FLOAT))
+    prev_input = TEO.cast(prev_input, TEO.dtype_map(TEO.TEO_FLOAT))
+    gate_kernel = TEO.cast(gate_kernel, TEO.dtype_map(TEO.TEO_FLOAT))
+    gate_bias = TEO.cast(gate_bias, TEO.dtype_map(TEO.TEO_FLOAT))
+    decay_weights = TEO.cast(decay_weights, TEO.dtype_map(TEO.TEO_FLOAT))
 
     return _fused_token_shift_internal(
         input_tensor,
@@ -149,20 +149,20 @@ def fused_token_shift(
 # =============================================================================
 
 
-@tf.custom_gradient
+@TEO.custom_gradient
 def fused_simplified_token_shift(
-    input_tensor: tf.Tensor,
-    prev_input: tf.Tensor,
-    decay_weights: tf.Tensor,
-) -> tf.Tensor:
+    input_tensor,
+    prev_input,
+    decay_weights,
+) :
     """RWKV-7 style simplified token shift (3x faster)."""
-    input_tensor = tf.cast(input_tensor, tf.float32)
-    prev_input = tf.cast(prev_input, tf.float32)
-    decay_weights = tf.cast(decay_weights, tf.float32)
+    input_tensor = TEO.cast(input_tensor, TEO.dtype_map(TEO.TEO_FLOAT))
+    prev_input = TEO.cast(prev_input, TEO.dtype_map(TEO.TEO_FLOAT))
+    decay_weights = TEO.cast(decay_weights, TEO.dtype_map(TEO.TEO_FLOAT))
 
     output = _fused_simplified_token_shift_op(input_tensor, prev_input, decay_weights)
 
-    def grad(grad_output: tf.Tensor) -> tuple[tf.Tensor, ...]:
+    def grad(grad_output):#: tf.Tensor) -> tuple[tf.Tensor, ...]:
         grad_input, grad_prev, grad_decay = _fused_simplified_token_shift_grad_op(
             grad_output, input_tensor, prev_input, decay_weights
         )
@@ -176,18 +176,18 @@ def fused_simplified_token_shift(
 # =============================================================================
 
 
-@tf.custom_gradient
+@TEO.custom_gradient
 def _fused_hierarchical_token_shift_internal(
-    input_tensor: tf.Tensor,
-    prev_input: tf.Tensor,
-    gate_kernel: tf.Tensor,
-    gate_bias: tf.Tensor,
-    decay_weights: tf.Tensor,
+    input_tensor,
+    prev_input,
+    gate_kernel,
+    gate_bias,
+    decay_weights,
     layer_position: int,
     decay_factor: float,
-) -> tf.Tensor:
+) :
     """Gated token shift with hierarchical decay scaling."""
-    gate_proj = tf.einsum("bld,de->ble", input_tensor, gate_kernel) + gate_bias
+    gate_proj = TEO.einsum("bld,de->ble", input_tensor, gate_kernel) + gate_bias
 
     output, gate = _fused_hierarchical_token_shift_op(
         input_tensor,
@@ -198,7 +198,7 @@ def _fused_hierarchical_token_shift_internal(
         decay_factor=decay_factor,
     )
 
-    def grad(grad_output: tf.Tensor) -> tuple[tf.Tensor, ...]:
+    def grad(grad_output):# tf.Tensor) -> tuple[tf.Tensor, ...]:
         grad_input_direct, grad_prev, grad_gate_proj, grad_decay = (
             _fused_hierarchical_token_shift_grad_op(
                 grad_output,
@@ -212,9 +212,9 @@ def _fused_hierarchical_token_shift_internal(
             )
         )
 
-        grad_kernel = tf.einsum("bld,ble->de", input_tensor, grad_gate_proj)
-        grad_bias = tf.reduce_sum(grad_gate_proj, axis=[0, 1])
-        grad_input_via_proj = tf.einsum("ble,ed->bld", grad_gate_proj, gate_kernel)
+        grad_kernel = TEO.einsum("bld,ble->de", input_tensor, grad_gate_proj)
+        grad_bias = TEO.reduce_sum(grad_gate_proj, axis=[0, 1])
+        grad_input_via_proj = TEO.einsum("ble,ed->bld", grad_gate_proj, gate_kernel)
 
         total_grad_input = grad_input_direct + grad_input_via_proj
         return (
@@ -231,14 +231,14 @@ def _fused_hierarchical_token_shift_internal(
 
 
 def fused_hierarchical_token_shift(
-    input_tensor: tf.Tensor,
-    prev_input: tf.Tensor,
-    gate_kernel: tf.Tensor,
-    gate_bias: tf.Tensor,
-    decay_weights: tf.Tensor,
+    input_tensor,
+    prev_input,
+    gate_kernel,
+    gate_bias,
+    decay_weights,
     layer_position: int = 0,
     decay_factor: float = 2.0,
-) -> tf.Tensor:
+) :
     """C++-accelerated hierarchical token shift."""
     return _fused_hierarchical_token_shift_internal(
         input_tensor,
@@ -256,26 +256,26 @@ def fused_hierarchical_token_shift(
 # =============================================================================
 
 
-@tf.custom_gradient
+@TEO.custom_gradient
 def _fused_delta_token_shift_internal(
-    input_tensor: tf.Tensor,
-    state: tf.Tensor,
-    erase_kernel: tf.Tensor,
-    erase_bias: tf.Tensor,
-    write_kernel: tf.Tensor,
-    write_bias: tf.Tensor,
-) -> tf.Tensor:
+    input_tensor,
+    state,
+    erase_kernel,
+    erase_bias,
+    write_kernel,
+    write_bias,
+) :
     """Gated Delta Network memory update."""
-    erase_proj = tf.einsum("bld,de->ble", input_tensor, erase_kernel) + erase_bias
-    write_proj = tf.einsum("bld,de->ble", input_tensor, write_kernel) + write_bias
+    erase_proj = TEO.einsum("bld,de->ble", input_tensor, erase_kernel) + erase_bias
+    write_proj = TEO.einsum("bld,de->ble", input_tensor, write_kernel) + write_bias
 
     output, new_state, erase, write = _fused_delta_token_shift_op(
         input_tensor, state, erase_proj, write_proj
     )
 
     def grad(
-        grad_output: tf.Tensor, grad_new_state: tf.Tensor
-    ) -> tuple[tf.Tensor, ...]:
+        grad_output, grad_new_state#: tf.Tensor
+    ):# -> tuple[tf.Tensor, ...]:
         grad_input_direct, grad_state, grad_erase_proj, grad_write_proj = (
             _fused_delta_token_shift_grad_op(
                 grad_output,
@@ -289,14 +289,14 @@ def _fused_delta_token_shift_internal(
             )
         )
 
-        grad_erase_kernel = tf.einsum("bld,ble->de", input_tensor, grad_erase_proj)
-        grad_erase_bias = tf.reduce_sum(grad_erase_proj, axis=[0, 1])
+        grad_erase_kernel = TEO.einsum("bld,ble->de", input_tensor, grad_erase_proj)
+        grad_erase_bias = TEO.reduce_sum(grad_erase_proj, axis=[0, 1])
 
-        grad_write_kernel = tf.einsum("bld,ble->de", input_tensor, grad_write_proj)
-        grad_write_bias = tf.reduce_sum(grad_write_proj, axis=[0, 1])
+        grad_write_kernel = TEO.einsum("bld,ble->de", input_tensor, grad_write_proj)
+        grad_write_bias = TEO.reduce_sum(grad_write_proj, axis=[0, 1])
 
-        grad_input_via_erase = tf.einsum("ble,ed->bld", grad_erase_proj, erase_kernel)
-        grad_input_via_write = tf.einsum("ble,ed->bld", grad_write_proj, write_kernel)
+        grad_input_via_erase = TEO.einsum("ble,ed->bld", grad_erase_proj, erase_kernel)
+        grad_input_via_write = TEO.einsum("ble,ed->bld", grad_write_proj, write_kernel)
 
         total_grad_input = (
             grad_input_direct + grad_input_via_erase + grad_input_via_write
@@ -315,13 +315,13 @@ def _fused_delta_token_shift_internal(
 
 
 def fused_delta_token_shift(
-    input_tensor: tf.Tensor,
-    state: tf.Tensor,
-    erase_kernel: tf.Tensor,
-    erase_bias: tf.Tensor,
-    write_kernel: tf.Tensor,
-    write_bias: tf.Tensor,
-) -> tuple[tf.Tensor, tf.Tensor]:
+    input_tensor,
+    state,
+    erase_kernel,
+    erase_bias,
+    write_kernel,
+    write_bias,
+):# -> tuple[tf.Tensor, tf.Tensor]:
     """C++-accelerated delta rule token shift."""
     return _fused_delta_token_shift_internal(
         input_tensor, state, erase_kernel, erase_bias, write_kernel, write_bias
@@ -333,21 +333,21 @@ def fused_delta_token_shift(
 # =============================================================================
 
 
-@tf.custom_gradient
+@TEO.custom_gradient
 def fused_multi_position_token_shift(
-    input_tensor: tf.Tensor,
-    blend_weights: tf.Tensor,
+    input_tensor,
+    blend_weights,
     distances: list[int],
-) -> tf.Tensor:
+) :
     """Multi-scale look-ahead token shift."""
-    input_tensor = tf.cast(input_tensor, tf.float32)
-    blend_weights = tf.cast(blend_weights, tf.float32)
+    input_tensor = TEO.cast(input_tensor, TEO.dtype_map(TEO.TEO_FLOAT))
+    blend_weights = TEO.cast(blend_weights, TEO.dtype_map(TEO.TEO_FLOAT))
 
     output = _fused_multi_position_token_shift_op(
         input_tensor, blend_weights, distances=distances
     )
 
-    def grad(grad_output: tf.Tensor) -> tuple[tf.Tensor, ...]:
+    def grad(grad_output):#: tf.Tensor) -> tuple[tf.Tensor, ...]:
         grad_input, grad_blend = _fused_multi_position_token_shift_grad_op(
             grad_output, input_tensor, blend_weights, distances=distances
         )
@@ -357,13 +357,13 @@ def fused_multi_position_token_shift(
 
 
 def fused_token_shift_with_gate(
-    input_tensor: tf.Tensor,
-    prev_input: tf.Tensor,
-    gate_kernel: tf.Tensor,
-    gate_bias: tf.Tensor,
-    decay_weights: tf.Tensor,
+    input_tensor,
+    prev_input,
+    gate_kernel,
+    gate_bias,
+    decay_weights,
     use_learned_decay: bool = True,
-) -> tuple[tf.Tensor, tf.Tensor]:
+):# -> tuple[tf.Tensor, tf.Tensor]:
     """Token shift that also returns the gate values.
 
     Useful for debugging and visualization.
@@ -375,14 +375,14 @@ def fused_token_shift_with_gate(
         Tuple of (output, gate) tensors.
     """
     # Ensure float32 precision
-    input_tensor = tf.cast(input_tensor, tf.float32)
-    prev_input = tf.cast(prev_input, tf.float32)
-    gate_kernel = tf.cast(gate_kernel, tf.float32)
-    gate_bias = tf.cast(gate_bias, tf.float32)
-    decay_weights = tf.cast(decay_weights, tf.float32)
+    input_tensor = TEO.cast(input_tensor, TEO.dtype_map(TEO.TEO_FLOAT))
+    prev_input = TEO.cast(prev_input, TEO.dtype_map(TEO.TEO_FLOAT))
+    gate_kernel = TEO.cast(gate_kernel, TEO.dtype_map(TEO.TEO_FLOAT))
+    gate_bias = TEO.cast(gate_bias,         TEO.dtype_map(TEO.TEO_FLOAT))
+    decay_weights = TEO.cast(decay_weights, TEO.dtype_map(TEO.TEO_FLOAT))
 
     # Compute gate projection in Python
-    gate_proj = tf.einsum("bld,de->ble", input_tensor, gate_kernel) + gate_bias
+    gate_proj = TEO.einsum("bld,de->ble", input_tensor, gate_kernel) + gate_bias
 
     return _fused_token_shift_op(
         input_tensor,
@@ -394,13 +394,13 @@ def fused_token_shift_with_gate(
 
 
 def _python_reference_forward(
-    input_tensor: tf.Tensor,
-    prev_input: tf.Tensor,
-    gate_kernel: tf.Tensor,
-    gate_bias: tf.Tensor,
-    decay_weights: tf.Tensor,
+    input_tensor,
+    prev_input,
+    gate_kernel,
+    gate_bias,
+    decay_weights,
     use_learned_decay: bool = True,
-) -> tuple[tf.Tensor, tf.Tensor]:
+):# -> tuple[tf.Tensor, tf.Tensor]:
     """Pure Python reference implementation FOR TESTING ONLY.
 
     This is NOT used in production - only for unit test comparisons.
@@ -418,7 +418,7 @@ def _python_reference_forward(
     """
     # Compute gate = sigmoid(input @ gate_kernel + gate_bias)
     gate = tf.nn.sigmoid(
-        tf.einsum("bld,de->ble", input_tensor, gate_kernel) + gate_bias
+        TEO.einsum("bld,de->ble", input_tensor, gate_kernel) + gate_bias
     )
 
     # Apply learned decay if enabled

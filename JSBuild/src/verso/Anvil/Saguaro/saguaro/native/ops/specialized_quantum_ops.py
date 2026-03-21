@@ -9,7 +9,7 @@ NO PYTHON FALLBACKS: RuntimeError raised if native ops unavailable.
 
 import logging
 
-import tensorflow as tf
+import tensor_ops as TEO
 
 from saguaro import config
 from saguaro.native.ops.lib_loader import resolve_op_library
@@ -26,7 +26,7 @@ def _load_ops():
         return _available
     try:
         lib_path = resolve_op_library(__file__, "_saguaro_core.so")
-        _module = tf.load_op_library(lib_path)
+        _module = TEO.load_custom_op(lib_path)
         _available = True
     except Exception as e:
         _available = False
@@ -48,9 +48,9 @@ def ops_available() -> bool:
 
 
 def teleport_gradients(
-    local_grads: tf.Tensor,
-    bell_channel: tf.Tensor,
-) -> tf.Tensor:
+    local_grads,#: tf.Tensor,
+    bell_channel,#: tf.Tensor,
+):# -> tf.Tensor:
     """Phase 64: Teleport gradients via Bell channel.
 
     Args:
@@ -72,11 +72,11 @@ def teleport_gradients(
 
 
 def spiking_quantum_neuron(
-    input_tensor: tf.Tensor,
-    membrane_potential: tf.Tensor,
+    input_tensor,#: tf.Tensor,
+    membrane_potential,#: tf.Tensor,
     threshold: float = 1.0,
     tau: float | None = None,
-) -> tuple[tf.Tensor, tf.Tensor]:
+):# -> tuple[tf.Tensor, tf.Tensor]:
     """Phase 68: Spiking quantum neuron with leaky integrate-and-fire.
 
     Args:
@@ -89,7 +89,7 @@ def spiking_quantum_neuron(
         Tuple of (spikes [batch, neurons], new_potential [batch, neurons]).
     """
     if not config.USE_NEUROMORPHIC_MEMORY:
-        return tf.zeros_like(input_tensor), membrane_potential
+        return TEO.zeros_like(input_tensor), membrane_potential
     _load_ops()
     tau = tau or config.NEUROMORPHIC_TAU
     return _module.spiking_quantum_neuron(
@@ -103,11 +103,11 @@ def spiking_quantum_neuron(
 
 
 def majorana_position_encode(
-    positions: tf.Tensor,
+    positions,#: tf.Tensor,
     dim: int,
     floquet_period: int | None = None,
     majorana_mass: float = 0.1,
-) -> tf.Tensor:
+):# -> tf.Tensor:
     """Phase 50: Majorana position encoding with Floquet drive.
 
     Args:
@@ -121,9 +121,9 @@ def majorana_position_encode(
     """
     if not config.USE_MAJORANA_POSITION:
         # Fall back to standard sinusoidal
-        batch = tf.shape(positions)[0]
-        seq = tf.shape(positions)[1]
-        return tf.zeros([batch, seq, dim], dtype=tf.float32)
+        batch = TEO.shape(positions)[0]
+        seq = TEO.shape(positions)[1]
+        return TEO.zeros([batch, seq, dim], dtype=TEO.dtype_map(TEO.TEO_FLOAT))
     _load_ops()
     floquet_period = floquet_period or config.MAJORANA_FLOQUET_PERIOD
     return _module.majorana_position_encode(
@@ -137,10 +137,10 @@ def majorana_position_encode(
 
 
 def td_moe_forward(
-    input_tensor: tf.Tensor,
-    core: tf.Tensor,
-    factors: list[tf.Tensor],
-) -> tf.Tensor:
+    input_tensor,#: tf.Tensor,
+    core,#: tf.Tensor,
+    factors,#: list[tf.Tensor],
+):# -> tf.Tensor:
     """Phase 57: Tucker-decomposed MoE forward pass.
 
     Args:
@@ -163,9 +163,9 @@ def td_moe_forward(
 
 
 def topological_wavelet_attention(
-    input_tensor: tf.Tensor,
+    input_tensor,#: tf.Tensor,
     num_scales: int | None = None,
-) -> tf.Tensor:
+):# -> tf.Tensor:
     """Phase 56: Topological wavelet attention.
 
     Args:
@@ -188,10 +188,10 @@ def topological_wavelet_attention(
 
 
 def mpqr_reasoning(
-    input_tensor: tf.Tensor,
+    input_tensor,#: tf.Tensor,
     num_paths: int | None = None,
     grover_iterations: int | None = None,
-) -> tf.Tensor:
+):# -> tf.Tensor:
     """Phase 55: Multi-path quantum reasoning.
 
     Args:
@@ -218,10 +218,10 @@ def mpqr_reasoning(
 
 
 def symplectic_gnn_kalman(
-    state: tf.Tensor,
-    observation: tf.Tensor,
+    state,#: tf.Tensor,
+    observation,#: tf.Tensor,
     dt: float | None = None,
-) -> tf.Tensor:
+):# -> tf.Tensor:
     """Phase 58: Symplectic GNN Kalman filter.
 
     Args:
@@ -245,11 +245,11 @@ def symplectic_gnn_kalman(
 
 
 def spini_optimizer(
-    params: tf.Tensor,
-    gradients: tf.Tensor,
-    velocity: tf.Tensor,
+    params,#: tf.Tensor,
+    gradients,#: tf.Tensor,
+    velocity,#: tf.Tensor,
     friction: float | None = None,
-) -> tuple[tf.Tensor, tf.Tensor]:
+):# -> tuple[tf.Tensor, tf.Tensor]:
     """Phase 78: SPINI symplectic integrator optimizer.
 
     Args:
@@ -275,10 +275,10 @@ def spini_optimizer(
 
 
 def multi_stage_hamiltonian(
-    state: tf.Tensor,
-    hamiltonian_params: tf.Tensor,
+    state,#: tf.Tensor,
+    hamiltonian_params,#: tf.Tensor,
     num_stages: int | None = None,
-) -> tf.Tensor:
+):# -> tf.Tensor:
     """Phase 70: Multi-stage Hamiltonian evolution.
 
     Args:
@@ -304,9 +304,9 @@ def multi_stage_hamiltonian(
 
 
 def random_natural_gradient(
-    gradients: tf.Tensor,
+    gradients,#: tf.Tensor,
     num_samples: int | None = None,
-) -> tf.Tensor:
+):# -> tf.Tensor:
     """Phase 72: Random natural gradient approximation.
 
     Args:

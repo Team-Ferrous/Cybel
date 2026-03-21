@@ -21,8 +21,8 @@ returning approximation and detail coefficients.
 
 import logging
 
-import tensorflow as tf
-
+#import tensorflow as tf
+import tensor_ops as TEO
 from saguaro.native.ops.lib_loader import resolve_op_library
 
 logger = logging.getLogger(__name__)
@@ -36,7 +36,7 @@ try:
     # lib_loader.resolve_op_library now returns _saguaro_core.so path
     _op_lib_path = resolve_op_library(__file__, "_fused_wavelet_encoder_op.so")
     # print(f"[DEBUG] Wavelet Encoder loading from: {_op_lib_path}")
-    _fused_wavelet_module = tf.load_op_library(_op_lib_path)
+    _fused_wavelet_module = TEO.load_custom_op(_op_lib_path)
     # Try to get the ops - names may differ in consolidated binary.
     fused_wavelet_encoder_chunk_op = getattr(
         _fused_wavelet_module,
@@ -52,7 +52,7 @@ try:
         logger.info("Successfully loaded custom C++ FusedWaveletEncoderChunk operator.")
     else:
         raise AttributeError("fused_wavelet_encoder_chunk op not found in library")
-except (tf.errors.NotFoundError, OSError, AttributeError) as e:
+except (TEO.map_backend_error(OSError)) as e:
     logger.error(
         f"Could not load the custom C++ FusedWaveletEncoderChunk op. Error: {e}"
     )
@@ -64,13 +64,13 @@ def fused_wavelet_encoder_available() -> bool:
     return fused_wavelet_encoder_chunk_op is not None
 
 
-@tf.custom_gradient
+@TEO.custom_gradient
 def fused_wavelet_encoder_chunk(
-    input_data: tf.Tensor,
-    low_pass_filter: tf.Tensor,
-    high_pass_filter: tf.Tensor,
-    mask: tf.Tensor,
-) -> tuple[tf.Tensor, tf.Tensor]:
+    input_data,#: tf.Tensor,
+    low_pass_filter,#: tf.Tensor,
+    high_pass_filter,#: tf.Tensor,
+    mask,#: tf.Tensor,
+):# -> tuple[tf.Tensor, tf.Tensor]:
     """Python wrapper for the FusedWaveletEncoderChunk custom C++ operator.
 
     Performs a 1D discrete wavelet transform on the input sequence data,
@@ -100,10 +100,10 @@ def fused_wavelet_encoder_chunk(
     )
 
     def grad_fn(
-        grad_approx: tf.Tensor,
-        grad_detail: tf.Tensor,
-        variables: list[tf.Variable] | None = None,
-    ) -> tuple[tuple[tf.Tensor, ...], list[tf.Tensor | None]]:
+        grad_approx,#: tf.Tensor,
+        grad_detail,#: tf.Tensor,
+        variables,#: list[tf.Variable] | None = None,
+    ):# -> tuple[tuple[tf.Tensor, ...], list[tf.Tensor | None]]:
         """Gradient function that calls the custom C++ backward kernel."""
         if fused_wavelet_encoder_chunk_grad_op is None:
             raise NotImplementedError(

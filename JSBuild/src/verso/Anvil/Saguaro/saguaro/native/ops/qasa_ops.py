@@ -46,7 +46,7 @@ _gradient_registered = False
 
 try:
     _lib_path = get_saguaro_core_path()
-    _ops = tf.load_op_library(_lib_path)
+    _ops = TEO.load_custom_op((_lib_path)
 
     # Register gradient for QASAAttention op
     @tf.RegisterGradient("QASAAttention")

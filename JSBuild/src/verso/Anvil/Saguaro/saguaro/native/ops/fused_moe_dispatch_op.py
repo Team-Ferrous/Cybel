@@ -21,8 +21,8 @@ NO PYTHON FALLBACK: This module requires the compiled .so to function.
 import logging
 import sys
 
-import tensorflow as tf
-
+#import tensorflow as tf
+import tensor_ops as TEO
 # --- Setup ---
 logger = logging.getLogger(__name__)
 
@@ -81,12 +81,12 @@ except Exception as e:
     logger.warning(f"Could not load fused MoE dispatch op: {e}")
 
 
-@tf.custom_gradient
+@TEO.custom_gradient
 def fused_moe_dispatch(
-    tokens: tf.Tensor,
-    router_logits: tf.Tensor,
-    expert_capacity: tf.Tensor,
-) -> tuple[tf.Tensor, ...]:
+    tokens,
+    router_logits,
+    expert_capacity,
+):# -> tuple[tf.Tensor, ...]:
     """Python wrapper for the fused MoE dispatch custom operator.
 
     This function implements expert choice routing, where each expert selects its
@@ -220,13 +220,13 @@ except Exception as e:
 
 
 def fused_moe_dispatch_v2(
-    tokens: tf.Tensor,
-    router_logits: tf.Tensor,
-    expert_capacity: tf.Tensor,
-    routing_bias: tf.Tensor,
+    tokens,
+    router_logits,
+    expert_capacity,
+    routing_bias,
     use_sigmoid_routing: bool = False,
     apply_bias_before_topk: bool = True,
-) -> tuple[tf.Tensor, ...]:
+):# -> tuple[tf.Tensor, ...]:
     """Enhanced MoE dispatch with routing bias and sigmoid gating support.
 
     Args:
@@ -249,7 +249,7 @@ def fused_moe_dispatch_v2(
 
     # Define internal custom gradient function that only takes tensors
     # The boolean flags are captured from the outer scope (closure)
-    @tf.custom_gradient
+    @TEO.custom_gradient
     def _fused_moe_dispatch_v2_internal(tokens_in, logits_in, capacity_in, bias_in):
         if fused_moe_dispatch_v2_op is None:
             raise NotImplementedError(

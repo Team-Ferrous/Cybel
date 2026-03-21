@@ -28,7 +28,8 @@ Key changes from v1.0:
 import logging
 from typing import NamedTuple
 
-import tensorflow as tf
+#import tensorflow as tf
+import tensor_ops as TEO
 from tensorflow.python.framework import ops
 
 # --- Setup ---

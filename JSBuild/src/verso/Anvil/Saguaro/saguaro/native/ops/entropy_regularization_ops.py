@@ -27,7 +27,7 @@ Ops:
 
 import logging
 
-import tensorflow as tf
+import tensor_ops as TEO
 
 from saguaro import config
 from saguaro.native.ops.lib_loader import resolve_op_library
@@ -48,7 +48,7 @@ def _load_ops():
         lib_path = resolve_op_library(__file__, "_saguaro_core.so")
         if lib_path is None:
             raise RuntimeError("Could not find _saguaro_core.so")
-        _module = tf.load_op_library(lib_path)
+        _module = TEO.load_custom_op(lib_path)
         _available = True
         logger.info(f"Entropy regularization ops loaded from {lib_path}")
     except Exception as e:
@@ -76,13 +76,13 @@ def ops_available() -> bool:
 
 
 def von_neumann_entropy_loss(
-    activations: tf.Tensor,
+    activations,#: tf.Tensor,
     entropy_weight: float | None = None,
     spectral_weight: float | None = None,
     target_entropy: float | None = None,
     spectral_flatness_target: float = 0.8,
     power_iter_steps: int = 10,
-) -> tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
+):#-> tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
     """Compute Von Neumann entropy regularization loss.
 
     Uses eigenvalue decomposition of activation covariance to compute:
@@ -112,7 +112,7 @@ def von_neumann_entropy_loss(
         >>> total_loss += loss * config.ENTROPY_REG_WEIGHT
     """
     if not config.USE_ENTROPY_REGULARIZATION:
-        return tf.constant(0.0), tf.constant(0.0), tf.constant(0.0)
+        return TEO.constant(0.0), TEO.constant(0.0), TEO.constant(0.0)
 
     _load_ops()
     entropy_weight = (
@@ -136,8 +136,8 @@ def von_neumann_entropy_loss(
 
 
 def compute_activation_covariance(
-    activations: tf.Tensor,
-) -> tf.Tensor:
+    activations,#: tf.Tensor,
+):# -> tf.Tensor:
     """Compute covariance matrix from activations.
 
     Useful for analyzing representation structure and

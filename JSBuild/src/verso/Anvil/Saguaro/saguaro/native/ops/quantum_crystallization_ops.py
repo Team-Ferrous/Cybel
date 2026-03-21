@@ -9,7 +9,7 @@ NO PYTHON FALLBACKS: RuntimeError raised if native ops unavailable.
 
 import logging
 
-import tensorflow as tf
+import tensor_ops as TEO
 
 from saguaro import config
 from saguaro.native.ops.lib_loader import resolve_op_library
@@ -26,7 +26,7 @@ def _load_ops():
         return _available
     try:
         lib_path = resolve_op_library(__file__, "_saguaro_core.so")
-        _module = tf.load_op_library(lib_path)
+        _module = TEO.load_custom_op((lib_path)
         _available = True
     except Exception as e:
         _available = False

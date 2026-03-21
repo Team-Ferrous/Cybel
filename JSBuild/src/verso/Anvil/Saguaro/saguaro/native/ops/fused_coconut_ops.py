@@ -27,7 +27,7 @@ from __future__ import annotations
 
 import logging
 
-import tensorflow as tf
+import tensor_ops as TEO
 
 from saguaro.config import COLLAPSE_HARD_SAMPLES
 
@@ -74,8 +74,8 @@ def fused_coconut_bfs_available() -> bool:
 
 
 def fused_coconut_bfs(
-    hidden_states: tf.Tensor,
-    context: tf.Tensor,
+    hidden_states,#: tf.Tensor,
+    context,#: tf.Tensor,
     input_norm_gamma: tf.Tensor,
     input_norm_beta: tf.Tensor,
     aggregator_weight: tf.Tensor,
@@ -209,13 +209,13 @@ def fused_coconut_dfs_collapse(
 
 
 def fused_coconut_crystallize(
-    thought_path: tf.Tensor,
-    confidence: tf.Tensor,
-    crystal_store: tf.Tensor,
-    crystal_ages: tf.Tensor,
+    thought_path,#: tf.Tensor,
+    confidence,#: tf.Tensor,
+    crystal_store,#: tf.Tensor,
+    crystal_ages,#: tf.Tensor,
     crystallize_threshold: float = 0.9,
     max_crystals: int = 64,
-) -> tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
+):# -> tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
     """Crystallize high-confidence thought paths for reuse.
 
     Stores thought paths exceeding threshold into a persistent store with
@@ -335,24 +335,24 @@ def fused_coconut_bfs_with_grad(
         Tuple of (output, amplitudes).
     """
     # Ensure float32
-    hidden_states = tf.cast(hidden_states, tf.float32)
-    context = tf.cast(context, tf.float32)
-    input_norm_gamma = tf.cast(input_norm_gamma, tf.float32)
-    input_norm_beta = tf.cast(input_norm_beta, tf.float32)
-    aggregator_weight = tf.cast(aggregator_weight, tf.float32)
-    aggregator_bias = tf.cast(aggregator_bias, tf.float32)
-    projector_norm_gamma = tf.cast(projector_norm_gamma, tf.float32)
-    projector_norm_beta = tf.cast(projector_norm_beta, tf.float32)
-    projector_dense1_weight = tf.cast(projector_dense1_weight, tf.float32)
-    projector_dense1_bias = tf.cast(projector_dense1_bias, tf.float32)
-    projector_dense2_weight = tf.cast(projector_dense2_weight, tf.float32)
-    projector_dense2_bias = tf.cast(projector_dense2_bias, tf.float32)
-    broadcast_weight = tf.cast(broadcast_weight, tf.float32)
-    broadcast_bias = tf.cast(broadcast_bias, tf.float32)
-    output_norm_gamma = tf.cast(output_norm_gamma, tf.float32)
-    output_norm_beta = tf.cast(output_norm_beta, tf.float32)
+    hidden_states = TEO.cast(hidden_states, TEO.dtype_map(TEO.TEO_FLOAT))
+    context = TEO.cast(context, TEO.dtype_map(TEO.TEO_FLOAT))
+    input_norm_gamma = TEO.cast(input_norm_gamma, TEO.dtype_map(TEO.TEO_FLOAT))
+    input_norm_beta = TEO.cast(input_norm_beta,   TEO.dtype_map(TEO.TEO_FLOAT))
+    aggregator_weight = TEO.cast(aggregator_weight, TEO.dtype_map(TEO.TEO_FLOAT))
+    aggregator_bias = TEO.cast(aggregator_bias, TEO.dtype_map(TEO.TEO_FLOAT))
+    projector_norm_gamma = TEO.cast(projector_norm_gamma, TEO.dtype_map(TEO.TEO_FLOAT))
+    projector_norm_beta = TEO.cast(projector_norm_beta, TEO.dtype_map(TEO.TEO_FLOAT))
+    projector_dense1_weight = TEO.cast(projector_dense1_weight, TEO.dtype_map(TEO.TEO_FLOAT))
+    projector_dense1_bias = TEO.cast(projector_dense1_bias, TEO.dtype_map(TEO.TEO_FLOAT))
+    projector_dense2_weight = TEO.cast(projector_dense2_weight, TEO.dtype_map(TEO.TEO_FLOAT))
+    projector_dense2_bias = TEO.cast(projector_dense2_bias, TEO.dtype_map(TEO.TEO_FLOAT))
+    broadcast_weight = TEO.cast(broadcast_weight,   TEO.dtype_map(TEO.TEO_FLOAT))
+    broadcast_bias = TEO.cast(broadcast_bias,       TEO.dtype_map(TEO.TEO_FLOAT))
+    output_norm_gamma = TEO.cast(output_norm_gamma, TEO.dtype_map(TEO.TEO_FLOAT))
+    output_norm_beta = TEO.cast(output_norm_beta,   TEO.dtype_map(TEO.TEO_FLOAT))
 
-    @tf.custom_gradient
+    @TEO.custom_gradient
     def _fused_coconut_bfs_inner(
         hs,
         ctx,
@@ -448,7 +448,7 @@ def fused_coconut_bfs_with_grad(
                 grads[13],  # bc_b (broadcast_bias)
                 grads[14],  # ong (output_norm_gamma)
                 grads[15],  # onb (output_norm_beta)
-            ), ([] if variables is None else [tf.zeros_like(v) for v in variables])
+            ), ([] if variables is None else [TEO.zeros_like(v) for v in variables])
 
         return (output, amplitudes), grad
 
@@ -473,16 +473,16 @@ def fused_coconut_bfs_with_grad(
 
 
 def fused_fft_projector_forward(
-    state: tf.Tensor,
-    freq_weights_1: tf.Tensor,
-    bias_1: tf.Tensor,
-    freq_weights_2: tf.Tensor,
-    bias_2: tf.Tensor,
-    norm_gamma: tf.Tensor,
-    norm_beta: tf.Tensor,
+    state,#: tf.Tensor,
+    freq_weights_1,#: tf.Tensor,
+    bias_1,#: tf.Tensor,
+    freq_weights_2,#: tf.Tensor,
+    bias_2,#: tf.Tensor,
+    norm_gamma,#: tf.Tensor,
+    norm_beta,#: tf.Tensor,
     dim: int,
     persistent_freq: bool = False,
-) -> tf.Tensor:
+):# -> tf.Tensor:
     """UQHA v3.1 FFT-based thought projector.
 
     Args:

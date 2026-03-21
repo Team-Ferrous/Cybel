@@ -7,7 +7,7 @@ Provides TensorFlow interface to native CPU kernel implementing tensor network c
 with SVD truncation, canonical forms, and entanglement entropy computation.
 """
 
-import tensorflow as tf
+import tensor_ops as TEO
 
 from saguaro.native import get_op
 
@@ -25,7 +25,7 @@ _HAS_MPS_EXPECT = hasattr(_mps_contract_module, "mps_expect")
 _HAS_MPS_CANONICALIZE = hasattr(_mps_contract_module, "mps_canonicalize")
 
 
-@tf.custom_gradient
+@TEO.custom_gradient
 def _mps_contract_with_gradient(
     mps_tensors,
     physical_dims,
@@ -152,33 +152,33 @@ def mps_contract(
         raise ValueError("mps_tensors must contain at least 1 tensor")
 
     # Convert inputs to tensors
-    physical_dims = tf.convert_to_tensor(physical_dims, dtype=tf.int32)
-    bond_dims = tf.convert_to_tensor(bond_dims, dtype=tf.int32)
-    max_bond_dim = tf.convert_to_tensor(max_bond_dim, dtype=tf.int32)
+    physical_dims = TEO.to_tensor(physical_dims, dtype=TEO.dtype_map(TEO.TEO_INT))
+    bond_dims     = TEO.to_tensor(bond_dims, dtype=TEO.dtype_map(TEO.TEO_INT))
+    max_bond_dim  = TEO.to_tensor(max_bond_dim, dtype=TEO.dtype_map(TEO.TEO_INT))
 
     # Shape validation
     tf.debugging.assert_equal(
-        tf.size(physical_dims), N, message=f"physical_dims must have {N} elements"
+        TEO.size(physical_dims), N, message=f"physical_dims must have {N} elements"
     )
     tf.debugging.assert_equal(
-        tf.size(bond_dims), N + 1, message=f"bond_dims must have {N + 1} elements"
+        TEO.size(bond_dims), N + 1, message=f"bond_dims must have {N + 1} elements"
     )
 
     # Ensure all MPS tensors are float32
-    mps_tensors = [tf.cast(t, tf.float32) for t in mps_tensors]
+    mps_tensors = [TEO.cast(t, TEO.dtype_map(TEO.TEO_FLOAT)) for t in mps_tensors]
 
     # Convert compute_entropy to Python bool for op attribute
     # Must extract static value for op attribute - cannot be a tensor
     # CRITICAL: Use tf.autograph.experimental.do_not_convert to prevent tracing
-    @tf.autograph.experimental.do_not_convert
+    @TEO.do_not_convert #@tf.autograph.experimental.do_not_convert
     def _extract_bool(val):
         """Extract Python bool from value, preventing AutoGraph tracing."""
-        if isinstance(val, bool):
+        if isinstance(val, bool): 
             return val
-        if isinstance(val, tf.Tensor):
+        if isinstance(val, TEO.dtype_map(TEO.TEO_TENSOR)):
             # Try to extract constant value
             try:
-                static_val = tf.get_static_value(val)
+                static_val = TEO.get_static_value(val)
                 if static_val is not None:
                     return bool(static_val)
             except (TypeError, ValueError, tf.errors.InvalidArgumentError):
@@ -193,15 +193,15 @@ def mps_contract(
         except (TypeError, ValueError):
             return True  # Safe default
 
-    @tf.autograph.experimental.do_not_convert
+    @TEO.do_not_convert #@tf.autograph.experimental.do_not_convert
     def _extract_float(val):
         """Extract Python float from value, preventing AutoGraph tracing."""
         if isinstance(val, (int, float)):
             return float(val)
-        if isinstance(val, tf.Tensor):
+        if isinstance(val, TEO.dtype_map(TEO.TEO_TENSOR)):
             # Try to extract constant value
             try:
-                static_val = tf.get_static_value(val)
+                static_val = TEO.get_static_value(val)
                 if static_val is not None:
                     return float(static_val)
             except (TypeError, ValueError, tf.errors.InvalidArgumentError):
@@ -234,7 +234,7 @@ def mps_contract(
     )
 
 
-@tf.custom_gradient
+@TEO.custom_gradient
 def _mps_contract_no_entropy(mps_tensors, physical_dims, bond_dims, max_bond_dim):
     """Internal: Contract MPS without computing entropy (for expectation value calculations).
 
@@ -327,14 +327,14 @@ def _mps_expect_python(mps_tensors, operator, physical_dims, bond_dims, max_bond
     )
 
     # Compute norm: <psi|psi>
-    state_conj = tf.math.conj(state)
-    norm_squared = tf.reduce_sum(state_conj * state)
-    norm_squared = tf.cast(tf.math.real(norm_squared), tf.float32)
+    state_conj = TEO.conj(state) #tf.math.conj
+    norm_squared = TEO.reduce_sum(state_conj * state)
+    norm_squared = TEO.cast(TEO.real(norm_squared), TEO.dtype_map(TEO.TEO_FLOAT))
 
     # Apply operator: <psi|O|psi> = psi^† O psi
-    op_state = tf.linalg.matvec(operator, state)
-    expectation_unnorm = tf.reduce_sum(state_conj * op_state)
-    expectation_unnorm = tf.cast(tf.math.real(expectation_unnorm), tf.float32)
+    op_state = TEO.matvec(operator, state)
+    expectation_unnorm = TEO.reduce_sum(state_conj * op_state)
+    expectation_unnorm = TEO.cast(TEO.real(expectation_unnorm), TEO.dtype_map(TEO.TEO_FLOAT))
 
     # Normalize: <psi|O|psi> / <psi|psi>
     # Add small epsilon for numerical stability (prevents division by zero)
@@ -343,7 +343,7 @@ def _mps_expect_python(mps_tensors, operator, physical_dims, bond_dims, max_bond
 
 
 
-@tf.custom_gradient
+@TEO.custom_gradient
 def _mps_expect_with_gradient(
     mps_tensors,
     operator,
@@ -365,18 +365,18 @@ def _mps_expect_with_gradient(
         state, _ = _mps_contract_no_entropy(
             mps_tensors, physical_dims, bond_dims, max_bond_dim
         )
-        state = tf.cast(state, tf.float32)
-        op_state = tf.linalg.matvec(operator, state)
-        op_state_t = tf.linalg.matvec(tf.transpose(operator), state)
+        state = TEO.cast(state, TEO.dtype_map(TEO.TEO_FLOAT))
+        op_state   = TEO.matvec(operator, state) #tf.linalg.matvec
+        op_state_t = TEO.matvec(TEO.transpose(operator), state)
 
-        norm_squared = tf.reduce_sum(state * state)
+        norm_squared = TEO.reduce_sum(state * state)
         denom = norm_squared + 1e-10
-        expectation_unnorm = tf.reduce_sum(state * op_state)
+        expectation_unnorm = TEO.reduce_sum(state * op_state)
 
         grad_state = (
             (op_state + op_state_t) * denom - 2.0 * expectation_unnorm * state
         ) / (denom * denom)
-        grad_state = tf.cast(grad_state, tf.float32) * tf.cast(grad_out, tf.float32)
+        grad_state = TEO.cast(grad_state, TEO.dtype_map(TEO.TEO_FLOAT)) * TEO.cast(grad_out, TEO.dtype_map(TEO.TEO_FLOAT))
 
         grad_mps_list = _mps_contract_module.mps_contract_grad(
             grad_state,
@@ -387,8 +387,8 @@ def _mps_expect_with_gradient(
         )
         grad_list = list(grad_mps_list)
 
-        grad_operator = tf.einsum("i,j->ij", state, state) * (
-            tf.cast(grad_out, tf.float32) / tf.cast(denom, tf.float32)
+        grad_operator = TEO.einsum("i,j->ij", state, state) * (
+            TEO.cast(grad_out, TEO.dtype_map(TEO.TEO_FLOAT)) / TEO.cast(denom, TEO.dtype_map(TEO.TEO_FLOAT))
         )
 
         if variables is None:
@@ -428,7 +428,7 @@ def canonical_mps(mps_tensors, physical_dims, bond_dims, center_site=None):
             mps_tensors,
             physical_dims,
             bond_dims,
-            tf.convert_to_tensor(center_site, dtype=tf.int32),
+            TEO.to_tensor(center_site, dtype=TEO.dtype_map(TEO.TEO_INT)),
         )
         return canonical_tensors, canonical_tensors[center_site]
 
@@ -440,17 +440,17 @@ def canonical_mps(mps_tensors, physical_dims, bond_dims, center_site=None):
         bond_left, phys, bond_right = tensor.shape
 
         # Reshape to matrix: [bond_left * phys, bond_right]
-        mat = tf.reshape(tensor, [bond_left * phys, bond_right])
+        mat = TEO.reshape(tensor, [bond_left * phys, bond_right])
 
         # QR decomposition
-        q, r = tf.linalg.qr(mat)
+        q, r = TEO.qr(mat) #tf.linalg.qr
 
         # Store left-orthogonal tensor
-        canonical_tensors[i] = tf.reshape(q, [bond_left, phys, -1])
+        canonical_tensors[i] = TEO.reshape(q, [bond_left, phys, -1])
 
         # Absorb R into next tensor
         if i < N - 1:
-            mps_tensors[i + 1] = tf.einsum("ij,jkl->ikl", r, mps_tensors[i + 1])
+            mps_tensors[i + 1] = TEO.einsum("ij,jkl->ikl", r, mps_tensors[i + 1])
 
     # Right-orthogonalization sweep (sites N-1 to center+1)
     for i in range(N - 1, center_site, -1):
@@ -458,21 +458,21 @@ def canonical_mps(mps_tensors, physical_dims, bond_dims, center_site=None):
         bond_left, phys, bond_right = tensor.shape
 
         # Reshape to matrix: [bond_left, phys * bond_right]
-        mat = tf.reshape(tensor, [bond_left, phys * bond_right])
-        mat_t = tf.transpose(mat)
+        mat = TEO.reshape(tensor, [bond_left, phys * bond_right])
+        mat_t = TEO.transpose(mat)
 
         # QR on transposed matrix
-        q, r = tf.linalg.qr(mat_t)
+        q, r = TEO.qr(mat_t)
 
         # Store right-orthogonal tensor
-        canonical_tensors[i] = tf.reshape(
-            tf.transpose(q), [bond_left, phys, bond_right]
+        canonical_tensors[i] = TEO.reshape(
+            TEO.transpose(q), [bond_left, phys, bond_right]
         )
 
         # Absorb R into previous tensor
         if i > 0:
-            mps_tensors[i - 1] = tf.einsum(
-                "ijk,kl->ijl", mps_tensors[i - 1], tf.transpose(r)
+            mps_tensors[i - 1] = TEO.einsum(
+                "ijk,kl->ijl", mps_tensors[i - 1], TEO.transpose(r)
             )
 
     # Center site

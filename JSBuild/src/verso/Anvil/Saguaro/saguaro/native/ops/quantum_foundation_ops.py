@@ -28,7 +28,7 @@ Copyright 2025-2026 Verso Industries
 from dataclasses import dataclass
 from enum import IntEnum
 
-import tensorflow as tf
+import tensor_ops as TEO
 
 # Import native ops loader - REQUIRED, no fallback
 from saguaro.native import load_saguaro_core
@@ -243,7 +243,7 @@ class UnifiedQuantumLayer(tf.keras.layers.Layer):
         """Forward pass."""
         if self.config.op_type == QuantumOpType.VQC:
             batch_vqc_params = tf.tile(
-                tf.expand_dims(self.vqc_params, 0), [tf.shape(inputs)[0], 1]
+                tf.expand_dims(self.vqc_params, 0), [TEO.shape(inputs)[0], 1]
             )
             return unified_quantum(
                 inputs, batch_vqc_params, self.config, aux_inputs, training or False
@@ -262,13 +262,13 @@ class UnifiedQuantumLayer(tf.keras.layers.Layer):
         if self.config.op_type == QuantumOpType.RESIDUAL:
             return unified_quantum(
                 inputs,
-                tf.reshape(self.alpha, [1]),
+                TEO.reshape(self.alpha, [1]),
                 self.config,
                 aux_inputs,
                 training or False,
             )
 
-        dummy_params = tf.zeros([1])
+        dummy_params = TEO.zeros([1])
         return unified_quantum(
             inputs, dummy_params, self.config, aux_inputs, training or False
         )
@@ -404,7 +404,7 @@ def quantum_expert(
     return unified_quantum(input_tensor, u_skew, config)
 
 
-@tf.custom_gradient
+@TEO.custom_gradient
 def quantum_residual(
     x: tf.Tensor,
     f_x: tf.Tensor,
@@ -493,7 +493,7 @@ def quantum_curriculum_score(
         seq_len=int(seq_len),
         **kwargs,
     )
-    return unified_quantum(input_tensor, tf.zeros([1]), config)
+    return unified_quantum(input_tensor, TEO.zeros([1]), config)
 
 
 def born_rule_measurement(state: tf.Tensor, num_qubits: int = 4) -> tf.Tensor:
@@ -510,7 +510,7 @@ def born_rule_measurement(state: tf.Tensor, num_qubits: int = 4) -> tf.Tensor:
         op_type=QuantumOpType.MEASUREMENT,
         num_qubits=num_qubits,
     )
-    return unified_quantum(state, tf.zeros([1]), config)
+    return unified_quantum(state, TEO.zeros([1]), config)
 
 
 # Alias for backward compatibility

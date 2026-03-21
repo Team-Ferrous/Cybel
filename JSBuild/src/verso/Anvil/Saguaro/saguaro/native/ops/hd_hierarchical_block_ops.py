@@ -24,8 +24,8 @@ otherwise TensorFlow will raise "gradient registry has no entry" error.
 
 import logging
 
-import tensorflow as tf
-
+#import tensorflow as tf
+import tensor_ops as TEO
 from saguaro.native.ops.lib_loader import resolve_op_library
 
 logger = logging.getLogger(__name__)
@@ -47,7 +47,7 @@ def _load_hd_hierarchical_ops():
         if lib_path is None:
             raise RuntimeError("Could not find _saguaro_core.so")
 
-        _hd_hierarchical_ops_module = tf.load_op_library(lib_path)
+        _hd_hierarchical_ops_module = TEO.load_custom_op(lib_path)
         _hd_hierarchical_ops_loaded = True
         logger.info(f"HD hierarchical ops loaded from {lib_path}")
 
@@ -76,7 +76,8 @@ def hd_hierarchical_ops_available() -> bool:
 # =============================================================================
 
 
-@tf.RegisterGradient("HDHierarchicalBlockForward")
+#@tf.RegisterGradient("HDHierarchicalBlockForward")
+@TEO.custom_gradient
 def _hd_hierarchical_block_forward_grad(
     op, grad_output, grad_h_final, grad_coherence, grad_next_state
 ):

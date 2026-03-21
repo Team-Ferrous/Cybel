@@ -22,7 +22,7 @@ sequence models for efficient linear-time sequence modeling.
 import contextlib
 import logging
 
-import tensorflow as tf
+import tensor_ops as TEO
 
 logger = logging.getLogger(__name__)
 
@@ -41,9 +41,9 @@ def _load_selective_scan_op() -> None:
     global _selective_scan_module, selective_scan_op, selective_scan_grad_op
 
     # Check if already registered in TensorFlow
-    if "SelectiveScan" in tf.raw_ops.__dict__:
-        selective_scan_op = tf.raw_ops.SelectiveScan
-        selective_scan_grad_op = tf.raw_ops.SelectiveScanGrad
+    if TEO.has_op("SelectiveScan"):
+        selective_scan_op = TEO.get_op("SelectiveScan")
+        selective_scan_grad_op = TEO.get_op("SelectiveScanGrad")
         return
 
     # First try to load from the consolidated _saguaro_core.so library
@@ -54,24 +54,24 @@ def _load_selective_scan_op() -> None:
     consolidated_lib_path = resolve_op_library(__file__, "_saguaro_core.so")
     if os.path.exists(consolidated_lib_path):
         try:
-            _selective_scan_module = tf.load_op_library(consolidated_lib_path)
+            _selective_scan_module = TEO.load_custom_op(consolidated_lib_path)
             selective_scan_op = _selective_scan_module.selective_scan
             selective_scan_grad_op = _selective_scan_module.selective_scan_grad
             logger.info("Loaded SelectiveScan from consolidated _saguaro_core.so")
             return
-        except (tf.errors.NotFoundError, OSError, AttributeError) as e:
+        except TEO.map_backend_error(OSError) as e:
             logger.debug(f"Could not load SelectiveScan from consolidated library: {e}")
 
     # Fallback: try individual .so file (legacy path)
     try:
         _op_lib_path = resolve_op_library(__file__, "_selective_scan_op.so")
         if os.path.exists(_op_lib_path):
-            _selective_scan_module = tf.load_op_library(_op_lib_path)
+            _selective_scan_module = TEO.load_custom_op(_op_lib_path)
             selective_scan_op = _selective_scan_module.selective_scan
             selective_scan_grad_op = _selective_scan_module.selective_scan_grad
             logger.info("Loaded SelectiveScan from individual .so file")
             return
-    except (tf.errors.NotFoundError, OSError) as e:
+    except TEO.map_backend_error(OSError) as e:
         logger.error(
             f"Could not load C++ _selective_scan_op: {e}. "
             "NO PYTHON FALLBACK IS PROVIDED - native op is required."
@@ -88,15 +88,15 @@ def selective_scan_available() -> bool:
     return selective_scan_op is not None
 
 
-@tf.custom_gradient
+@TEO.custom_gradient
 def selective_scan(
-    u: tf.Tensor,
-    delta: tf.Tensor,
-    a_log: tf.Tensor,
-    b: tf.Tensor,
-    c: tf.Tensor,
-    d: tf.Tensor,
-) -> tuple[tf.Tensor, tf.Tensor]:
+    u,#: tf.Tensor,
+    delta,#: tf.Tensor,
+    a_log,#: tf.Tensor,
+    b,#: tf.Tensor,
+    c,#: tf.Tensor,
+    d,#: tf.Tensor,
+):# -> tuple[tf.Tensor, tf.Tensor]:
     """Python wrapper for the custom SelectiveScan operator.
 
     Implements the selective scan mechanism from Mamba for efficient
@@ -140,10 +140,10 @@ def selective_scan(
     )
 
     def grad_fn(
-        dy: tf.Tensor,
-        d_hidden_states: tf.Tensor | None,
-        variables: list[tf.Variable] | None = None,
-    ) -> tuple[tuple[tf.Tensor, ...], list[tf.Tensor | None]]:
+        dy,#: tf.Tensor,
+        d_hidden_states,#: tf.Tensor | None,
+        variables,#: list[tf.Variable] | None = None,
+    ):# -> tuple[tuple[tf.Tensor, ...], list[tf.Tensor | None]]:
         """Gradient function for selective scan."""
         if selective_scan_grad_op is None:
             raise NotImplementedError(

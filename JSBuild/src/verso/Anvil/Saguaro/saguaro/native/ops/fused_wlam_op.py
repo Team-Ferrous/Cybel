@@ -29,8 +29,8 @@ Enhanced features (per WLAM roadmap):
 
 from __future__ import annotations
 
-import tensorflow as tf
-
+#import tensorflow as tf
+import tensor_ops as TEO
 from saguaro import config as hn_config
 from saguaro.native import get_op
 
@@ -41,13 +41,13 @@ _fused_wlam_grad_op = getattr(_lib, "FusedWLAMGrad", None) if _lib else None
 
 
 def fused_wlam(
-    x: tf.Tensor,
-    h_filter: tf.Tensor,
-    g_filter: tf.Tensor,
-    h_synth: tf.Tensor,
-    g_synth: tf.Tensor,
-    norm_gamma: tf.Tensor,
-    norm_beta: tf.Tensor,
+    x,
+    h_filter,
+    g_filter,
+    h_synth,
+    g_synth,
+    norm_gamma,
+    norm_beta,
     kernel_size: int = 4,
     num_heads: int = 4,
     # Enhanced features
@@ -64,7 +64,7 @@ def fused_wlam(
     scattering_layers: int = 0,
     scattering_pool: int = 4,
     use_cross_attn: bool = False,
-) -> tf.Tensor:
+):# -> tf.Tensor:
     """Fused Wavelet-Enhanced Linear Attention Mechanism.
 
     C++-accelerated WLAM that fuses DWT decomposition, frequency processing,
@@ -116,31 +116,31 @@ def fused_wlam(
     embed_dim = x.shape[-1] if x.shape[-1] is not None else 64
 
     # Ensure float32
-    x = tf.cast(x, tf.float32)
-    h_filter = tf.cast(h_filter, tf.float32)
-    g_filter = tf.cast(g_filter, tf.float32)
-    h_synth = tf.cast(h_synth, tf.float32)
-    g_synth = tf.cast(g_synth, tf.float32)
-    norm_gamma = tf.cast(norm_gamma, tf.float32)
-    norm_beta = tf.cast(norm_beta, tf.float32)
+    x = TEO.cast(x, TEO.dtype_map(TEO.TEO_FLOAT))
+    h_filter = TEO.cast(h_filter, TEO.dtype_map(TEO.TEO_FLOAT))
+    g_filter = TEO.cast(g_filter, TEO.dtype_map(TEO.TEO_FLOAT))
+    h_synth = TEO.cast(h_synth, TEO.dtype_map(TEO.TEO_FLOAT))
+    g_synth = TEO.cast(g_synth, TEO.dtype_map(TEO.TEO_FLOAT))
+    norm_gamma = TEO.cast(norm_gamma, TEO.dtype_map(TEO.TEO_FLOAT))
+    norm_beta = TEO.cast(norm_beta, TEO.dtype_map(TEO.TEO_FLOAT))
 
     # Default tensors for optional inputs
     if predict_w is None:
-        predict_w = tf.zeros([num_levels, kernel_size, embed_dim], dtype=tf.float32)
+        predict_w = TEO.zeros([num_levels, kernel_size, embed_dim], dtype=TEO.dtype_map(TEO.TEO_FLOAT))
     if update_w is None:
-        update_w = tf.zeros([num_levels, kernel_size, embed_dim], dtype=tf.float32)
+        update_w = TEO.zeros([num_levels, kernel_size, embed_dim], dtype=TEO.dtype_map(TEO.TEO_FLOAT))
     if scatter_filter is None:
-        scatter_filter = tf.zeros([kernel_size, embed_dim], dtype=tf.float32)
+        scatter_filter = TEO.zeros([kernel_size, embed_dim], dtype=TEO.dtype_map(TEO.TEO_FLOAT))
     if cross_attn_q is None:
-        cross_attn_q = tf.ones([embed_dim], dtype=tf.float32)
+        cross_attn_q = TEO.ones([embed_dim], dtype=TEO.dtype_map(TEO.TEO_FLOAT))
     if cross_attn_k is None:
-        cross_attn_k = tf.ones([embed_dim], dtype=tf.float32)
+        cross_attn_k = TEO.ones([embed_dim], dtype=TEO.dtype_map(TEO.TEO_FLOAT))
     if cross_attn_v is None:
-        cross_attn_v = tf.ones([embed_dim], dtype=tf.float32)
+        cross_attn_v = TEO.ones([embed_dim], dtype=TEO.dtype_map(TEO.TEO_FLOAT))
     if cross_attn_o is None:
-        cross_attn_o = tf.ones([embed_dim], dtype=tf.float32)
+        cross_attn_o = TEO.ones([embed_dim], dtype=TEO.dtype_map(TEO.TEO_FLOAT))
 
-    @tf.custom_gradient
+    @TEO.custom_gradient
     def _fused_wlam_inner(
         x_in, h_f, g_f, h_s, g_s, gamma, beta, p_w, u_w, scat_f, caq, cak, cav, cao
     ):
@@ -192,7 +192,7 @@ def fused_wlam(
             """
             # Compute gradients for captured variables (if any)
             # These are external layer variables that TensorFlow detected
-            var_grads = [tf.zeros_like(v) for v in variables] if variables else []
+            var_grads = [TEO.zeros_like(v) for v in variables] if variables else []
 
             if _fused_wlam_grad_op is None:
                 raise RuntimeError(
@@ -201,31 +201,31 @@ def fused_wlam(
                 )
 
             # Compute cached values for backward pass
-            batch_size = tf.shape(x_in)[0]
-            seq_len = tf.shape(x_in)[1]
+            batch_size = TEO.shape(x_in)[0]
+            seq_len = TEO.shape(x_in)[1]
             half_seq = seq_len // 2
-            embed_d = tf.shape(x_in)[2]
+            embed_d = TEO.shape(x_in)[2]
 
             # Cache low/high freq and residual
             # For simplified backward, use small placeholders when streaming is enabled
             if streaming_chunk_size and streaming_chunk_size > 0:
                 cache_seq = max(1, streaming_chunk_size // 2)
-                low_freq_cache = tf.zeros(
-                    [batch_size, cache_seq, embed_d], dtype=tf.float32
+                low_freq_cache = TEO.zeros(
+                    [batch_size, cache_seq, embed_d], dtype=TEO.dtype_map(TEO.TEO_FLOAT)
                 )
-                high_freq_cache = tf.zeros(
-                    [batch_size, cache_seq, embed_d], dtype=tf.float32
+                high_freq_cache = TEO.zeros(
+                    [batch_size, cache_seq, embed_d], dtype=TEO.dtype_map(TEO.TEO_FLOAT)
                 )
-                residual_cache = tf.zeros(
+                residual_cache = TEO.zeros(
                     [batch_size, max(1, streaming_chunk_size), embed_d],
-                    dtype=tf.float32,
+                    dtype=TEO.dtype_map(TEO.TEO_FLOAT),
                 )
             else:
-                low_freq_cache = tf.zeros(
-                    [batch_size, half_seq, embed_d], dtype=tf.float32
+                low_freq_cache = TEO.zeros(
+                    [batch_size, half_seq, embed_d], dtype=TEO.dtype_map(TEO.TEO_FLOAT)
                 )
-                high_freq_cache = tf.zeros(
-                    [batch_size, half_seq, embed_d], dtype=tf.float32
+                high_freq_cache = TEO.zeros(
+                    [batch_size, half_seq, embed_d], dtype=TEO.dtype_map(TEO.TEO_FLOAT)
                 )
                 residual_cache = x_in + output  # Approximate residual
 
@@ -259,11 +259,11 @@ def fused_wlam(
                 grads[6],  # grad_beta
                 grads[7],  # grad_predict_w
                 grads[8],  # grad_update_w
-                tf.zeros_like(scat_f),  # grad_scatter_filter
-                tf.zeros_like(caq),  # grad_cross_attn_q
-                tf.zeros_like(cak),  # grad_cross_attn_k
-                tf.zeros_like(cav),  # grad_cross_attn_v
-                tf.zeros_like(cao),  # grad_cross_attn_o
+                TEO.zeros_like(scat_f),  # grad_scatter_filter
+                TEO.zeros_like(caq),  # grad_cross_attn_q
+                TEO.zeros_like(cak),  # grad_cross_attn_k
+                TEO.zeros_like(cav),  # grad_cross_attn_v
+                TEO.zeros_like(cao),  # grad_cross_attn_o
             )
 
             # Return input gradients and variable gradients
@@ -290,16 +290,16 @@ def fused_wlam(
 
 
 def fused_wlam_simple(
-    x: tf.Tensor,
-    h_filter: tf.Tensor,
-    g_filter: tf.Tensor,
-    h_synth: tf.Tensor,
-    g_synth: tf.Tensor,
-    norm_gamma: tf.Tensor,
-    norm_beta: tf.Tensor,
+    x,
+    h_filter,
+    g_filter,
+    h_synth,
+    g_synth,
+    norm_gamma,
+    norm_beta,
     kernel_size: int = 4,
     num_heads: int = 4,
-) -> tf.Tensor:
+):
     """Simplified fused WLAM for backward compatibility.
 
     Uses single-level DWT without enhanced features.

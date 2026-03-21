@@ -1,51 +1,51 @@
 # saguaro.native/ops/mps_temporal.py
 # Python wrapper for MPSTemporalScan C++ Op
 
-import tensorflow as tf
+import tensor_ops as TEO
 
 from saguaro.native.ops.lib_loader import resolve_op_library
 
 _LIB_PATH = resolve_op_library(__file__, "_saguaro_core")
-_mps_temporal_module = tf.load_op_library(_LIB_PATH)
+_mps_temporal_module = TEO.load_custom_op(_LIB_PATH)
 
 
 def _mps_temporal_scan_fallback(inputs, site_weights, initial_state):
     """TensorFlow fallback for MPSTemporalScan (used for gradients)."""
-    site_weights = tf.cast(site_weights, tf.float32)
-    initial_state = tf.cast(initial_state, tf.float32)
+    site_weights = TEO.cast(site_weights, TEO.dtype_map(TEO.TEO_FLOAT))
+    initial_state = TEO.cast(initial_state, TEO.dtype_map(TEO.TEO_FLOAT))
 
-    time_major_weights = tf.transpose(site_weights, [1, 0, 2, 3, 4])
-    batch_size = tf.shape(site_weights)[0]
-    phys_dim = tf.shape(site_weights)[3]
+    time_major_weights = TEO.transpose(site_weights, [1, 0, 2, 3, 4])
+    batch_size = TEO.shape(site_weights)[0]
+    phys_dim = TEO.shape(site_weights)[3]
 
     def step(state, site_t):
         left_env, _, _ = state
         left = left_env[:, 0, :]
-        result = tf.einsum("bc,bcdk->bdk", left, site_t)
+        result = TEO.einsum("bc,bcdk->bdk", left, site_t)
 
-        output = tf.reduce_mean(result, axis=2)
-        norm_sq = tf.reduce_sum(tf.square(result), axis=[1, 2])
-        log_prob = 0.5 * tf.math.log(norm_sq + 1e-12)
+        output = TEO.reduce_mean(result, axis=2)
+        norm_sq = TEO.reduce_sum(tf.square(result), axis=[1, 2])
+        log_prob = 0.5 * TEO.log(norm_sq + 1e-12)
 
-        denom = tf.sqrt(tf.maximum(norm_sq, 1e-12))
+        denom = TEO.sqrt(TEO.maximum(norm_sq, 1e-12))
         result_normed = tf.where(
             norm_sq[:, None, None] > 1e-12,
             result / denom[:, None, None],
             result,
         )
-        left_env_next = tf.reduce_mean(result_normed, axis=1, keepdims=True)
+        left_env_next = TEO.reduce_mean(result_normed, axis=1, keepdims=True)
         return left_env_next, output, log_prob
 
-    init_output = tf.zeros([batch_size, phys_dim], dtype=tf.float32)
-    init_log_prob = tf.zeros([batch_size], dtype=tf.float32)
+    init_output = TEO.zeros([batch_size, phys_dim], dtype=TEO.dtype_map(TEO.TEO_FLOAT))
+    init_log_prob = TEO.zeros([batch_size], dtype=TEO.dtype_map(TEO.TEO_FLOAT))
     init_state = (initial_state, init_output, init_log_prob)
     _, outputs, log_probs = tf.scan(step, time_major_weights, initializer=init_state)
-    outputs = tf.transpose(outputs, [1, 0, 2])
-    log_probs = tf.transpose(log_probs, [1, 0])
+    outputs = TEO.transpose(outputs, [1, 0, 2])
+    log_probs = TEO.transpose(log_probs, [1, 0])
     return outputs, log_probs
 
 
-@tf.custom_gradient
+@TEO.custom_gradient
 def _mps_temporal_scan_with_gradient(
     inputs,
     site_weights,
@@ -66,8 +66,8 @@ def _mps_temporal_scan_with_gradient(
         if grad_outputs is None:
             return [
                 None,
-                tf.zeros_like(site_weights),
-                tf.zeros_like(initial_state),
+                TEO.zeros_like(site_weights),
+                TEO.zeros_like(initial_state),
                 None,
                 None,
             ]
@@ -77,17 +77,17 @@ def _mps_temporal_scan_with_gradient(
             fallback_outputs, fallback_log_probs = _mps_temporal_scan_fallback(
                 inputs, site_weights, initial_state
             )
-            loss = tf.reduce_sum(fallback_outputs * grad_outputs)
+            loss = TEO.reduce_sum(fallback_outputs * grad_outputs)
             if grad_log_probs is not None:
-                loss += tf.reduce_sum(fallback_log_probs * grad_log_probs)
+                loss += TEO.reduce_sum(fallback_log_probs * grad_log_probs)
 
         grad_site_weights, grad_initial_state = tape.gradient(
             loss, [site_weights, initial_state]
         )
         if grad_site_weights is None:
-            grad_site_weights = tf.zeros_like(site_weights)
+            grad_site_weights = TEO.zeros_like(site_weights)
         if grad_initial_state is None:
-            grad_initial_state = tf.zeros_like(initial_state)
+            grad_initial_state = TEO.zeros_like(initial_state)
 
         return [None, grad_site_weights, grad_initial_state, None, None]
 

@@ -146,7 +146,7 @@ def load_saguaro_core():
                 )
 
             try:
-                mod = tf.load_op_library(lib_path)
+                mod = TEO.load_custom_op((lib_path)
                 _debug_log(f"DEBUG: Loaded module attributes: {dir(mod)}")
             except tf.errors.AlreadyExistsError:
                 _debug_log("DEBUG: SAGUARO Core already loaded (AlreadyExistsError).")
