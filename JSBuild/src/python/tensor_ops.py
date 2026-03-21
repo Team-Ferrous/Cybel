@@ -935,3 +935,123 @@ def fft(x):
         return np.fft.fft(x.astype(np.complex128))
     else:
         raise RuntimeError(f"Unsupported backend: {b}")
+    
+def matmul(a, b):
+    bck = backend()
+    if bck == "tensorflow":
+        import tensorflow as tf
+        return tf.matmul(a, b)
+    elif bck == "torch":
+        import torch
+        return torch.matmul(a, b)
+    elif bck == "jax":
+        import jax.numpy as jnp
+        return jnp.matmul(a, b)
+    elif bck == "numpy":
+        import numpy as np
+        return np.matmul(a, b)
+    else:
+        raise RuntimeError(f"Unsupported backend: {bck}")
+
+
+def elu(x, alpha=1.0):
+    bck = backend()
+    if bck == "tensorflow":
+        import tensorflow as tf
+        return tf.nn.elu(x)
+    elif bck == "torch":
+        import torch
+        return torch.nn.functional.elu(x, alpha=alpha)
+    elif bck == "jax":
+        import jax.numpy as jnp
+        return jnp.where(x > 0, x, alpha * (jnp.exp(x) - 1))
+    elif bck == "numpy":
+        import numpy as np
+        return np.where(x > 0, x, alpha * (np.exp(x) - 1))
+    else:
+        raise RuntimeError(f"Unsupported backend: {bck}")
+
+
+def softmax(x, axis=-1):
+    bck = backend()
+    if bck == "tensorflow":
+        import tensorflow as tf
+        return tf.nn.softmax(x, axis=axis)
+    elif bck == "torch":
+        import torch
+        return torch.nn.functional.softmax(x, dim=axis)
+    elif bck == "jax":
+        import jax.numpy as jnp
+        e_x = jnp.exp(x - jnp.max(x, axis=axis, keepdims=True))
+        return e_x / jnp.sum(e_x, axis=axis, keepdims=True)
+    elif bck == "numpy":
+        import numpy as np
+        e_x = np.exp(x - np.max(x, axis=axis, keepdims=True))
+        return e_x / np.sum(e_x, axis=axis, keepdims=True)
+    else:
+        raise RuntimeError(f"Unsupported backend: {bck}")
+    
+class TEO_LorentzianGATLayer:
+    """Backend-agnostic Lorentzian Graph Attention layer using TEO."""
+
+    def __init__(self, feature_dim: int, num_heads: int = 1, backend_name=None):
+        self.feature_dim = feature_dim
+        self.num_heads = num_heads
+        self._backend = backend_name or backend()  # default global backend
+
+        # Initialize weights using TEO
+        self.transform_weights = TEO.random_uniform(
+            (feature_dim, feature_dim), dtype=dtype_map(TEO_FLOAT)
+        )
+        self.transform_bias = zeros((feature_dim,), dtype=dtype_map(TEO_FLOAT))
+
+        self.activation_weights = TEO.random_uniform(
+            (feature_dim, feature_dim), dtype=dtype_map(TEO_FLOAT)
+        )
+        self.activation_bias = zeros((feature_dim,), dtype=dtype_map(TEO_FLOAT))
+
+        self.output_weights = TEO.random_uniform(
+            (feature_dim, feature_dim), dtype=dtype_map(TEO_FLOAT)
+        )
+        self.output_bias = zeros((feature_dim,), dtype=dtype_map(TEO_FLOAT))
+
+    def call(
+        self,
+        node_features,
+        adj_indices,
+        adj_values,
+        adj_dense_shape,
+        attention_weights,
+    ):
+        """Apply Lorentzian GAT using TEO ops or fused op if available."""
+        if hasattr(TEO, "fused_lorentzian_gat_op") and fused_lorentzian_gat_op is not None:
+            return fused_lorentzian_gat_op(
+                node_features=node_features,
+                adj_indices=adj_indices,
+                adj_values=adj_values,
+                adj_dense_shape=adj_dense_shape,
+                attention_weights=attention_weights,
+                lor_transform_weights=self.transform_weights,
+                lor_transform_bias=self.transform_bias,
+                lor_activation_weights=self.activation_weights,
+                lor_activation_bias=self.activation_bias,
+                lor_output_weights=self.output_weights,
+                lor_output_bias=self.output_bias,
+            )
+
+        # Otherwise, fall back to pure TEO implementation
+        # (example: matmul, Lorentzian inner products, softmax)
+        x = matmul(node_features, self.transform_weights) + self.transform_bias
+        x = elu(x)  # or other Lorentzian-specific activation
+        x = matmul(x, self.activation_weights) + self.activation_bias
+        # Apply attention weights
+        x = x * attention_weights[..., None]
+        x = matmul(x, self.output_weights) + self.output_bias
+        return x
+
+    def get_config(self):
+        return {
+            "feature_dim": self.feature_dim,
+            "num_heads": self.num_heads,
+            "backend": self._backend,
+        }

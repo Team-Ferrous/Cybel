@@ -155,16 +155,16 @@ def _fused_superposition_moe_grad(
     def return_zero_grads():
         """The safeguard: returns zero gradients with correct shapes for all 7 inputs."""
         return (
-            tf.zeros_like(tokens),
-            tf.zeros_like(ffn1_cores),
-            tf.zeros_like(ffn2_cores),
-            tf.zeros_like(path_bases),
-            tf.zeros_like(path_weights),
-            tf.zeros_like(hd_input_proj),
-            tf.zeros_like(hd_output_proj),
+            TEO.zeros_like(tokens),
+            TEO.zeros_like(ffn1_cores),
+            TEO.zeros_like(ffn2_cores),
+            TEO.zeros_like(path_bases),
+            TEO.zeros_like(path_weights),
+            TEO.zeros_like(hd_input_proj),
+            TEO.zeros_like(hd_output_proj),
         )
 
-    is_grad_zero = tf.equal(tf.reduce_sum(tf.abs(grad_output)), 0.0)
+    is_grad_zero = tf.equal(TEO.reduce_sum(TEO.abs(grad_output)), 0.0)
 
     return tf.cond(
         is_grad_zero, true_fn=return_zero_grads, false_fn=call_custom_grad_op

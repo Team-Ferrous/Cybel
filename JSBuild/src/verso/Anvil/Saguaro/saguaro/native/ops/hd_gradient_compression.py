@@ -44,7 +44,7 @@ import logging
 from dataclasses import dataclass, field
 from typing import Any
 
-import tensorflow as tf
+import tensor_ops as TEO
 
 logger = logging.getLogger(__name__)
 
