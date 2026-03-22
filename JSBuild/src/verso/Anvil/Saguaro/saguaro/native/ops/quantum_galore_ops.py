@@ -121,10 +121,10 @@ def _get_op(op_name: str):
 
 
 def compute_effective_rank(
-    eigenvalues: tf.Tensor,
+    eigenvalues,
     max_rank: int = 32,
     min_rank: int = 4,
-) -> tf.Tensor:
+):
     """Compute effective rank from eigenvalue spectrum entropy.
 
     Uses Shannon entropy: effective_rank = exp(-Σ p_i log(p_i))
@@ -147,9 +147,9 @@ def compute_effective_rank(
 
 
 def compute_block_influence(
-    gradient_norms: tf.Tensor,
-    weight_norms: tf.Tensor,
-) -> tf.Tensor:
+    gradient_norms,
+    weight_norms,
+):
     """Compute Taylor expansion influence scores for block-wise allocation.
 
     Influence = ||∇W||² / ||W||² approximates Fisher information diagonal.
@@ -170,11 +170,11 @@ def compute_block_influence(
 
 
 def allocate_block_ranks(
-    influence_scores: tf.Tensor,
+    influence_scores,
     total_rank_budget: int = 256,
     min_rank_per_block: int = 4,
     critical_block_ids: list[int] | None = None,
-) -> tf.Tensor:
+):
     """Allocate rank budget across blocks based on influence scores.
 
     Critical blocks (first/last layers) receive minimum 1.5x average allocation.
@@ -204,13 +204,13 @@ def allocate_block_ranks(
 
 
 def quantum_galore_project(
-    gradient: tf.Tensor,
-    eigenvalues: tf.Tensor,
-    rotation_matrix: tf.Tensor,
-    bias: tf.Tensor,
+    gradient,
+    eigenvalues,
+    rotation_matrix,
+    bias,
     max_rank: int = 32,
     min_rank: int = 4,
-) -> tuple[tf.Tensor, tf.Tensor]:
+):
     """Project gradient to low-rank space using quantum random features.
 
     Uses entropy-based dynamic rank selection and quantum feature map
@@ -245,12 +245,12 @@ def quantum_galore_project(
 
 
 def quantum_galore_deproject(
-    compressed: tf.Tensor,
-    rotation_matrix: tf.Tensor,
-    bias: tf.Tensor,
+    compressed,
+    rotation_matrix,
+    bias,
     original_shape: tuple[int, int],
     row_projection: bool = True,
-) -> tf.Tensor:
+):
     """Reconstruct full gradient from low-rank compressed representation.
 
     Uses quantum random feature adjoint mapping for reconstruction.
@@ -303,7 +303,7 @@ def init_quantum_random_features(
     if scale is None:
         scale = 1.0 / np.sqrt(dim)
 
-    tf.random.set_seed(seed)
+    TEO.set_seed(seed)
 
     rotation_matrix = TEO.variable(
         TEO.random_normal([rank, dim], stddev=scale),
@@ -312,7 +312,7 @@ def init_quantum_random_features(
     )
 
     bias = TEO.variable(
-        tf.random.uniform([rank], 0, 2 * np.pi),
+        TEO.random_uniform([rank], 0, 2 * np.pi),
         trainable=False,
         name="quantum_galore_bias",
     )

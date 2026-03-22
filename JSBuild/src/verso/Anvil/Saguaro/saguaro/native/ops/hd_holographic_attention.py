@@ -65,7 +65,7 @@ def hd_holographic_attention_available() -> bool:
     return _load_native_ops()
 
 
-def holographic_bind(x: tf.Tensor, y: tf.Tensor) -> tf.Tensor:
+def holographic_bind(x, y):
     """Holographic bind: x ⊛ y = IFFT(FFT(x) * FFT(y)).
 
     Binds two vectors in a position-preserving way.
@@ -81,22 +81,22 @@ def holographic_bind(x: tf.Tensor, y: tf.Tensor) -> tf.Tensor:
         return _native_ops.HolographicBind(x, y)
 
     # TensorFlow fallback - Phase 4.1: Use complex128 for quantum precision
-    x_complex = tf.cast(x, tf.complex128)
-    y_complex = tf.cast(y, tf.complex128)
+    x_complex = TEO.cast(x, TEO.dtype_map(TEO.TEO_COMPLEX))
+    y_complex = TEO.cast(y, TEO.dtype_map(TEO.TEO_COMPLEX))
 
-    x_fft = tf.signal.fft(x_complex)
-    y_fft = tf.signal.fft(y_complex)
+    x_fft = TEO.fft(x_complex)
+    y_fft = TEO.fft(y_complex)
 
     bound_fft = x_fft * y_fft
-    bound = tf.signal.ifft(bound_fft)
+    bound = TEO.signal.ifft(bound_fft)
 
     # Cast back to float32 for downstream compatibility
-    return tf.cast(tf.math.real(bound), tf.float32)
+    return TEO.cast(TEO.real(bound), TEO.dtype_map(TEO.TEO_FLOAT))
 
 
 def holographic_unbind(
-    bundle: tf.Tensor, key: tf.Tensor, epsilon: float = 1e-8
-) -> tf.Tensor:
+    bundle, key, epsilon: float = 1e-8
+):
     """Holographic unbind: retrieval via complex division.
 
     unbind(bundle, key) = IFFT(FFT(bundle) / FFT(key))
@@ -110,22 +110,22 @@ def holographic_unbind(
         Unbound tensor [..., dim].
     """
     # Phase 4.1: Use complex128 for quantum precision
-    b_complex = tf.cast(bundle, tf.complex128)
-    k_complex = tf.cast(key, tf.complex128)
+    b_complex = TEO.cast(bundle, TEO.dtype_map(TEO.TEO_COMPLEX))
+    k_complex = TEO.cast(key,    TEO.dtype_map(TEO.TEO_COMPLEX))
 
-    b_fft = tf.signal.fft(b_complex)
-    k_fft = tf.signal.fft(k_complex)
+    b_fft = TEO.fft(b_complex)
+    k_fft = TEO.fft(k_complex)
 
     # Complex division with stability
-    denom = tf.abs(k_fft) ** 2 + epsilon
-    result_fft = b_fft * tf.math.conj(k_fft) / tf.cast(denom, tf.complex128)
+    denom = TEO.abs(k_fft) ** 2 + epsilon
+    result_fft = b_fft * TEO.conj(k_fft) / TEO.cast(denom, TEO.dtype_map(TEO.TEO_COMPLEX))
 
-    result = tf.signal.ifft(result_fft)
+    result = TEO.ifft(result_fft)
     # Cast back to float32 for downstream compatibility
-    return tf.cast(tf.math.real(result), tf.float32)
+    return TEO.cast(TEO.real(result), TEO.dtype_map(TEO.TEO_FLOAT))
 
 
-def holographic_similarity(x: tf.Tensor, y: tf.Tensor) -> tf.Tensor:
+def holographic_similarity(x, y):# -> tf.Tensor:
     """Holographic similarity via circular correlation.
 
     Args:
@@ -139,26 +139,26 @@ def holographic_similarity(x: tf.Tensor, y: tf.Tensor) -> tf.Tensor:
         return _native_ops.HolographicSimilarity(x, y)
 
     # TensorFlow fallback - Phase 4.1: Use complex128 for quantum precision
-    x_complex = tf.cast(x, tf.complex128)
-    y_complex = tf.cast(y, tf.complex128)
+    x_complex = TEO.cast(x, TEO.dtype_map(TEO.TEO_COMPLEX))
+    y_complex = TEO.cast(y, TEO.dtype_map(TEO.TEO_COMPLEX))
 
-    x_fft = tf.signal.fft(x_complex)
-    y_fft = tf.signal.fft(y_complex)
+    x_fft = TEO.fft(x_complex)
+    y_fft = TEO.fft(y_complex)
 
     # Correlation = x * conj(y) in frequency domain
-    corr_fft = x_fft * tf.math.conj(y_fft)
-    corr = tf.signal.ifft(corr_fft)
+    corr_fft = x_fft * TEO.conj(y_fft)
+    corr = TEO.ifft(corr_fft)
 
     # Return max correlation (position 0 for aligned vectors)
     # Cast back to float32 for downstream compatibility
-    return tf.cast(tf.math.real(corr[..., 0]), tf.float32)
+    return TEO.cast(TEO.real(corr[..., 0]), TEO.dtype_map(TEO.TEO_FLOAT))
 
 
 def holographic_attention_scores(
-    queries: tf.Tensor,
-    keys: tf.Tensor,
+    queries, #: tf.Tensor,
+    keys,#: tf.Tensor,
     temperature: float = 1.0,
-) -> tf.Tensor:
+):# -> tf.Tensor:
     """Compute holographic attention scores.
 
     Args:
@@ -176,43 +176,43 @@ def holographic_attention_scores(
 
     # TensorFlow fallback - compute pairwise holographic similarity
     # This is O(n² × d log d) instead of native O(n × d log d + n²)
-    tf.shape(queries)[0]
-    tf.shape(queries)[1]
-    tf.shape(queries)[2]
-    tf.shape(keys)[3]
+    TEO.shape(queries)[0]
+    TEO.shape(queries)[1]
+    TEO.shape(queries)[2]
+    TEO.shape(keys)[3]
     head_dim = queries.shape[-1]
 
     # Phase 4.1: Use complex128 for quantum precision
-    q_complex = tf.cast(queries, tf.complex128)
-    k_complex = tf.cast(keys, tf.complex128)
+    q_complex = TEO.cast(queries, TEO.dtype_map(TEO.TEO_COMPLEX))
+    k_complex = TEO.cast(keys,    TEO.dtype_map(TEO.TEO_COMPLEX))
 
-    q_fft = tf.signal.fft(q_complex)  # [B, H, Sq, D]
-    k_fft = tf.signal.fft(k_complex)  # [B, H, Sk, D]
+    q_fft = TEO.fft(q_complex)  # [B, H, Sq, D]
+    k_fft = TEO.fft(k_complex)  # [B, H, Sk, D]
 
     # Compute correlation: sum over dim of q_fft * conj(k_fft)
     # For position-0 correlation, this is just the sum
-    k_fft_conj = tf.math.conj(k_fft)
+    k_fft_conj = TEO.conj(k_fft)
 
     # [B, H, Sq, D] @ [B, H, D, Sk] -> [B, H, Sq, Sk]
-    scores = tf.einsum(
+    scores = TEO.einsum(
         "bhqd,bhkd->bhqk",
-        tf.cast(tf.math.real(q_fft * k_fft_conj[:, :, None, :, :]), tf.float32),
-        tf.ones_like(keys)[..., 0:1],
+        TEO.cast(TEO.real(q_fft * k_fft_conj[:, :, None, :, :]), TEO.dtype_map(TEO.TEO_FLOAT)),
+        TEO.ones_like(keys)[..., 0:1],
     )
 
     # Simplified: use standard attention with FFT features
-    q_feat = tf.cast(tf.math.real(q_fft), tf.float32)
-    k_feat = tf.cast(tf.math.real(k_fft), tf.float32)
-    scores = tf.einsum("bhqd,bhkd->bhqk", q_feat, k_feat)
+    q_feat = TEO.cast(TEO.real(q_fft), TEO.dtype_map(TEO.TEO_FLOAT))
+    k_feat = TEO.cast(TEO.real(k_fft), TEO.dtype_map(TEO.TEO_FLOAT))
+    scores = TEO.einsum("bhqd,bhkd->bhqk", q_feat, k_feat)
 
-    return scores / (temperature * tf.sqrt(tf.cast(head_dim, tf.float32)))
+    return scores / (temperature * TEO.sqrt(TEO.cast(head_dim, TEO.dtype_map(TEO.TEO_FLOAT))))
 
 
 def generate_position_keys(
     max_seq: int,
     head_dim: int,
     base_freq: float = 10000.0,
-) -> tf.Tensor:
+):# -> tf.Tensor:
     """Generate Floquet-inspired position keys.
 
     Args:
@@ -229,18 +229,18 @@ def generate_position_keys(
         )
 
     # TensorFlow fallback
-    positions = tf.range(max_seq, dtype=tf.float32)
-    dims = tf.range(head_dim, dtype=tf.float32)
+    positions = TEO.range(max_seq, dtype=TEO.dtype_map(TEO.TEO_FLOAT))
+    dims = TEO.range(head_dim,     dtype=TEO.dtype_map(TEO.TEO_FLOAT))
 
-    freqs = 1.0 / tf.pow(base_freq, 2.0 * (dims // 2) / tf.cast(head_dim, tf.float32))
+    freqs = 1.0 / TEO.pow(base_freq, 2.0 * (dims // 2) / TEO.cast(head_dim, TEO.dtype_map(TEO.TEO_FLOAT)))
 
     angles = positions[:, None] * freqs[None, :]
 
     # Interleave sin and cos
-    return tf.where(
-        tf.range(head_dim) % 2 == 0,
-        tf.sin(angles),
-        tf.cos(angles),
+    return TEO.where(
+        TEO.range(head_dim) % 2 == 0,
+        TEO.sin(angles),
+        TEO.cos(angles),
     )
 
 
@@ -269,19 +269,19 @@ class HDKVCache:
         self.max_seq = max_seq
 
         self._pos_keys = generate_position_keys(max_seq, head_dim)
-        self._cache: tf.Variable | None = None
+        self._cache: TEO.variable | None = None
         self._current_len = 0
 
     def reset(self, batch_size: int, num_heads: int) -> None:
         """Reset cache for new sequence."""
         num_bundles = self.max_seq // self.compression_ratio + 1
-        self._cache = tf.Variable(
-            tf.zeros([batch_size, num_heads, num_bundles, self.head_dim]),
+        self._cache = TEO.variable(
+            TEO.zeros([batch_size, num_heads, num_bundles, self.head_dim]),
             trainable=False,
         )
         self._current_len = 0
 
-    def append(self, kv: tf.Tensor) -> None:
+    def append(self, kv) -> None:
         """Append new K/V to cache.
 
         Args:
@@ -301,7 +301,7 @@ class HDKVCache:
 
         self._current_len += 1
 
-    def get(self, positions: tf.Tensor | None = None) -> tf.Tensor:
+    def get(self, positions): # -> tf.Tensor:
         """Retrieve K/V for specified positions.
 
         Args:
@@ -311,7 +311,7 @@ class HDKVCache:
             Retrieved K/V [batch, heads, num_positions, head_dim].
         """
         if positions is None:
-            positions = tf.range(self._current_len)
+            positions = TEO.range(self._current_len)
 
         results = []
         for pos in positions:
@@ -322,7 +322,7 @@ class HDKVCache:
             retrieved = holographic_unbind(bundle, pos_key)
             results.append(retrieved)
 
-        return tf.stack(results, axis=2)
+        return TEO.stack(results, axis=2)
 
 
 __all__ = [

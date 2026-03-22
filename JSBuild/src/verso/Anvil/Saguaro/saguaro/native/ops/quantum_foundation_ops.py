@@ -136,12 +136,12 @@ class QuantumConfig:
 
 
 def unified_quantum(
-    input_tensor: tf.Tensor,
-    params: tf.Tensor,
+    input_tensor,#: tf.Tensor,
+    params,#: tf.Tensor,
     config: QuantumConfig,
-    aux_input: tf.Tensor | None = None,
+    aux_input,#: tf.Tensor | None = None,
     training: bool = False,
-) -> tf.Tensor:
+):# -> tf.Tensor:
     """Unified quantum operation dispatcher.
 
     Dispatches to native C++ kernel. No Python fallback.
@@ -160,7 +160,7 @@ def unified_quantum(
         RuntimeError: If native ops are not available
     """
     if aux_input is None:
-        aux_input = tf.zeros([1], dtype=tf.float32)
+        aux_input = TEO.zeros([1], dtype=TEO.dtype_map(TEO.TEO_FLOAT))
 
     return _saguaro_core.unified_quantum_op(
         input=input_tensor,
@@ -188,7 +188,7 @@ def unified_quantum(
 # =============================================================================
 
 
-class UnifiedQuantumLayer(tf.keras.layers.Layer):
+class UnifiedQuantumLayer(TEO.Layer):
     """Keras layer wrapper for unified quantum operations."""
 
     def __init__(self, config: QuantumConfig, name: str | None = None, **kwargs) -> None:
@@ -225,7 +225,7 @@ class UnifiedQuantumLayer(tf.keras.layers.Layer):
             self.u_skew = self.add_weight(
                 name="u_skew",
                 shape=(self.config.d_model, self.config.d_ff),
-                initializer=tf.keras.initializers.Orthogonal(),
+                initializer=TEO.orthogonal_initializer(),
                 trainable=True,
             )
 
@@ -233,7 +233,7 @@ class UnifiedQuantumLayer(tf.keras.layers.Layer):
             self.alpha = self.add_weight(
                 name="alpha",
                 shape=(),
-                initializer=tf.keras.initializers.Constant(1.0),
+                initializer=TEO.constant_initializer(1.0),
                 trainable=True,
             )
 
@@ -242,8 +242,8 @@ class UnifiedQuantumLayer(tf.keras.layers.Layer):
     def call(self, inputs, aux_inputs=None, training=None):
         """Forward pass."""
         if self.config.op_type == QuantumOpType.VQC:
-            batch_vqc_params = tf.tile(
-                tf.expand_dims(self.vqc_params, 0), [TEO.shape(inputs)[0], 1]
+            batch_vqc_params = TEO.tile(
+                TEO.expand_dims(self.vqc_params, 0), [TEO.shape(inputs)[0], 1]
             )
             return unified_quantum(
                 inputs, batch_vqc_params, self.config, aux_inputs, training or False
@@ -295,12 +295,12 @@ class UnifiedQuantumLayer(tf.keras.layers.Layer):
 
 
 def vqc(
-    input_tensor: tf.Tensor,
-    vqc_params: tf.Tensor,
+    input_tensor,#: tf.Tensor,
+    vqc_params,#: tf.Tensor,
     num_qubits: int = 4,
     vqc_layers: int = 2,
     **kwargs,
-) -> tf.Tensor:
+): # -> tf.Tensor:
     """Variational Quantum Circuit forward pass.
 
     Args:
@@ -312,7 +312,7 @@ def vqc(
     Returns:
         VQC output features [batch, dim]
     """
-    batch_size = tf.shape(input_tensor)[0]
+    batch_size = TEO.shape(input_tensor)[0]
     d_model = input_tensor.shape[-1] or 512
 
     config = QuantumConfig(
@@ -327,12 +327,12 @@ def vqc(
 
 
 def quantum_norm(
-    input_tensor: tf.Tensor,
-    scale: tf.Tensor,
-    bias: tf.Tensor | None = None,
+    input_tensor,#: tf.Tensor,
+    scale, #: tf.Tensor,
+    bias,#: tf.Tensor | None = None,
     epsilon: float = 1e-6,
     **kwargs,
-) -> tuple[tf.Tensor, dict]:
+): # -> tuple[tf.Tensor, dict]:
     """Quantum (unitary-style) normalization - Python implementation.
 
     Uses L2 normalization which preserves angles (unitary-like).
@@ -348,7 +348,7 @@ def quantum_norm(
         Tuple of (normalized output, empty stats dict)
     """
     # L2 normalize preserves angular relationships (unitary-like)
-    normalized = tf.nn.l2_normalize(input_tensor, axis=-1, epsilon=epsilon)
+    normalized = TEO.l2_normalize(input_tensor, axis=-1, epsilon=epsilon)
 
     # Apply learned scale
     output = normalized * scale
@@ -361,12 +361,12 @@ def quantum_norm(
 
 
 def quantum_expert(
-    input_tensor: tf.Tensor,
-    u_skew: tf.Tensor,
+    input_tensor,#: tf.Tensor,
+    u_skew,#: tf.Tensor,
     d_ff: int = 2048,
     activation_angle: float = 0.5,
     **kwargs,
-) -> tf.Tensor:
+):# -> tf.Tensor:
     """Quantum expert (unitary network) forward pass.
 
     Args:
@@ -406,10 +406,10 @@ def quantum_expert(
 
 @TEO.custom_gradient
 def quantum_residual(
-    x: tf.Tensor,
-    f_x: tf.Tensor,
-    angle: tf.Tensor,
-) -> tf.Tensor:
+    x,#: tf.Tensor,
+    f_x,#: tf.Tensor,
+    angle,#: tf.Tensor,
+):# -> tf.Tensor:
     """Unitary residual connection via rotation blending.
 
     Implements: y = cos(angle)*x + sin(angle)*f_x
@@ -453,8 +453,8 @@ def quantum_residual(
 
 
 def measurement_dropout(
-    state: tf.Tensor, dropout_rate: float = 0.1, training: bool = True, **kwargs
-) -> tf.Tensor:
+    state, dropout_rate: float = 0.1, training: bool = True, **kwargs
+): # -> tf.Tensor:
     """Apply measurement dropout to quantum state.
 
     Args:
@@ -468,12 +468,12 @@ def measurement_dropout(
     config = QuantumConfig(
         op_type=QuantumOpType.DROPOUT, dropout_rate=dropout_rate, **kwargs
     )
-    return unified_quantum(state, tf.zeros([1]), config, training=training)
+    return unified_quantum(state, TEO.zeros([1]), config, training=training)
 
 
 def quantum_curriculum_score(
-    input_tensor: tf.Tensor, use_fft: bool = True, **kwargs
-) -> tf.Tensor:
+    input_tensor, use_fft: bool = True, **kwargs
+):
     """Compute quantum curriculum score (spectral complexity).
 
     Args:
@@ -496,7 +496,7 @@ def quantum_curriculum_score(
     return unified_quantum(input_tensor, TEO.zeros([1]), config)
 
 
-def born_rule_measurement(state: tf.Tensor, num_qubits: int = 4) -> tf.Tensor:
+def born_rule_measurement(state, num_qubits: int = 4):
     """Extract probabilities from quantum state via Born rule.
 
     Args:

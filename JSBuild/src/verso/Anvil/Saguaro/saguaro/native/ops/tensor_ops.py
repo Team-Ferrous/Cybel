@@ -15,7 +15,137 @@ def Tensor():
     if b == "tensorflow":
         import tensorflow as tf
         return tf.Tensor
+
+def initializer(name_or_instance):
+    """
+    TEO wrapper for backend initializers.
+
+    Args:
+        name_or_instance: Either a string (like "zeros", "glorot_uniform") or a backend initializer instance.
+
+    Returns:
+        Backend-specific initializer.
+    """
+    b = backend()
+    if b == "tensorflow":
+        import tensorflow as tf
+        return tf.keras.initializers.get(name_or_instance)
+    elif b == "torch":
+        import torch
+        # Torch doesn’t have a direct initializer object; return a callable
+        if isinstance(name_or_instance, str):
+            if name_or_instance.lower() == "zeros":
+                return lambda shape: torch.zeros(shape)
+            elif name_or_instance.lower() == "ones":
+                return lambda shape: torch.ones(shape)
+            elif name_or_instance.lower() in {"glorot_uniform", "xavier_uniform"}:
+                import math, torch
+                def fn(shape):
+                    fan_in, fan_out = shape[-2], shape[-1]
+                    limit = math.sqrt(6 / (fan_in + fan_out))
+                    return torch.empty(shape).uniform_(-limit, limit)
+                return fn
+            else:
+                raise RuntimeError(f"Unsupported torch initializer: {name_or_instance}")
+        else:
+            return name_or_instance
+    elif b == "jax":
+        import jax.numpy as jnp
+        # Return a callable function
+        return lambda shape, key=None: jnp.zeros(shape) if name_or_instance == "zeros" else jnp.ones(shape)
+    elif b == "numpy":
+        import numpy as np
+        if name_or_instance == "zeros":
+            return lambda shape: np.zeros(shape)
+        elif name_or_instance == "ones":
+            return lambda shape: np.ones(shape)
+        else:
+            raise RuntimeError(f"Unsupported numpy initializer: {name_or_instance}")
+    else:
+        raise RuntimeError(f"Unsupported backend: {b}")
+
+
+def serialize_initializer(init):
+    """
+    TEO wrapper for tf.keras.initializers.serialize
+
+    Args:
+        init: Backend initializer instance
+
+    Returns:
+        Serializable dict/string representation
+    """
+    b = backend()
+    if b == "tensorflow":
+        import tensorflow as tf
+        return tf.keras.initializers.serialize(init)
+    else:
+        # For other backends, just return the callable or string name
+        return init
     
+def TensorSpec(shape, dtype):
+    """
+    TEO TensorSpec abstraction.
+
+    Args:
+        shape: Tensor shape (tuple or list)
+        dtype: TEO dtype (e.g., TEO.TEO_FLOAT, TEO.TEO_INT)
+
+    Returns:
+        Backend-specific TensorSpec or placeholder
+    """
+    b = backend()
+
+    if b == "tensorflow":
+        import tensorflow as tf
+        return tf.TensorSpec(shape=shape, dtype=TEO.dtype_map(dtype))
+    elif b in {"jax", "torch", "numpy"}:
+        # Other backends: return a simple tuple (shape, dtype)
+        return (shape, dtype)
+    else:
+        raise RuntimeError(f"Unsupported backend: {b}")
+    
+def orthogonal_initializer(shape, gain=1.0, dtype=None, seed=None):
+    b = backend()
+    
+    if b == "tensorflow":
+        import tensorflow as tf
+        init = tf.keras.initializers.Orthogonal(gain=gain, seed=seed)
+        return init(shape, dtype=dtype)
+    
+    elif b == "torch":
+        import torch
+        from torch.nn import init
+        out = torch.empty(shape, dtype=dtype) if dtype is not None else torch.empty(shape)
+        if seed is not None:
+            torch.manual_seed(seed)
+        init.orthogonal_(out, gain=gain)
+        return out
+    
+    elif b == "jax":
+        import jax.numpy as jnp
+        from jax import random
+        key = random.PRNGKey(seed) if seed is not None else random.PRNGKey(0)
+        flat_shape = (shape[0], int(jnp.prod(jnp.array(shape[1:]))))
+        a = random.normal(key, flat_shape, dtype=dtype if dtype else jnp.float32)
+        u, _, v = jnp.linalg.svd(a, full_matrices=False)
+        q = u if u.shape == flat_shape else v
+        q = q.reshape(shape)
+        return gain * q.astype(dtype) if dtype else gain * q
+    
+    elif b == "numpy":
+        import numpy as np
+        rng = np.random.default_rng(seed)
+        flat_shape = (shape[0], int(np.prod(shape[1:])))
+        a = rng.normal(size=flat_shape).astype(dtype if dtype else np.float32)
+        u, _, v = np.linalg.svd(a, full_matrices=False)
+        q = u if u.shape == flat_shape else v
+        q = q.reshape(shape)
+        return gain * q.astype(dtype) if dtype else gain * q
+    
+    else:
+        raise RuntimeError(f"Unsupported backend: {b}")
+     
 def scatter_nd(indices, updates, shape):
     b = backend()
     

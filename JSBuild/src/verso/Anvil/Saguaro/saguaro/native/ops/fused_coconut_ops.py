@@ -74,28 +74,28 @@ def fused_coconut_bfs_available() -> bool:
 
 
 def fused_coconut_bfs(
-    hidden_states,#: tf.Tensor,
-    context,#: tf.Tensor,
-    input_norm_gamma: tf.Tensor,
-    input_norm_beta: tf.Tensor,
-    aggregator_weight: tf.Tensor,
-    aggregator_bias: tf.Tensor,
-    projector_norm_gamma: tf.Tensor,
-    projector_norm_beta: tf.Tensor,
-    projector_dense1_weight: tf.Tensor,
-    projector_dense1_bias: tf.Tensor,
-    projector_dense2_weight: tf.Tensor,
-    projector_dense2_bias: tf.Tensor,
-    broadcast_weight: tf.Tensor,
-    broadcast_bias: tf.Tensor,
-    output_norm_gamma: tf.Tensor,
-    output_norm_beta: tf.Tensor,
+    hidden_states,#,
+    context,#,
+    input_norm_gamma,
+    input_norm_beta,
+    aggregator_weight,
+    aggregator_bias,
+    projector_norm_gamma,
+    projector_norm_beta,
+    projector_dense1_weight,
+    projector_dense1_bias,
+    projector_dense2_weight,
+    projector_dense2_bias,
+    broadcast_weight,
+    broadcast_bias,
+    output_norm_gamma,
+    output_norm_beta,
     num_paths: int = 2,
     num_thought_steps: int = 4,
     prune_threshold: float = 0.1,
     use_fft: bool = False,
     persistent_freq_state: bool = False,
-) -> tuple[tf.Tensor, tf.Tensor]:
+):
     """Multi-path BFS thought exploration with Grover-inspired amplitude scoring.
 
     Expands hidden state to num_paths parallel thought paths, evolves them
@@ -167,12 +167,12 @@ def fused_coconut_bfs(
 
 
 def fused_coconut_dfs_collapse(
-    path_states: tf.Tensor,
-    path_amplitudes: tf.Tensor,
+    path_states,
+    path_amplitudes,
     collapse_threshold: float = 0.8,
     crystallize_threshold: float = 0.9,
     use_hard_samples: bool | None = None,
-) -> tuple[tf.Tensor, tf.Tensor, tf.Tensor, tf.Tensor]:
+): # -> tuple[tf.Tensor, tf.Tensor, tf.Tensor, tf.Tensor]:
     """Adaptive BFS→DFS collapse based on path confidence.
 
     When best path amplitude exceeds collapse_threshold, collapse to that
@@ -209,10 +209,10 @@ def fused_coconut_dfs_collapse(
 
 
 def fused_coconut_crystallize(
-    thought_path,#: tf.Tensor,
-    confidence,#: tf.Tensor,
-    crystal_store,#: tf.Tensor,
-    crystal_ages,#: tf.Tensor,
+    thought_path,#,
+    confidence,#,
+    crystal_store,#,
+    crystal_ages,#,
     crystallize_threshold: float = 0.9,
     max_crystals: int = 64,
 ):# -> tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
@@ -249,11 +249,11 @@ def fused_coconut_crystallize(
 
 
 def fused_coconut_retrieve(
-    query: tf.Tensor,
-    crystal_store: tf.Tensor,
-    crystal_valid: tf.Tensor,
+    query,
+    crystal_store,
+    crystal_valid,
     top_k: int = 1,
-) -> tuple[tf.Tensor, tf.Tensor]:
+):# -> tuple[tf.Tensor, tf.Tensor]:
     """Retrieve crystallized reasoning paths similar to query.
 
     Args:
@@ -280,28 +280,28 @@ def fused_coconut_retrieve(
 
 # Custom gradient registration for training support
 def fused_coconut_bfs_with_grad(
-    hidden_states: tf.Tensor,
-    context: tf.Tensor,
-    input_norm_gamma: tf.Tensor,
-    input_norm_beta: tf.Tensor,
-    aggregator_weight: tf.Tensor,
-    aggregator_bias: tf.Tensor,
-    projector_norm_gamma: tf.Tensor,
-    projector_norm_beta: tf.Tensor,
-    projector_dense1_weight: tf.Tensor,
-    projector_dense1_bias: tf.Tensor,
-    projector_dense2_weight: tf.Tensor,
-    projector_dense2_bias: tf.Tensor,
-    broadcast_weight: tf.Tensor,
-    broadcast_bias: tf.Tensor,
-    output_norm_gamma: tf.Tensor,
-    output_norm_beta: tf.Tensor,
+    hidden_states,
+    context,
+    input_norm_gamma,
+    input_norm_beta,
+    aggregator_weight,
+    aggregator_bias,
+    projector_norm_gamma,
+    projector_norm_beta,
+    projector_dense1_weight,
+    projector_dense1_bias,
+    projector_dense2_weight,
+    projector_dense2_bias,
+    broadcast_weight,
+    broadcast_bias,
+    output_norm_gamma,
+    output_norm_beta,
     num_paths: int = 2,
     num_thought_steps: int = 4,
     prune_threshold: float = 0.1,
     use_fft: bool = False,
     persistent_freq_state: bool = False,
-) -> tuple[tf.Tensor, tf.Tensor]:
+): # -> tuple[tf.Tensor, tf.Tensor]:
     """CoCoNut BFS with custom gradient for training.
 
     This wrapper uses an inner function with @tf.custom_gradient to avoid
@@ -473,13 +473,13 @@ def fused_coconut_bfs_with_grad(
 
 
 def fused_fft_projector_forward(
-    state,#: tf.Tensor,
-    freq_weights_1,#: tf.Tensor,
-    bias_1,#: tf.Tensor,
-    freq_weights_2,#: tf.Tensor,
-    bias_2,#: tf.Tensor,
-    norm_gamma,#: tf.Tensor,
-    norm_beta,#: tf.Tensor,
+    state,#,
+    freq_weights_1,#,
+    bias_1,#,
+    freq_weights_2,#,
+    bias_2,#,
+    norm_gamma,#,
+    norm_beta,#,
     dim: int,
     persistent_freq: bool = False,
 ):# -> tf.Tensor:

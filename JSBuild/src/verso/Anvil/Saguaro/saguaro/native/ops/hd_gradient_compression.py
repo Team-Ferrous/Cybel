@@ -146,10 +146,10 @@ def frequency_topk_mask(
 
 @TEO.do_not_convert
 def frequency_reconstruct(
-    compressed_fft: tf.Tensor,
-    mask_indices: tf.Tensor,
-    original_dim: int | tf.Tensor,
-) -> tf.Tensor:
+    compressed_fft, #: tf.Tensor,
+    mask_indices,#: tf.Tensor,
+    original_dim#: int | tf.Tensor,
+): # -> tf.Tensor:
     """Reconstruct gradient from compressed frequency representation.
 
     Note: This function is NOT decorated with @tf.function to avoid retracing
@@ -170,7 +170,7 @@ def frequency_reconstruct(
         )
 
     # Convert original_dim to Python int if it's a tensor
-    if isinstance(original_dim, tf.Tensor):
+    if isinstance(original_dim, TEO.dtype_map(TEO.TEO_TENSOR)):
         # In graph mode, we need to handle this carefully
         # Use tf.py_function or ensure static shape is available
         if original_dim.shape.rank == 0:
@@ -184,8 +184,8 @@ def frequency_reconstruct(
         original_dim = int(original_dim)
 
     # Extract components
-    comp_real = tf.math.real(compressed_fft)
-    comp_imag = tf.math.imag(compressed_fft)
+    comp_real = TEO.real(compressed_fft)
+    comp_imag = TEO.imag(compressed_fft)#tf.math.imag(compressed_fft)
 
     return _hd_gradient_fft_decompress(
         compressed_real=comp_real,
@@ -251,9 +251,9 @@ class HDGradientCompressor:
 
     def compress(
         self,
-        gradient: tf.Tensor,
-        variable: tf.Variable,
-    ) -> tuple[tf.Tensor, dict[str, Any]]:
+        gradient, #: tf.Tensor,
+        variable, #: tf.Variable,
+    ): #-> tuple[tf.Tensor, dict[str, Any]]:
         """Compress gradient using frequency-domain filtering.
 
         Args:
@@ -290,7 +290,7 @@ class HDGradientCompressor:
         )
 
         # Track stats
-        if tf.executing_eagerly():
+        if TEO.executing_eagerly():
             original_size = int(TEO.size(flat_grad).numpy())
             compressed_size = int(TEO.size(compressed_fft).numpy())
             self._stats.setdefault("total_compressed", 0)
@@ -321,9 +321,9 @@ class HDGradientCompressor:
 
     def decompress(
         self,
-        compressed: tf.Tensor,
+        compressed,#: tf.Tensor,
         metadata: dict[str, Any],
-    ) -> tf.Tensor:
+    ):# -> tf.Tensor:
         """Decompress gradient back to original shape.
 
         Args:

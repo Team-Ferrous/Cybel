@@ -47,9 +47,10 @@ def _load_hd_streaming_ops() -> None:
     global _hd_streaming_module, hd_streaming_project_op, hd_streaming_project_grad_op
 
     # Check if already registered in TensorFlow
-    if "HDStreamingProject" in tf.raw_ops.__dict__:
-        hd_streaming_project_op = tf.raw_ops.HDStreamingProject
-        hd_streaming_project_grad_op = tf.raw_ops.HDStreamingProjectGrad
+    #tf.raw_ops
+    if "HDStreamingProject" in TEO.has_op(__dict__):
+        hd_streaming_project_op      = TEO.get_op("HDStreamingProject")     #tf.raw_ops.HDStreamingProject
+        hd_streaming_project_grad_op = TEO.get_op("HDStreamingProjectGrad") #tf.raw_ops.HDStreamingProjectGrad
         logger.debug("HDStreamingProject already registered in TensorFlow")
         return
 
@@ -76,7 +77,7 @@ def _load_hd_streaming_ops() -> None:
                 )
                 return
             raise AttributeError("HDStreamingProject symbols not found in library")
-        except (tf.errors.NotFoundError, OSError, AttributeError) as e:
+        except (TEO.map_backend_error(OSError)) as e:
             logger.error(
                 f"Could not load HDStreamingProject from consolidated library: {e}"
             )
@@ -91,7 +92,8 @@ _load_hd_streaming_ops()
 
 
 # Register gradient for the HDStreamingProject op
-@tf.RegisterGradient("HDStreamingProject")
+#@tf.RegisterGradient("HDStreamingProject")
+@TEO.custom_gradient
 def _hd_streaming_project_grad_fn(op, grad):
     """Gradient function for HDStreamingProject op.
 
@@ -113,7 +115,7 @@ def _hd_streaming_project_grad_fn(op, grad):
 
     # Flatten sequence dim if present: (batch, 1, hidden_dim) -> (batch, hidden_dim)
     if len(grad.shape) == 3:
-        grad = tf.squeeze(grad, axis=1)
+        grad = TEO.squeeze(grad, axis=1)
 
     # Call the gradient op
     grad_bundles, grad_weights, grad_bias = hd_streaming_project_grad_op(
@@ -175,7 +177,7 @@ def hd_streaming_project_grad(
     projection_weights,
     hd_dim: int,
     hidden_dim: int,
-) -> tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
+):# -> tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
     """Compute gradients for HD streaming projection.
 
     Pure C++ operation - no Python fallback.
@@ -242,10 +244,10 @@ class HDStreamingAdapter(TEO.Layer): #tf.keras.layers.Layer):
         self.hidden_dim = hidden_dim
         self.hd_dim = hd_dim
         self.use_bias = use_bias
-        self.kernel_initializer = tf.keras.initializers.get(kernel_initializer)
-        self.bias_initializer = tf.keras.initializers.get(bias_initializer)
+        self.kernel_initializer = TEO.initializer(kernel_initializer) #tf.keras.initializers.get(kernel_initializer)
+        self.bias_initializer   = TEO.initializer(bias_initializer)   #tf.keras.initializers.get(bias_initializer)
 
-    def build(self, input_shape: tf.TensorShape) -> None:
+    def build(self, input_shape: TEO.TensorShape) -> None:
         # Validate input shape
         if input_shape[-1] != self.hd_dim:
             raise ValueError(
@@ -270,7 +272,7 @@ class HDStreamingAdapter(TEO.Layer): #tf.keras.layers.Layer):
             )
         else:
             # Create zero bias for C++ op (which always expects bias tensor)
-            self.projection_bias = TEO.zeros([self.hidden_dim], dtype=tf.float32)
+            self.projection_bias = TEO.zeros([self.hidden_dim], dtype=TEO.dtype_map(TEO.TEO_FLOAT))
 
         super().build(input_shape)
 
@@ -300,10 +302,10 @@ class HDStreamingAdapter(TEO.Layer): #tf.keras.layers.Layer):
                 "hidden_dim": self.hidden_dim,
                 "hd_dim": self.hd_dim,
                 "use_bias": self.use_bias,
-                "kernel_initializer": tf.keras.initializers.serialize(
+                "kernel_initializer": TEO.serialize_initializer(
                     self.kernel_initializer
                 ),
-                "bias_initializer": tf.keras.initializers.serialize(
+                "bias_initializer": TEO.serialize_initializer(
                     self.bias_initializer
                 ),
             }

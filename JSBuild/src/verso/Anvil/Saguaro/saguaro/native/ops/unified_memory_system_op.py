@@ -141,7 +141,7 @@ def unified_memory_read(
 # =============================================================================
 
 
-class UnifiedMemoryLayer(tf.keras.layers.Layer):
+class UnifiedMemoryLayer(TEO.Layer): #tf.keras.layers
     """Keras layer wrapper for unified memory operations."""
 
     def __init__(self, config: MemoryConfig, name: str | None = None, **kwargs) -> None:
@@ -155,7 +155,7 @@ class UnifiedMemoryLayer(tf.keras.layers.Layer):
         self.memory = self.add_weight(
             name="memory",
             shape=(self.config.num_slots, self.config.slot_dim),
-            initializer=tf.keras.initializers.Orthogonal(),
+            initializer=TEO.orthogonal_initializer,
             trainable=True,
         )
 

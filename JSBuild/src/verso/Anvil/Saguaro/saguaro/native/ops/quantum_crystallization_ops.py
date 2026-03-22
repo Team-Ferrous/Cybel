@@ -26,7 +26,7 @@ def _load_ops():
         return _available
     try:
         lib_path = resolve_op_library(__file__, "_saguaro_core.so")
-        _module = TEO.load_custom_op((lib_path)
+        _module = TEO.load_custom_op(lib_path)
         _available = True
     except Exception as e:
         _available = False
@@ -43,10 +43,10 @@ def ops_available() -> bool:
 
 
 def crystallize_memory(
-    knowledge: tf.Tensor,
-    importance: tf.Tensor,
+    knowledge,#: tf.Tensor,
+    importance,#: tf.Tensor,
     threshold: float | None = None,
-) -> tf.Tensor:
+):# -> tf.Tensor:
     """Crystallize important knowledge for long-term persistence.
 
     Args:
@@ -65,9 +65,9 @@ def crystallize_memory(
 
 
 def retrieve_from_crystal(
-    crystal: tf.Tensor,
-    query: tf.Tensor,
-) -> tf.Tensor:
+    crystal,#: tf.Tensor,
+    query,#: tf.Tensor,
+):# -> tf.Tensor:
     """Retrieve from crystallized memory.
 
     Args:

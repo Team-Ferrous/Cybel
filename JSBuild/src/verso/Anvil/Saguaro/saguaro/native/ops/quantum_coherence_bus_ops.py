@@ -55,7 +55,7 @@ def _load_ops():
         lib_path = resolve_op_library(__file__, "_saguaro_core.so")
         if lib_path is None:
             raise RuntimeError("Could not find _saguaro_core.so")
-        _module = TEO.load_custom_op((lib_path)
+        _module = TEO.load_custom_op(lib_path)
         _available = True
         logger.info(f"Quantum Coherence Bus ops loaded from {lib_path}")
     except Exception as e:
@@ -89,7 +89,7 @@ def qcb_initialize(
     bidirectional: bool = True,
     coherence_threshold: float | None = None,
     seed: int = 42,
-) -> tuple[tf.Tensor, tf.Tensor]:
+): # -> tuple[tf.Tensor, tf.Tensor]:
     """Initialize Quantum Coherence Bus with GHZ-like entanglement.
 
     Creates a maximally entangled state spanning all blocks in the
@@ -125,13 +125,13 @@ def qcb_initialize(
 
 
 def qcb_coherent_transfer(
-    source_state: tf.Tensor,
-    entangled_state: tf.Tensor,
+    source_state,#: tf.Tensor,
+    entangled_state,#: tf.Tensor,
     source_block: int,
     target_block: int,
     num_blocks: int | None = None,
     entanglement_dim: int = 64,
-) -> tf.Tensor:
+): # -> tf.Tensor:
     """Coherent state transfer between blocks via QCB entanglement.
 
     Transfers quantum state from source block to target block using
@@ -165,11 +165,11 @@ def qcb_coherent_transfer(
 
 
 def qcb_teleport_gradient(
-    block_gradients: tf.Tensor,
-    entangled_state: tf.Tensor,
+    block_gradients,#: tf.Tensor,
+    entangled_state,#: tf.Tensor,
     num_blocks: int | None = None,
     entanglement_dim: int = 64,
-) -> tf.Tensor:
+):# -> tf.Tensor:
     """Teleport and aggregate gradients from all blocks via QCB.
 
     Uses quantum entanglement to coherently aggregate gradients from
@@ -200,10 +200,10 @@ def qcb_teleport_gradient(
 
 
 def qcb_synchronize_phase(
-    entangled_state: tf.Tensor,
+    entangled_state,#: tf.Tensor,
     num_blocks: int | None = None,
     entanglement_dim: int = 64,
-) -> tuple[tf.Tensor, tf.Tensor]:
+): # -> tuple[tf.Tensor, tf.Tensor]:
     """Synchronize quantum phase across all blocks in QCB.
 
     Performs global phase alignment to maintain coherent evolution
@@ -232,12 +232,12 @@ def qcb_synchronize_phase(
 
 
 def qcb_update_mesh(
-    entangled_state: tf.Tensor,
-    block_states: tf.Tensor,
+    entangled_state,#: tf.Tensor,
+    block_states,#: tf.Tensor,
     num_blocks: int | None = None,
     entanglement_dim: int = 64,
     learning_rate: float = 0.01,
-) -> tf.Tensor:
+):# -> tf.Tensor:
     """Update QCB mesh with new block states while preserving coherence.
 
     Incrementally updates the entanglement mesh based on new block
@@ -274,15 +274,15 @@ def qcb_update_mesh(
 
 
 def unified_bus_propagate_entanglement(
-    block_states: tf.Tensor,
-    entanglement_strength: tf.Tensor,
+    block_states,#: tf.Tensor,
+    entanglement_strength,#: tf.Tensor,
     num_blocks: int | None = None,
     bus_dim: int = 64,
     mps_bond_dim: int | None = None,
     coherence_threshold: float | None = None,
     propagation_rate: float = 0.1,
     use_adaptive: bool = True,
-) -> tuple[tf.Tensor, tf.Tensor]:
+):# -> tuple[tf.Tensor, tf.Tensor]:
     """Unified Quantum Bus - Propagate entanglement across blocks.
 
     Propagates quantum correlations across blocks with O(n·d) complexity
@@ -308,7 +308,7 @@ def unified_bus_propagate_entanglement(
     if not config.USE_UNIFIED_QUANTUM_BUS:
         # Pass through if disabled
         nb = block_states.shape[1] or num_blocks or config.QCB_NUM_NODES
-        coherence = tf.eye(nb, dtype=tf.float32)
+        coherence = TEO.eye(nb, dtype=TEO.dtype_map(TEO.TEO_FLOAT))
         return block_states, coherence
 
     _load_ops()
@@ -329,13 +329,13 @@ def unified_bus_propagate_entanglement(
 
 
 def unified_bus_update_strength(
-    entanglement_strength: tf.Tensor,
-    coherence: tf.Tensor,
+    entanglement_strength,#: tf.Tensor,
+    coherence,#: tf.Tensor,
     num_blocks: int | None = None,
     coherence_threshold: float | None = None,
     propagation_rate: float = 0.1,
     use_adaptive: bool = True,
-) -> tf.Tensor:
+):# -> tf.Tensor:
     """Update entanglement strength based on coherence feedback.
 
     Adaptively adjusts the entanglement matrix based on measured

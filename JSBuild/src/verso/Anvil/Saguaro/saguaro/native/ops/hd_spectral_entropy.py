@@ -57,9 +57,9 @@ def hd_spectral_entropy_available() -> bool:
 
 
 def hd_spectral_entropy(
-    hidden_states: tf.Tensor,
+    hidden_states,#: tf.Tensor,
     epsilon: float = 1e-8,
-) -> tf.Tensor:
+): # -> tf.Tensor:
     """Compute HD spectral entropy from hidden states.
 
     Uses FFT-based O(d log d) spectral analysis instead of O(d²)
@@ -80,9 +80,9 @@ def hd_spectral_entropy(
 
 
 def _tf_spectral_entropy(
-    hidden_states: tf.Tensor,
+    hidden_states,#: tf.Tensor,
     epsilon: float = 1e-8,
-) -> tf.Tensor:
+): # -> tf.Tensor:
     """TensorFlow fallback for spectral entropy computation."""
     rank = len(hidden_states.shape)
 
@@ -101,16 +101,16 @@ def _tf_spectral_entropy(
     return _compute_single_entropy(hidden_states, epsilon)
 
 
-def _compute_single_entropy(x: tf.Tensor, epsilon: float) -> tf.Tensor:
+def _compute_single_entropy(x, epsilon: float): #: tf.Tensor -> tf.Tensor:
     """Compute spectral entropy for 2D tensor [batch, dim]."""
     # Phase 1.5: Cast to complex128 for quantum precision per GRADIENT_CONNECTIVITY_ROADMAP
-    x_complex = TEO.cast(x, tf.complex128)
+    x_complex = TEO.cast(x, TEO.dtype_map(TEO.TEO_COMPLEX))
 
     # FFT along last dimension
     x_fft = TEO.fft(x_complex) #tf.signal.fft(x_complex)
 
     # Power spectrum: |FFT(x)|², cast back to float32
-    power = TEO.cast(TEO.abs(x_fft) ** 2, tf.float32)
+    power = TEO.cast(TEO.abs(x_fft) ** 2, TEO.dtype_map(TEO.TEO_FLOAT))
 
     # Normalize to probability
     total = TEO.reduce_sum(power, axis=-1, keepdims=True) + epsilon
@@ -121,16 +121,16 @@ def _compute_single_entropy(x: tf.Tensor, epsilon: float) -> tf.Tensor:
     entropy = -TEO.reduce_sum(p * log_p, axis=-1)
 
     # Normalize by max entropy
-    dim = TEO.cast(TEO.shape(x)[-1], tf.float32)
+    dim = TEO.cast(TEO.shape(x)[-1], TEO.dtype_map(TEO.TEO_FLOAT))
     max_entropy = TEO.log(dim)
 
     return entropy / (max_entropy + epsilon)
 
 
 def hd_spectral_flatness(
-    hidden_states: tf.Tensor,
+    hidden_states, #: tf.Tensor,
     epsilon: float = 1e-8,
-) -> tf.Tensor:
+):# -> tf.Tensor:
     """Compute spectral flatness (Wiener entropy).
 
     Spectral flatness = geometric_mean(power) / arithmetic_mean(power).
@@ -147,9 +147,9 @@ def hd_spectral_flatness(
         return _native_ops.HDSpectralFlatness(hidden_states, epsilon=epsilon)
 
     # Phase 1.5: TensorFlow fallback with complex128 precision
-    x_complex = TEO.cast(hidden_states, tf.complex128)
+    x_complex = TEO.cast(hidden_states, TEO.dtype_map(TEO.TEO_COMPLEX))
     x_fft     = TEO.fft(x_complex) #tf.signal.fft(x_complex)
-    power     = TEO.cast(tf.abs(x_fft) ** 2, tf.float32) + epsilon
+    power     = TEO.cast(TEO.abs(x_fft) ** 2, TEO.dtype_map(TEO.TEO_FLOAT)) + epsilon
 
     # Geometric mean: exp(mean(log(power)))
     log_power = TEO.log(power) #tf.math.
@@ -163,9 +163,9 @@ def hd_spectral_flatness(
 
 @TEO.custom_gradient
 def hd_spectral_entropy_with_grad(
-    hidden_states: tf.Tensor,
+    hidden_states,#: tf.Tensor,
     epsilon: float = 1e-8,
-) -> tf.Tensor:
+):# -> tf.Tensor:
     """Spectral entropy with gradient support.
 
     Args:
@@ -187,7 +187,7 @@ def hd_spectral_entropy_with_grad(
             )
 
         # TensorFlow gradient via automatic differentiation
-        with tf.GradientTape() as tape:
+        with TEO.GradientTape() as tape:
             tape.watch(hidden_states)
             e = _tf_spectral_entropy(hidden_states, epsilon)
         return tape.gradient(e, hidden_states) * upstream[:, None], None

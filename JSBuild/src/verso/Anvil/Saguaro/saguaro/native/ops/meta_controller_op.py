@@ -101,25 +101,25 @@ def trigger_meta_controller(
     ops = _get_native_ops()
 
     # Ensure inputs are tensors with correct types
-    if not isinstance(metric_values, tf.Tensor):
-        metric_values = TEO.constant(metric_values, dtype=tf.float32)
+    if not isinstance(metric_values, TEO.dtype_map(TEO.TEO_TENSOR)):
+        metric_values = TEO.constant(metric_values, dtype=TEO.dtype_map(TEO.TEO_FLOAT))
 
-    if not isinstance(metric_names, tf.Tensor):
-        metric_names = TEO.constant(metric_names, dtype=tf.string)
+    if not isinstance(metric_names, TEO.dtype_map(TEO.TEO_TENSOR)):
+        metric_names = TEO.constant(metric_names, dtype=TEO.dtype_map(TEO.TEO_STRING))
 
     if control_input_names is None:
-        control_input_names = TEO.constant([], dtype=tf.string)
-    elif not isinstance(control_input_names, tf.Tensor):
-        control_input_names = TEO.constant(control_input_names, dtype=tf.string)
+        control_input_names = TEO.constant([], dtype=TEO.dtype_map(TEO.TEO_STRING))
+    elif not isinstance(control_input_names, TEO.dtype_map(TEO.TEO_TENSOR)):
+        control_input_names = TEO.constant(control_input_names, dtype=TEO.dtype_map(TEO.TEO_STRING))
 
-    if not isinstance(trigger_autotune, tf.Tensor):
-        trigger_autotune = TEO.constant(trigger_autotune, dtype=tf.bool)
+    if not isinstance(trigger_autotune, TEO.dtype_map(TEO.TEO_TENSOR)):
+        trigger_autotune = TEO.constant(trigger_autotune, dtype=TEO.dtype_map(TEO.TEO_BOOL))
 
-    if not isinstance(trigger_system_id, tf.Tensor):
-        trigger_system_id = TEO.constant(trigger_system_id, dtype=tf.bool)
+    if not isinstance(trigger_system_id, TEO.dtype_map(TEO.TEO_TENSOR)):
+        trigger_system_id = TEO.constant(trigger_system_id, dtype=TEO.dtype_map(TEO.TEO_BOOL))
 
-    if not isinstance(config_path, tf.Tensor):
-        config_path = TEO.constant(config_path, dtype=tf.string)
+    if not isinstance(config_path, TEO.dtype_map(TEO.TEO_TENSOR)):
+        config_path = TEO.constant(config_path, dtype=TEO.dtype_map(TEO.TEO_STRING))
 
     # Call the C++ op
     block_names, evolution_times = ops.trigger_meta_controller(

@@ -14,6 +14,110 @@ class TEOError(Exception):
 class TEONotFoundError(TEOError):
     """Raised when a required resource or op cannot be found."""
 
+def set_seed(seed: int):
+    """
+    Set the global random seed for reproducibility across backends.
+
+    Args:
+        seed: Integer seed value
+    """
+    b = backend()
+    
+    if b == "tensorflow":
+        import tensorflow as tf
+        tf.random.set_seed(seed)
+        
+    elif b == "torch":
+        import torch
+        torch.manual_seed(seed)
+        if torch.cuda.is_available():
+            torch.cuda.manual_seed_all(seed)
+            
+    elif b == "jax":
+        # JAX uses PRNG keys, global seeding is not standard; store key for TEO use
+        import jax
+        jax._jax_key = jax.random.PRNGKey(seed)
+        
+    elif b == "numpy":
+        import numpy as np
+        np.random.seed(seed)
+        
+    else:
+        raise RuntimeError(f"Unsupported backend: {b}")
+    
+def random_uniform(shape, minval=0.0, maxval=1.0, seed=None, dtype=None):
+    """
+    TEO wrapper for uniform random tensors across backends.
+
+    Args:
+        shape: tuple/list, tensor shape
+        minval: float, minimum value
+        maxval: float, maximum value
+        seed: int or None, random seed
+        dtype: TEO dtype (optional)
+
+    Returns:
+        Backend-specific random tensor
+    """
+    b = backend()
+    
+    if b == "tensorflow":
+        import tensorflow as tf
+        return tf.random.uniform(
+            shape=shape, minval=minval, maxval=maxval, seed=seed, dtype=dtype or tf.float32
+        )
+    
+    elif b == "torch":
+        import torch
+        if seed is not None:
+            torch.manual_seed(seed)
+        dtype_map = {
+            TEO.TEO_FLOAT: torch.float32,
+            TEO.TEO_DOUBLE: torch.float64,
+        }
+        t_dtype = dtype_map.get(dtype, torch.float32)
+        return (maxval - minval) * torch.rand(*shape, dtype=t_dtype) + minval
+    
+    elif b == "jax":
+        import jax.numpy as jnp
+        import jax
+        key = jax.random.PRNGKey(seed if seed is not None else 0)
+        return jax.random.uniform(key, shape, minval=minval, maxval=maxval, dtype=dtype or jnp.float32)
+    
+    elif b == "numpy":
+        import numpy as np
+        if seed is not None:
+            np.random.seed(seed)
+        return np.random.uniform(minval, maxval, size=shape).astype(dtype or np.float32)
+    
+    else:
+        raise RuntimeError(f"Unsupported backend: {b}")
+    
+def function(fn, input_signature=None, output_shape=None, dtype=None):
+    b = backend()
+    
+    if b == "tensorflow":
+        import tensorflow as tf
+        spec = None
+        if output_shape is not None and dtype is not None:
+            spec = tf.TensorSpec(output_shape, TEO.dtype_map(dtype))
+        return tf.function(fn, input_signature=input_signature, autograph=True, experimental_relax_shapes=True)
+    
+    elif b == "torch":
+        # PyTorch doesn’t have a direct equivalent, just return the function
+        return fn
+    
+    elif b == "jax":
+        import jax
+        return jax.jit(fn)
+    
+    elif b == "numpy":
+        # No JIT in NumPy, just return fn
+        return fn
+    
+    else:
+        raise RuntimeError(f"Unsupported backend: {b}")
+    
 def random_normal(shape, stddev=1.0):
     b = backend()
 

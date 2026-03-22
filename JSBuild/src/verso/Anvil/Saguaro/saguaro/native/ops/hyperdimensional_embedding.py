@@ -70,7 +70,7 @@ def hyperdimensional_embedding_available() -> bool:
 # =============================================================================
 
 
-@tf.function
+@TEO.function
 def circular_convolution_tf(a, b): # : tf.Tensor : tf.Tensor) -> tf.Tensor
     """Circular convolution via FFT (TensorFlow implementation).
 
@@ -101,7 +101,7 @@ def circular_convolution_tf(a, b): # : tf.Tensor : tf.Tensor) -> tf.Tensor
     return TEO.cast(TEO.real(result), TEO.dtype_map(TEO.TEO_FLOAT))
 
 
-@tf.function
+@TEO.function
 def holographic_bundle_tf(
     token_ids,#: tf.Tensor,
     base_vectors,#: tf.Tensor,
@@ -150,7 +150,7 @@ def holographic_bundle_tf(
     bound_embeds = TEO.map_fn(
         bind_position,
         TEO.range(seq_len),
-        fn_output_signature=tf.TensorSpec([None, hd_dim], TEO.dtype_map(TEO.TEO_FLOAT)),
+        fn_output_signature=TEO.TensorSpec([None, hd_dim], TEO.dtype_map(TEO.TEO_FLOAT)),
     )  # [seq, batch, hd_dim]
 
     # Transpose to [batch, seq, hd_dim]
@@ -166,7 +166,7 @@ def holographic_bundle_tf(
 
 
 
-@tf.function
+@TEO.function
 def ctqw_spread_tf(
     embeddings,#: tf.Tensor,
     steps: int = 3,

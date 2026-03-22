@@ -21,7 +21,7 @@ from typing import Any
 
 import numpy as np
 import tensorflow as tf
-
+import tensor_ops as TEO
 logger = logging.getLogger(__name__)
 
 
@@ -171,19 +171,19 @@ class TwinMPCController:
         """
         # State cost (exclude last state since no control applied)
         x_error = x_trajectory[:-1] - x_ref  # [horizon, state_dim]
-        state_cost = tf.reduce_sum(
-            tf.reduce_sum(x_error * tf.linalg.matvec(self.Q, x_error), axis=1)
+        state_cost = TEO.reduce_sum(
+            TEO.reduce_sum(x_error * TEO.matvec(self.Q, x_error), axis=1)
         )
 
         # Input cost
-        input_cost = tf.reduce_sum(
-            tf.reduce_sum(u_sequence * tf.linalg.matvec(self.R, u_sequence), axis=1)
+        input_cost = TEO.reduce_sum(
+            TEO.reduce_sum(u_sequence * TEO.matvec(self.R, u_sequence), axis=1)
         )
 
         # Terminal cost (penalize final state error more heavily)
         terminal_error = x_trajectory[-1] - x_ref
-        terminal_cost = 2.0 * tf.reduce_sum(
-            terminal_error * tf.linalg.matvec(self.Q, terminal_error)
+        terminal_cost = 2.0 * TEO.reduce_sum(
+            terminal_error * TEO.matvec(self.Q, terminal_error)
         )
 
         return state_cost + input_cost + terminal_cost

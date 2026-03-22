@@ -104,7 +104,7 @@ def lorentzian_feature_transform(
 
     def grad_fn(
         grad_output,
-        variables: list[tf.Variable] | None = None,
+        variables#: list[tf.Variable] | None = None,
     ):# -> tuple[tuple[tf.Tensor, ...], list[tf.Tensor | None]]:
         """Gradient function that calls the custom C++ backward kernel."""
         if lorentzian_feature_transform_grad_op is None:
