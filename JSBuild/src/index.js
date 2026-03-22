@@ -273,10 +273,16 @@ ipcMain.handle("chat:send", async (_, userInput) => {
     return result;
 });
 
+ipcMain.handle("chat:setMode", (event, mode) => {
+  console.log("mode set to", mode)
+  return `Mode changed to ${mode}`
+})
+
 ipcMain.handle("spawn-agent", async (event, config) => {
     let eng = getEngineInstance();
     return await eng.spawn(config);
 });
+
 
 ipcMain.handle("get-agent", (event, id) => {
     let eng = getEngineInstance();

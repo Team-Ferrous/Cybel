@@ -1,9 +1,8 @@
 # sparc_server.py
 
-import io
 import torch
 from flask import Flask, request, send_file, jsonify
-from sparc3d_sdf.scripts.sdf import run
+#from sparc3d_sdf.scripts.sdf import run
 
 app = Flask(__name__)
 
@@ -50,7 +49,7 @@ def get_dtype(device):
 def generate_sdf_local(user_id, prompt, n):
     input_obj = f"assets/{user_id}.obj"
     output_obj = f"./local_generations/{user_id}_{n}.obj"
-    run(input_obj, n, prompt, output_obj)
+    #run(input_obj, n, prompt, output_obj)
     print(f"SDF Built at Output Path: {output_obj}")
 
 # WEB API

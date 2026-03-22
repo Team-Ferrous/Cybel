@@ -24,14 +24,16 @@
   "build": {
     "appId": "com.teamferrous.cybel",
     "productName": "cybel",
-    "files": [
-      "**/*",
-      ".env"
-    ],
+    "files": ["**/*", ".env"],
     "win": {
       "target": "nsis",
       "icon": "assets/cybel.ico"
-    }
+    },
+    "extraMetadata": {
+      "scripts": {
+        "beforePack": "npm run build_faiss_win"
+        }
+      }
   },
   "dependencies": {
     "@ai-sdk/xai": "^3.0.67",

@@ -1,16 +1,11 @@
-import { embedText }      from "./embeddings.js"; // your embedding function
+import { embedText }      from "./embeddings.js";
 import { VestAuthClient } from "./vestauth.js";
-const  { IndexFlatL2 } = './node_modules/faiss-node/build/Release/faiss-node';
-import { dialog }   from "electron";
+import { dialog }         from "electron";
+import { createRequire }  from 'module';
 
-//example invocation
-/*const engine = new InstanceEngine();
-engine.spawn({
-  id: "chat-agent",
-  provider: "huggingface",
-  secretKey: "HF_TOKEN",
-  tools: ["search", "filesystem"]
-});*/
+// Then any const/require calls
+const require         = createRequire(import.meta.url);
+const { IndexFlatL2 } = require('faiss-node'); // now works fine
 
 //This is for the AI Agents Control Only
 class InstanceEngine {
@@ -61,15 +56,15 @@ class InstanceEngine {
     }
 
     const instance = {
-      id: config.id,
-      provider: config.provider,
-      secretKey: providerToken,
-      tools: config.tools,
-      mode: config.mode,
+      id:         config.id,
+      provider:   config.provider,
+      secretKey:  providerToken,
+      tools:      config.tools,
+      mode:       config.mode,
       sessionState: {},
       faissIndex: index,
-      agent: null,
-      createdAt: Date.now()
+      agent:      null,
+      createdAt:  Date.now()
     };
 
     this.instances.set(config.id, instance);

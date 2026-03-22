@@ -1,5 +1,6 @@
 // renderer.js
 import { AutoTokenizer, AutoModelForCausalLM } from "https://cdn.jsdelivr.net/npm/@xenova/transformers/dist/transformers.min.js"; //"@xenova/transformers";
+//import { InstanceEngine } from './instance_engine'
 
 document.querySelectorAll("input[type='range']").forEach(slider => {
 slider.addEventListener("input", (e) => {
@@ -277,6 +278,11 @@ function initModelSelects() {
         }
     });
 
+    let apiKeySelector    = document.getElementById("api-token-input")
+    let apiKeySelectorV   = document.getElementById("api-token-inputV")
+    apiKeySelector.value  = localStorage.getItem("api_key")
+    apiKeySelectorV.value = localStorage.getItem("api_key")
+
     modeSelector.addEventListener("change", (e) => {
         const mode = e.target.value;
         if (mode === "groq") {
@@ -318,7 +324,9 @@ function initModelSelects() {
         localStorage.setItem("modeSelector", e.target.value);
         window.api.setGenerationMode(e.target.value);
     });
-
+    const btn = document.getElementById("groq-key-confirm");
+    btn.innerText = "Download Model";
+    btn.onclick = initDownloads()
     modeSelector.dispatchEvent(new Event('change'));
     initLocalSelector();
     initVSLocalSelector();
@@ -348,15 +356,18 @@ function initModelSelects() {
             return;
         }
         window.api.setTokenKey(key);
+        localStorage.setItem("token-key", key)
     });
 
     buttonGK.addEventListener("click", () => {
         const key = input.value.trim();
         if (!key) {
             showToast("Please enter a Grok key.");
+            localStorage.setItem(key)
             return;
         }
         window.api.setTokenKey(key);
+        localStorage.setItem("token-key", key)
     });
 
     buttonVS.addEventListener("click", () => {
@@ -366,6 +377,8 @@ function initModelSelects() {
             return;
         }
         window.api.setTokenKey(key);
+                localStorage.setItem("token-key", key)
+
     });
 
     button.addEventListener("click", () => {
@@ -375,7 +388,7 @@ function initModelSelects() {
         return;
     }
     // Example: store in localStorage
-    localStorage.setItem("groqKey", key);
+    localStorage.setItem("token-key", key);
 
     // Or send to main process if Electron
     window.api.setTokenKey(key);
@@ -384,7 +397,6 @@ function initModelSelects() {
 
 const storedKey = localStorage.getItem("tokenKey");
 if (storedKey) input.value = storedKey;
-
 
 const bgChatContainer = document.getElementById('bg-chat');
 document.addEventListener('change', (e) => {
@@ -439,6 +451,12 @@ function initializeAgent(agentEl) {
     checkboxV.dispatchEvent(new Event('change'));
 }
 
+function updateAddStepButton() {
+    const addStepBtn = document.getElementById("add-step-btn");
+    const agentsExist = document.querySelectorAll(".agent").length > 0; // adjust selector
+    addStepBtn.disabled = !agentsExist;
+}
+
 // Example: spawning a new agent VISUALLY
 function addAgent() {
     const template = document.getElementById('agent-template');
@@ -453,34 +471,43 @@ function addAgent() {
 }
 
 // Enable / disable + Step button based on agent existence VISUALLY
-function updateAddStepButton() {
+/*function updateAddStepButton() {
     const agents = document.querySelectorAll('.agent-instance');
     addStepBtn.disabled = agents.length === 0;
-}
+}*/
 let workflowStepCounter = 0;
 
-function addWorkflowStep(){
-
+function addWorkflowStep() {
     const template = document.getElementById("workflow-step-template");
     const container = document.getElementById("workflow-steps");
 
     const clone = template.content.cloneNode(true);
 
     const stepIndex = ++workflowStepCounter;
-
     const indexLabel = clone.querySelector(".workflow-index");
     indexLabel.textContent = stepIndex;
 
     const removeBtn = clone.querySelector(".workflow-remove");
 
-    removeBtn.addEventListener("click", (e)=>{
+    removeBtn.addEventListener("click", (e) => {
         e.target.closest(".workflow-step").remove();
         reindexWorkflow();
+        updateAddStepButton(); // <-- update '+ Add Step' button after removing
     });
 
-    populateAgentDropdown(clone);
-
     container.appendChild(clone);
+    populateAgentDropdown(clone);
+    // -----------------------------
+    // Conditional logic for buttons
+    // -----------------------------
+
+    // Only show remove button if there's more than 1 step
+    removeBtn.style.display = workflowStepCounter > 1 ? "inline-block" : "none";
+
+    // Enable '+ Add Step' button only if agents exist
+    const addStepBtn = document.getElementById("add-step-btn");
+    const agentsExist = document.querySelectorAll(".agent").length > 0; // replace with your agent tracker
+    addStepBtn.disabled = !agentsExist;
 }
 
 function populateAgentDropdown(stepClone){
@@ -606,7 +633,7 @@ const selects = document.querySelectorAll(".workflow-agent");
 }
 
 async function createAgent(config = {}) {
-    let engine      = window.api.getEngineInstance();
+    let engine = window.api.getEngineInstance();
     const template  = document.getElementById("agent-template");
     const agentList = document.getElementById("agent-list");
 
@@ -655,7 +682,10 @@ async function createAgent(config = {}) {
     });
 
     // Spawn agent in engine
-    engine.spawn({
+    /*if(engine == null){
+        engine = new InstanceEngine();
+    }*/
+    /*engine.spawn({
         id: agentId,
         provider: config.provider || "local",
         mode: "active",
@@ -664,7 +694,9 @@ async function createAgent(config = {}) {
     }).then(result => {
         if (!result.success) alert("Agent creation failed: " + result.error);
         else console.log("Agent created:", agentId);
-    });
+    });*/
+    
+    window.api.spawn(config);
 }
 
 function deleteAgent(agentId) {
@@ -1680,9 +1712,7 @@ function confirmCreateBot() {
     }
 
 async function executeWorkflow() {
-
     console.log("⚙️ Starting workflow...");
-
     const steps = document.querySelectorAll(".workflow-step");
 
     if (steps.length === 0) {
@@ -1690,14 +1720,59 @@ async function executeWorkflow() {
         return;
     }
 
-    let previousOutput = "";
+    const context = {
+        previousOutput: "",
+        results: [],
+        memory: {}
+    };
+
+    // -------- PRE-FLIGHT --------
+
+    const requiredModels = new Set();
+
+    steps.forEach(step => {
+
+        const agentName = step.querySelector(".workflow-agent")?.value;
+
+        if (!agentName) return;
+
+        const agent = getAgentByName(agentName);
+
+        if (agent?.model) {
+            requiredModels.add(agent.model);
+        }
+
+    });
+
+    console.log("Checking models:", [...requiredModels]);
+
+    for (const model of requiredModels) {
+
+        const exists = await checkModelExists(model);
+
+        if (!exists) {
+
+            console.log("Downloading model:", model);
+
+            try {
+                await downloadModel(model);
+            } catch (err) {
+                console.error("Failed downloading model:", model, err);
+                return;
+            }
+        }
+    }
+
+    console.log("All models ready.");
+
+    // -------- EXECUTION --------
 
     for (let i = 0; i < steps.length; i++) {
 
         const step = steps[i];
 
-        const agentName = step.querySelector(".workflow-agent").value;
-        const action = step.querySelector(".workflow-action").value;
+        const agentName = step.querySelector(".workflow-agent")?.value;
+        const action = step.querySelector(".workflow-action")?.value;
 
         console.log(`Running Step ${i + 1}:`, agentName, action);
 
@@ -1715,36 +1790,49 @@ async function executeWorkflow() {
 
         let result = "";
 
-        switch (action) {
+        try {
 
-            case "respond":
-                result = await runAgent(agent, previousOutput);
-                break;
+            switch (action) {
 
-            case "research":
-                result = await runResearchTool(previousOutput);
-                break;
+                case "respond":
+                    result = await runAgent(agent, context.previousOutput);
+                    break;
 
-            case "code":
-                result = await runAgent(agent, "Write code for: " + previousOutput);
-                break;
+                case "research":
+                    result = await runResearchTool(context.previousOutput);
+                    break;
 
-            case "tool":
-                result = await runAgentTool(agent, previousOutput);
-                break;
+                case "code":
+                    result = await runAgent(agent, "Write code for: " + context.previousOutput);
+                    break;
+
+                case "tool":
+                    result = await runAgentTool(agent, context.previousOutput);
+                    break;
+
+                default:
+                    console.warn("Unknown action:", action);
+            }
+
+        } catch (err) {
+
+            console.error(`Step ${i + 1} failed:`, err);
+            continue;
         }
 
-        previousOutput = result;
+        context.previousOutput = result;
+        context.results.push(result);
 
         console.log(`Step ${i + 1} output:`, result);
     }
-
     console.log("✅ Workflow finished.");
+    return context.results;
 }
 
 setInterval(draw, 50);
 // Init
 document.addEventListener("DOMContentLoaded", initUI);
+    initDownloads();
 
 function initAppearance(){
 
@@ -1839,30 +1927,40 @@ function initWorkflow(){
 }
 
 
-    function initDownloads(){
+async function initDownloads(){
 
-        let conf = window.api.getConfig();
-        if(conf.tokenKey != null){
-        const button = document.getElementById("model_confirmation");
-        const input  = document.getElementById("model-search-input");
-        const dropdown = document.getElementById("local-model-selector");
+    const conf = await window.api.getConfig();
 
-        if(!button) return;
+    const button   = document.getElementById("model_confirmation");
+    const input    = document.getElementById("model-search-input");
+    const dropdown = document.getElementById("local-model-selector");
 
-        function getSelectedSources() {
+    if(!button) return;
+
+    function getSelectedSources(){
 
         const sources = [];
 
-        const hf = document.getElementById("hfBox")?.checked;
-        const ms = document.getElementById("msBox")?.checked;
-
-        if (hf) sources.push("huggingface");
-        if (ms) sources.push("modelscope");
+        if(document.getElementById("hfBox")?.checked) sources.push("huggingface");
+        if(document.getElementById("msBox")?.checked) sources.push("modelscope");
 
         return sources;
     }
 
-    button.addEventListener("click", async ()=>{
+   button.addEventListener("click", async ()=>{
+
+        if (button.dataset.busy) return;
+        button.dataset.busy = "1";
+
+        try{
+
+            const conf = await window.api.getConfig();
+
+            if(!conf.tokenKey){
+                alert("Please input your API Key/Token");
+                return;
+            }
+
             const modelName =
                 input?.value?.length > 0
                 ? input.value
@@ -1880,27 +1978,31 @@ function initWorkflow(){
                 return;
             }
 
-            try{
+            button.disabled = true;
+            button.innerText = "Downloading...";
 
-                button.disabled = true;
-                button.innerText = "Downloading...";
+            await downloadModel(modelName, sources);
 
-                await downloadModel(modelName, sources);
+            button.innerText = "Downloaded";
 
-                button.innerText = "Downloaded";
+        } catch(err){
 
-            }catch(err){
-                console.error("Download failed", err);
-                button.innerText = "Failed";
-            }
+            console.error("Download failed", err);
+            button.innerText = "Failed";
+
+        } finally {
 
             button.disabled = false;
-        });
-    }
+            button.dataset.busy = "";
+
+        }
+    });
 }
 
 function initUI() {
     initModelSelects();
+    const btn   = document.getElementById("grok-key-input");
+    btn.value   = localStorage.getItem("token_key");
     try { initAppearance(); } catch(e){ console.error("Appearance failed", e); }
     try { initBackground(); } catch(e){ console.error("Background failed", e); }
     try { initModelControls(); } catch(e){ console.error("Model controls failed", e); }

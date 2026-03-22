@@ -12,7 +12,7 @@
     <link   href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link   rel="stylesheet" href="./main.css">
     <script src="./renderer.js"                type="module"></script>
-    <meta http-equiv="Content-Security-Policy"
+    <!--<meta http-equiv="Content-Security-Policy"
         content="
         default-src 'self';
         script-src 'self' https://cdn.jsdelivr.net https://unpkg.com;
@@ -20,7 +20,7 @@
         font-src 'self' https://fonts.gstatic.com;
         connect-src 'self' https://cdn.jsdelivr.net https://unpkg.com;
         img-src 'self' data:;
-        ">
+        "> --> <!-- This is straightup overkill -->
 </head>
 <body style="background-color: var(--bg-primary); color: var(--text-primary);" class="h-screen w-screen flex flex-col md:flex-row relative">
     <!-- Global Scanline Overlay -->
@@ -263,7 +263,7 @@
                         <div id="verso-option-panel">
                             <div>
                                 <p class="text-xs text-amber-400 mt-2">API Token (High Noon)</p>
-                                <input id="api-token-input" placeholder="Enter your token" class="w-full text-xs">
+                                <input id="api-token-inputV" placeholder="Enter your token" class="w-full text-xs">
                             </div>
                             <div class="flex items-center gap-4 mt-2 text-xs text-amber-400">
                                 <label class="flex items-center gap-1">
@@ -302,7 +302,17 @@
                             </div>
                         <!-- other Groq-specific panels -->
                     </div>
+                    <script>
+                        const ipt = document.getElementById("groq-key-input");
 
+                        // load saved key
+                        ipt.value = localStorage.getItem("token-key") || "";
+
+                        // save when user edits
+                        ipt.addEventListener("change", () => {
+                            localStorage.setItem("token-key", ipt.value);
+                        });
+                    </script>
                 <!-- Local mode panels -->
                 <div id="local-panels" style="display:none">
                     <div class="glass-panel p-6 rounded-xl" id="local-model-panel">
@@ -923,7 +933,7 @@
     <div class="workflow-builder glass-panel">
         <h2 class="agent-title text-accent font-mono">Workflow</h2>
         <div id="workflow-steps" class="workflow-steps"></div>
-        <button id="add-step-btn" class="workflow-add text-accent font-mono" onclick="addWorkflowStep()" disabled>
+        <button id="add-step-btn" class="workflow-add text-accent font-mono" onclick="addWorkflowStep()">
             + Add Step
         </button>
     </div>

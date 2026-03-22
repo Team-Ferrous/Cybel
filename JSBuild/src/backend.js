@@ -863,8 +863,18 @@ async function sendMessage(userInput) {
 
         const fullUserInput   = `Time: ${contextVars.time}\nDay: ${contextVars.day}\nUser: ${userInput}`;
         let dc = new Decoder();
-        let parsed = dc.parseChat(fullUserInput, `chat_${contextVars.time}_${contextVars.day}`, {preserveFormatting: true, includeMetadata: true});
-        saveDocument(parsed);
+     
+        // sanitize chat/day/year into a single string
+        const filename = `chat_${contextVars.day}_${contextVars.time}.json`.replace(/[\\/:"*?<>|]/g, "_"); //_${contextVars.year}
+
+        // write directly to Logs folder
+        const filePath = path.join(__dirname, "Logs", filename);
+
+        // make sure Logs exists (just the top folder)
+        //await fs.mkdir(path.join(__dirname, "Logs"), { recursive: true });
+
+        // write the log
+        await fs.promises.writeFile(filePath, userInput, { encoding: 'utf-8' })
         const embeddingVector = await embedText(fullUserInput);
 
         console.log("STEP 3: retrieveTopK from FAISS");
