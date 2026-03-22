@@ -18,7 +18,7 @@ Copyright 2025-2026 Verso Industries
 from dataclasses import dataclass
 from enum import IntEnum
 
-import tensorflow as tf
+import tensor_ops as TEO
 
 # Import native ops loader - REQUIRED, no fallback
 from saguaro.native import load_saguaro_core
@@ -93,10 +93,10 @@ class MemoryConfig:
 
 
 def unified_memory_read(
-    query: tf.Tensor,
-    memory: tf.Tensor,
+    query,#: tf.Tensor,
+    memory,#: tf.Tensor,
     config: MemoryConfig,
-    aux_data: tf.Tensor | None = None,
+    aux_data#,: tf.Tensor | None = None,
 ) -> tuple:
     """Unified memory read dispatcher.
 
@@ -115,7 +115,7 @@ def unified_memory_read(
         RuntimeError: If native ops are not available
     """
     if aux_data is None:
-        aux_data = tf.zeros([1], dtype=tf.float32)
+        aux_data = TEO.zeros([1], dtype=TEO.dtype_map(TEO.TEO_FLOAT))
 
     return _saguaro_core.unified_memory_system_op(
         query=query,
@@ -181,8 +181,8 @@ class UnifiedMemoryLayer(tf.keras.layers.Layer):
         aux_data = None
 
         if self.config.mem_type == MemoryType.PRODUCT_KEY:
-            aux_data = tf.concat(
-                [tf.reshape(self.codebook_a, [-1]), tf.reshape(self.codebook_b, [-1])],
+            aux_data = TEO.concat(
+                [TEO.reshape(self.codebook_a, [-1]), TEO.reshape(self.codebook_b, [-1])],
                 axis=0,
             )
 
@@ -211,8 +211,8 @@ class UnifiedMemoryLayer(tf.keras.layers.Layer):
 
 
 def content_addressed_memory(
-    query: tf.Tensor,
-    memory: tf.Tensor,
+    query,#: tf.Tensor,
+    memory,#: tf.Tensor,
     num_slots: int = 256,
     temperature: float = 1.0,
     **kwargs,
@@ -244,10 +244,10 @@ def content_addressed_memory(
 
 
 def product_key_memory(
-    query: tf.Tensor,
-    memory: tf.Tensor,
-    codebook_a: tf.Tensor,
-    codebook_b: tf.Tensor,
+    query,#: tf.Tensor,
+    memory,#: tf.Tensor,
+    codebook_a,#: tf.Tensor,
+    codebook_b,#: tf.Tensor,
     num_slots: int = 4096,
     product_k: int = 8,
     **kwargs,
@@ -280,16 +280,16 @@ def product_key_memory(
         **kwargs,
     )
 
-    aux_data = tf.concat(
-        [tf.reshape(codebook_a, [-1]), tf.reshape(codebook_b, [-1])], axis=0
+    aux_data = TEO.concat(
+        [TEO.reshape(codebook_a, [-1]), TEO.reshape(codebook_b, [-1])], axis=0
     )
 
     return unified_memory_read(query, memory, config, aux_data)
 
 
 def hopfield_memory(
-    query: tf.Tensor,
-    patterns: tf.Tensor,
+    query,#: tf.Tensor,
+    patterns,#: tf.Tensor,
     num_patterns: int = 256,
     beta: float = 1.0,
     num_iterations: int = 1,
@@ -324,8 +324,8 @@ def hopfield_memory(
 
 
 def adaptive_memory(
-    query: tf.Tensor,
-    memory: tf.Tensor,
+    query,#: tf.Tensor,
+    memory,#: tf.Tensor,
     num_slots: int = 256,
     surprise_threshold: float = 0.5,
     **kwargs,

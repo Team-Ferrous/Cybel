@@ -90,7 +90,7 @@ def _tf_spectral_entropy(
         # [batch, seq, dim] -> average over seq
         batch_size = TEO.shape(hidden_states)[0]
         seq_len = TEO.shape(hidden_states)[1]
-        dim = hidden_states.shape[2] or tf.shape(hidden_states)[2]
+        dim = hidden_states.shape[2] or TEO.shape(hidden_states)[2]
 
         # Flatten to [batch * seq, dim]
         flat = TEO.reshape(hidden_states, [-1, dim])
@@ -110,7 +110,7 @@ def _compute_single_entropy(x: tf.Tensor, epsilon: float) -> tf.Tensor:
     x_fft = TEO.fft(x_complex) #tf.signal.fft(x_complex)
 
     # Power spectrum: |FFT(x)|², cast back to float32
-    power = TEO.cast(tf.abs(x_fft) ** 2, tf.float32)
+    power = TEO.cast(TEO.abs(x_fft) ** 2, tf.float32)
 
     # Normalize to probability
     total = TEO.reduce_sum(power, axis=-1, keepdims=True) + epsilon
@@ -161,7 +161,7 @@ def hd_spectral_flatness(
     return geometric_mean / arithmetic_mean
 
 
-@tf.custom_gradient
+@TEO.custom_gradient
 def hd_spectral_entropy_with_grad(
     hidden_states: tf.Tensor,
     epsilon: float = 1e-8,

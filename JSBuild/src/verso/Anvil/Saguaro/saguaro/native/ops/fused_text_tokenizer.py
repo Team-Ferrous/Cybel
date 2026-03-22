@@ -129,8 +129,8 @@ class SuperwordTrieHandle:
             ngram: Sequence of token IDs forming the n-gram.
             superword_id: Superword ID to map to.
         """
-        ngram_tensor = TEO.constant(list(ngram), dtype=tf.int32)
-        id_tensor = TEO.constant(superword_id, dtype=tf.int32)
+        ngram_tensor = TEO.constant(list(ngram), dtype=TEO.dtype_map(TEO.TEO_INT))
+        id_tensor = TEO.constant(superword_id, dtype=TEO.dtype_map(TEO.TEO_INT))
         _text_tok_module.superword_trie_insert(self._handle, ngram_tensor, id_tensor)
         self._num_entries += 1
 
@@ -163,9 +163,9 @@ class SuperwordTrieHandle:
             tokens.extend(ngram)
             offsets.append(len(tokens))
 
-        offsets_tensor = TEO.constant(offsets, dtype=tf.int32)
-        tokens_tensor = TEO.constant(tokens, dtype=tf.int32)
-        ids_tensor = TEO.constant(list(superword_ids), dtype=tf.int32)
+        offsets_tensor = TEO.constant(offsets, dtype=TEO.dtype_map(TEO.TEO_INT))
+        tokens_tensor = TEO.constant(tokens, dtype=TEO.dtype_map(TEO.TEO_INT))
+        ids_tensor = TEO.constant(list(superword_ids), dtype=TEO.dtype_map(TEO.TEO_INT))
 
         _text_tok_module.superword_trie_build_from_table(
             self._handle, offsets_tensor, tokens_tensor, ids_tensor
@@ -185,7 +185,7 @@ def fused_text_tokenize(
     byte_offset: int = 32,
     add_special_tokens: bool = True,
     max_length: int = 131072,
-) -> tuple[tf.Tensor, tf.Tensor]:
+):# -> tuple[tf.Tensor, tf.Tensor]:
     """Tokenize single text with SIMD optimization.
 
     Args:
@@ -210,7 +210,7 @@ def fused_text_tokenize(
     handle = (
         trie.handle
         if trie is not None
-        else tf.raw_ops.VarHandleOp(dtype=tf.int32, shape=[])
+        else TEO.get_op("VarHandleOp") #tf.raw_ops.VarHandleOp(dtype=TEO.dtype_map(TEO.TEO_INT), shape=[])
     )
 
     return _text_tok_module.fused_text_tokenize(
@@ -259,7 +259,7 @@ def fused_text_tokenize_batch(
     handle = (
         trie.handle
         if trie is not None
-        else tf.raw_ops.VarHandleOp(dtype=tf.int32, shape=[])
+        else TEO.get_op("VarHandleOp") #tf.raw_ops.VarHandleOp(dtype=TEO.dtype_map(TEO.TEO_INT), shape=[])
     )
 
     return _text_tok_module.fused_text_tokenize_batch(

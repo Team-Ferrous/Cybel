@@ -65,10 +65,10 @@ def _get_native_ops():
 def trigger_meta_controller(
     metric_values,
     metric_names,
-    control_input_names: tf.Tensor | None = None,
-    trigger_autotune: tf.Tensor | bool = False,
-    trigger_system_id: tf.Tensor | bool = False,
-    config_path: tf.Tensor | str = "",
+    control_input_names,#: tf.Tensor | None = None,
+    trigger_autotune,#: tf.Tensor | bool = False,
+    trigger_system_id,#: tf.Tensor | bool = False,
+    config_path #: tf.Tensor | str = "",
 ):# -> tuple[tf.Tensor, tf.Tensor]:
     """Trigger the Hamiltonian Meta-Controller with current training metrics.
 

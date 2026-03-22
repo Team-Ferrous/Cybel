@@ -88,11 +88,11 @@ def hd_gradient_compression_available() -> bool:
 # =============================================================================
 
 
-@tf.autograph.experimental.do_not_convert
+@TEO.do_not_convert
 def frequency_topk_mask(
-    gradient: tf.Tensor,
+    gradient,#: tf.Tensor,
     bandwidth: int,
-) -> tuple[tf.Tensor, tf.Tensor]:
+):# -> tuple[tf.Tensor, tf.Tensor]:
     """Create frequency-domain top-K mask for gradient compression.
 
     Computes FFT of gradient and identifies top-K frequency components
@@ -125,7 +125,7 @@ def frequency_topk_mask(
         if rank_tensor > 2:
             # Flatten to [batch, dim] or [dim]
             flat_dim = gradient.shape[-1]
-            flat_grad = tf.reshape(gradient, [-1, flat_dim])
+            flat_grad = TEO.reshape(gradient, [-1, flat_dim])
         else:
             flat_grad = gradient
     else:
@@ -139,12 +139,12 @@ def frequency_topk_mask(
     )
 
     # Combine real/imag into complex
-    compressed_fft = tf.complex(compressed_real, compressed_imag)
+    compressed_fft = TEO.complex(compressed_real, compressed_imag)
 
     return compressed_fft, mask_indices
 
 
-@tf.autograph.experimental.do_not_convert
+@TEO.do_not_convert
 def frequency_reconstruct(
     compressed_fft: tf.Tensor,
     mask_indices: tf.Tensor,
@@ -282,7 +282,7 @@ class HDGradientCompressor:
             return gradient, {"passthrough": True}
 
         # Flatten to 2D for processing: [batch, features]
-        flat_grad = tf.reshape(gradient, [-1, original_dim])
+        flat_grad = TEO.reshape(gradient, [-1, original_dim])
 
         # Compute frequency compression
         compressed_fft, mask_indices = frequency_topk_mask(
@@ -291,8 +291,8 @@ class HDGradientCompressor:
 
         # Track stats
         if tf.executing_eagerly():
-            original_size = int(tf.size(flat_grad).numpy())
-            compressed_size = int(tf.size(compressed_fft).numpy())
+            original_size = int(TEO.size(flat_grad).numpy())
+            compressed_size = int(TEO.size(compressed_fft).numpy())
             self._stats.setdefault("total_compressed", 0)
             self._stats.setdefault("total_original", 0)
             self._stats["total_compressed"] += compressed_size
@@ -348,7 +348,7 @@ class HDGradientCompressor:
         )
 
         # Reshape to original
-        reconstructed = tf.reshape(reconstructed_flat, original_shape)
+        reconstructed = TEO.reshape(reconstructed_flat, original_shape)
 
         # Apply scale
         if self.scale != 1.0:
@@ -392,7 +392,7 @@ class HDGradientCompressor:
 # =============================================================================
 
 
-@tf.autograph.experimental.do_not_convert
+@TEO.do_not_convert
 def _get_gradient_compressor(bandwidth: int):
     """Get or create a cached gradient compression function for a specific bandwidth.
 
@@ -417,10 +417,10 @@ def _get_gradient_compressor(bandwidth: int):
     # Capture bandwidth as a closure variable (constant for this function)
     bw = bandwidth  # Capture in closure
 
-    @tf.autograph.experimental.do_not_convert
-    @tf.custom_gradient
+    @TEO.do_not_convert
+    @TEO.custom_gradient
     def compress_gradients(x):
-        @tf.autograph.experimental.do_not_convert
+        @TEO.do_not_convert
         def grad(dy):
             # Compress the incoming gradient
             # Get the last dimension size as a Python int when possible
@@ -429,12 +429,12 @@ def _get_gradient_compressor(bandwidth: int):
                 last_dim = int(dy_shape[-1])
             else:
                 # Fallback for dynamic shapes - use tf.shape
-                last_dim = tf.shape(dy)[-1]
+                last_dim = TEO.shape(dy)[-1]
 
-            flat_dy = tf.reshape(dy, [-1, last_dim])
+            flat_dy = TEO.reshape(dy, [-1, last_dim])
             compressed, indices = frequency_topk_mask(flat_dy, bw)
             reconstructed = frequency_reconstruct(compressed, indices, last_dim)
-            return tf.reshape(reconstructed, tf.shape(dy))
+            return TEO.reshape(reconstructed, TEO.shape(dy))
 
         return x, grad
 
@@ -445,7 +445,7 @@ def _get_gradient_compressor(bandwidth: int):
     return compress_gradients
 
 
-class HDGradientCompressionLayer(tf.keras.layers.Layer):
+class HDGradientCompressionLayer(TEO.Layer): #tf.keras.layers.Layer):
     """Layer wrapper that applies HD gradient compression during training.
 
     Wraps any layer and compresses gradients flowing through it during
@@ -462,7 +462,7 @@ class HDGradientCompressionLayer(tf.keras.layers.Layer):
 
     def __init__(
         self,
-        wrapped_layer: tf.keras.layers.Layer,
+        wrapped_layer: TEO.Layer, #tf.keras.layers.Layer,
         bandwidth: int = 256,
         **kwargs,
     ) -> None:
@@ -487,7 +487,7 @@ class HDGradientCompressionLayer(tf.keras.layers.Layer):
         config.update(
             {
                 "bandwidth": self.bandwidth,
-                "wrapped_layer": tf.keras.layers.serialize(self.wrapped_layer),
+                "wrapped_layer": TEO.Layer.serialize(self.wrapped_layer) #tf.keras.layers.serialize(self.wrapped_layer),
             }
         )
         return config

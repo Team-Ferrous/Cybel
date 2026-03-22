@@ -80,12 +80,12 @@ class HDGradientCompressor:
         self.rank = rank
         self.seed = seed
 
-        self._projections: dict[str, tuple[tf.Tensor, tf.Tensor]] = {}
+        self._projections = {} #: dict[str, tuple[tf.Tensor, tf.Tensor]]
         self._shapes: dict[str, tuple[int, ...]] = {}
 
         self._use_native = hd_gradient_projection_available()
 
-    def _var_key(self, variable: tf.Variable) -> str:
+    def _var_key(self, variable: TEO.variable) -> str:
         """Create a unique key for projection state to avoid name collisions."""
         return f"{variable.name}::{id(variable)}"
 
@@ -93,7 +93,7 @@ class HDGradientCompressor:
         self,
         var_key: str,
         param_size: int,
-    ) -> tuple[tf.Tensor, tf.Tensor]:
+    ): # -> tuple[tf.Tensor, tf.Tensor]:
         """Get or create projection parameters for a variable."""
         if var_key in self._projections:
             return self._projections[var_key]
@@ -111,22 +111,22 @@ class HDGradientCompressor:
                 padded *= 2
 
             # Random signs
-            signs = tf.random.stateless_uniform(
+            signs = TEO.stateless_uniform(
                 [padded],
                 seed=[self.seed + hash(var_key) % 10000, 0],
                 minval=0,
                 maxval=2,
-                dtype=tf.int32,
+                dtype=TEO.dtype_map(TEO.TEO_INT),
             )
-            signs = tf.cast(signs * 2 - 1, tf.float32)
+            signs = TEO.cast(signs * 2 - 1, TEO.dtype_map(TEO.TEO_FLOAT))
 
             # Random indices
-            indices = tf.random.stateless_uniform(
+            indices = TEO.stateless_uniform(
                 [self.rank],
                 seed=[self.seed + hash(var_key) % 10000 + 1, 0],
                 minval=0,
                 maxval=padded,
-                dtype=tf.int32,
+                dtype=TEO.dtype_map(TEO.TEO_INT),
             )
 
         self._projections[var_key] = (signs, indices)
@@ -134,9 +134,9 @@ class HDGradientCompressor:
 
     def compress(
         self,
-        gradient: tf.Tensor,
-        variable: tf.Variable,
-    ) -> tuple[tf.Tensor, str]:
+        gradient,#: tf.Tensor,
+        variable,#: tf.Variable,
+    ): #-> tuple[tf.Tensor, str]:
         """Compress gradient to low-rank representation.
 
         Args:
@@ -150,7 +150,7 @@ class HDGradientCompressor:
         shape = gradient.shape
         self._shapes[var_key] = tuple(shape.as_list())
 
-        flat_grad = tf.reshape(gradient, [-1])
+        flat_grad = TEO.reshape(gradient, [-1])
         param_size = flat_grad.shape[0]
 
         signs, indices = self._get_or_create_projection(var_key, param_size)
@@ -168,9 +168,9 @@ class HDGradientCompressor:
 
     def decompress(
         self,
-        compressed: tf.Tensor,
+        compressed,#: tf.Tensor,
         var_key: str,
-    ) -> tf.Tensor:
+    ): # -> tf.Tensor:
         """Decompress low-rank gradient back to full tensor.
 
         Args:
@@ -202,20 +202,20 @@ class HDGradientCompressor:
                 compressed, signs, indices, param_size
             )
 
-        return tf.reshape(flat_grad, shape)
+        return TEO.reshape(flat_grad, shape)
 
     def _tf_srht_project(
         self,
-        x: tf.Tensor,
-        signs: tf.Tensor,
-        indices: tf.Tensor,
-    ) -> tf.Tensor:
+        x, #: tf.Tensor,
+        signs, #: tf.Tensor,
+        indices, #: tf.Tensor,
+    ): # -> tf.Tensor:
         """TensorFlow fallback for SRHT projection."""
         # Pad to power of 2
         dim = x.shape[0]
         padded_dim = signs.shape[0]
 
-        padded = tf.concat([x, tf.zeros([padded_dim - dim])], axis=0)
+        padded = TEO.concat([x, TEO.zeros([padded_dim - dim])], axis=0)
 
         # Apply random signs
         signed = padded * signs
@@ -223,42 +223,42 @@ class HDGradientCompressor:
         # Walsh-Hadamard via FFT approximation
         # (True WHT not available in TF, use FFT as proxy)
         # Phase 1.5: Use complex128 for quantum precision per GRADIENT_CONNECTIVITY_ROADMAP
-        complex_x = tf.cast(signed, tf.complex128)
-        fft_x = tf.signal.fft(complex_x)
+        complex_x = TEO.cast(signed, TEO.dtype_map(TEO.TEO_COMPLEX))
+        fft_x = TEO.fft(complex_x)
 
         # Subsample, cast back to float32
-        sampled = tf.gather(tf.cast(tf.math.real(fft_x), tf.float32), indices)
-        scale = 1.0 / tf.sqrt(tf.cast(self.rank, tf.float32))
+        sampled = TEO.gather(TEO.cast(TEO.real(fft_x), TEO.dtype_map(TEO.TEO_FLOAT)), indices)
+        scale = 1.0 / TEO.sqrt(TEO.cast(self.rank,    TEO.dtype_map(TEO.TEO_FLOAT)))
 
         return sampled * scale
 
     def _tf_srht_reconstruct(
         self,
-        compressed: tf.Tensor,
-        signs: tf.Tensor,
-        indices: tf.Tensor,
+        compressed, #: tf.Tensor,
+        signs, #: tf.Tensor,
+        indices, #: tf.Tensor,
         param_size: int,
-    ) -> tf.Tensor:
+    ): # -> tf.Tensor:
         """TensorFlow fallback for SRHT reconstruction."""
         padded_dim = signs.shape[0]
 
         # Expand to padded dimension
-        expanded = tf.scatter_nd(
+        expanded = TEO.scatter_nd(
             indices[:, None],
             compressed,
             [padded_dim],
         )
 
-        scale = 1.0 / tf.sqrt(tf.cast(self.rank, tf.float32))
+        scale = 1.0 / TEO.sqrt(TEO.cast(self.rank, TEO.dtype_map(TEO.TEO_FLOAT)))
         expanded = expanded * scale
 
         # Inverse via FFT
         # Phase 1.5: Use complex128 for quantum precision per GRADIENT_CONNECTIVITY_ROADMAP
-        complex_x = tf.cast(expanded, tf.complex128)
-        ifft_x = tf.signal.ifft(complex_x) * tf.cast(padded_dim, tf.complex128)
+        complex_x = TEO.cast(expanded, TEO.dtype_map(TEO.TEO_COMPLEX))
+        ifft_x = TEO.ifft(complex_x) * TEO.cast(padded_dim, TEO.dtype_map(TEO.TEO_COMPLEX))
 
         # Apply signs and truncate, cast back to float32
-        result = tf.cast(tf.math.real(ifft_x), tf.float32) * signs
+        result = TEO.cast(TEO.real(ifft_x), TEO.dtype_map(TEO.TEO_FLOAT)) * signs
         return result[:param_size]
 
     def get_compression_ratio(self, var_name: str) -> float:

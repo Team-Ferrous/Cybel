@@ -417,13 +417,14 @@ def _python_reference_forward(
         Tuple of (output, gate) tensors.
     """
     # Compute gate = sigmoid(input @ gate_kernel + gate_bias)
-    gate = tf.nn.sigmoid(
+    #tf.nn.sigmoid
+    gate = TEO.sigmoid(
         TEO.einsum("bld,de->ble", input_tensor, gate_kernel) + gate_bias
     )
 
     # Apply learned decay if enabled
     if use_learned_decay:
-        learned_decay = tf.nn.sigmoid(decay_weights)
+        learned_decay = TEO.sigmoid(decay_weights)
         gate = gate * learned_decay
 
     # Token mixing

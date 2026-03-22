@@ -42,15 +42,11 @@ _lib = None
 def _load_native_ops() -> bool:
     """Load native C++ operations."""
     global _native_available, _lib
-
     try:
-        import tensorflow as tf
-
         from saguaro.native.ops.lib_loader import get_consolidated_library
-
         lib_path = get_consolidated_library()
         if lib_path is not None:
-            _lib = TEO.load_custom_op((lib_path)
+            _lib = TEO.load_custom_op(lib_path)
             if _lib is not None:
                 _native_available = True
                 logger.debug("[HDFisherCompression] Native C++ ops available")
@@ -67,15 +63,15 @@ _load_native_ops()
 
 
 def hd_fisher_compress(
-    fisher_values: tf.Tensor,
-    pos_keys: tf.Tensor,
-    proj_weights: tf.Tensor,
+    fisher_values,#: tf.Tensor,
+    pos_keys,#: tf.Tensor,
+    proj_weights,#: tf.Tensor,
     hd_dim: int = 4096,
     out_dim: int = 64,
     normalize: bool = True,
     scale: float = 1.0,
     use_native: bool = True,
-) -> tf.Tensor:
+): # -> tf.Tensor:
     """Compress layer-wise Fisher info using holographic bundling.
 
     Compresses variable-length layer Fisher information into a fixed-size
@@ -103,16 +99,16 @@ def hd_fisher_compress(
     )
 
 
-@tf.custom_gradient
+@TEO.custom_gradient
 def _hd_fisher_compress_native(
-    fisher_values: tf.Tensor,
-    pos_keys: tf.Tensor,
-    proj_weights: tf.Tensor,
+    fisher_values,#: tf.Tensor,
+    pos_keys,#: tf.Tensor,
+    proj_weights,#: tf.Tensor,
     hd_dim: int,
     out_dim: int,
     normalize: bool,
     scale: float,
-) -> tf.Tensor:
+):# -> tf.Tensor:
     """Native C++ implementation with custom gradient."""
     output = _lib.hd_fisher_compress(
         fisher_values,
@@ -141,14 +137,13 @@ def _hd_fisher_compress_native(
 
 
 def _hd_fisher_compress_tf(
-    fisher_values: tf.Tensor,
-    pos_keys: tf.Tensor,
-    proj_weights: tf.Tensor,
-    hd_dim: int,
-    out_dim: int,
-    normalize: bool,
-    scale: float,
-) -> tf.Tensor:
+    fisher_values,#: tf.Tensor,
+    pos_keys,     #: tf.Tensor,
+    proj_weights, #,: tf.Tensor,
+    hd_dim,       #: int,
+    normalize,    #: bool,
+    scale,        #: float,
+): # -> tf.Tensor:
     """Pure TensorFlow fallback implementation.
 
     Uses FFT-based circular convolution for holographic binding.
@@ -156,55 +151,55 @@ def _hd_fisher_compress_tf(
     # Handle batched input
     is_batched = len(fisher_values.shape) == 2
     if not is_batched:
-        fisher_values = tf.expand_dims(fisher_values, 0)
+        fisher_values = TEO.expand_dims(fisher_values, 0)
 
-    batch_size = tf.shape(fisher_values)[0]
-    num_layers = tf.shape(fisher_values)[1]
+    batch_size = TEO.shape(fisher_values)[0]
+    num_layers = TEO.shape(fisher_values)[1]
 
     # Scale Fisher values
     fisher_scaled = fisher_values * scale
 
     # Initialize bundle accumulator
-    bundle = tf.zeros([batch_size, hd_dim], dtype=tf.float32)
+    bundle = TEO.zeros([batch_size, hd_dim], dtype=TEO.dtype_map(TEO.TEO_FLOAT))
 
     # Holographic binding for each layer
-    for layer_idx in tf.range(num_layers):
+    for layer_idx in TEO.range(num_layers):
         # Get Fisher value for this layer: [batch]
         fisher_val = fisher_scaled[:, layer_idx]
 
         # Scale the position key by Fisher value: [batch, hd_dim]
         key = pos_keys[layer_idx]  # [hd_dim]
-        scaled_vec = tf.ones([batch_size, hd_dim]) * tf.expand_dims(fisher_val, -1)
+        scaled_vec = TEO.ones([batch_size, hd_dim]) * TEO.expand_dims(fisher_val, -1)
 
         # Holographic bind via FFT circular convolution
         # bind(a, b) = IFFT(FFT(a) * FFT(b))
         # Phase 1.5: Use complex128 for quantum precision per GRADIENT_CONNECTIVITY_ROADMAP
-        scaled_complex = tf.cast(scaled_vec, tf.complex128)
-        key_complex = tf.cast(key, tf.complex128)
+        scaled_complex = TEO.cast(scaled_vec,  TEO.dtype_map(TEO.TEO_COMPLEX))
+        key_complex    = TEO.cast(key,         TEO.dtype_map(TEO.TEO_COMPLEX))
 
-        scaled_freq = tf.signal.fft(scaled_complex)
-        key_freq = tf.signal.fft(key_complex)
+        scaled_freq    = TEO.signal.fft(scaled_complex)
+        key_freq       = TEO.signal.fft(key_complex)
 
         # Element-wise multiplication in frequency domain
-        bound_freq = scaled_freq * tf.expand_dims(key_freq, 0)
+        bound_freq = scaled_freq * TEO.expand_dims(key_freq, 0)
 
         # Inverse FFT, cast back to float32 for downstream compatibility
-        bound = tf.cast(tf.math.real(tf.signal.ifft(bound_freq)), tf.float32)
+        bound = TEO.cast(TEO.real(TEO.ifft(bound_freq)), TEO.dtype_map(TEO.TEO_FLOAT))
 
         # Accumulate into bundle
         bundle = bundle + bound
 
     # Normalize bundle to unit sphere
     if normalize:
-        norm = tf.sqrt(tf.reduce_sum(bundle**2, axis=-1, keepdims=True) + 1e-8)
+        norm = TEO.sqrt(TEO.reduce_sum(bundle**2, axis=-1, keepdims=True) + 1e-8)
         bundle = bundle / norm
 
     # Project to output dimension
-    output = tf.matmul(bundle, proj_weights)
+    output = TEO.matmul(bundle, proj_weights)
 
     # Remove batch dimension if input was unbatched
     if not is_batched:
-        output = tf.squeeze(output, 0)
+        output = TEO.squeeze(output, 0)
 
     return output
 
@@ -213,7 +208,7 @@ def create_position_keys(
     num_layers: int,
     hd_dim: int = 4096,
     seed: int | None = None,
-) -> tf.Variable:
+):# -> tf.Variable:
     """Create learnable position keys for holographic binding.
 
     Args:
@@ -225,21 +220,21 @@ def create_position_keys(
         TensorFlow Variable containing position keys [num_layers, hd_dim].
     """
     if seed is not None:
-        tf.random.set_seed(seed)
+        TEO.set_seed(seed)
 
     # Initialize with random bipolar vectors
-    keys = tf.random.uniform([num_layers, hd_dim], -1.0, 1.0)
+    keys = TEO.uniform_random([num_layers, hd_dim], -1.0, 1.0)
 
     # Normalize each key to unit norm
-    keys = keys / tf.sqrt(tf.reduce_sum(keys**2, axis=-1, keepdims=True) + 1e-8)
+    keys = keys / TEO.sqrt(TEO.reduce_sum(keys**2, axis=-1, keepdims=True) + 1e-8)
 
-    return tf.Variable(keys, trainable=True, name="hd_fisher_pos_keys")
+    return TEO.variable(keys, trainable=True, name="hd_fisher_pos_keys")
 
 
 def create_projection_weights(
     hd_dim: int = 4096,
     out_dim: int = 64,
-) -> tf.Variable:
+): # -> tf.Variable:
     """Create learnable projection weights.
 
     Args:
@@ -250,10 +245,10 @@ def create_projection_weights(
         TensorFlow Variable containing projection weights [hd_dim, out_dim].
     """
     # Xavier/Glorot initialization
-    stddev = tf.sqrt(2.0 / (hd_dim + out_dim))
-    weights = tf.random.truncated_normal([hd_dim, out_dim], stddev=stddev)
+    stddev  = TEO.sqrt(2.0 / (hd_dim + out_dim))
+    weights = TEO.truncated_normal([hd_dim, out_dim], stddev=stddev)
 
-    return tf.Variable(weights, trainable=True, name="hd_fisher_proj_weights")
+    return TEO.variable(weights, trainable=True, name="hd_fisher_proj_weights")
 
 
 def is_native_available() -> bool:

@@ -27,7 +27,7 @@ Ops:
 
 import logging
 
-import tensorflow as tf
+import tensor_ops as TEO
 
 from saguaro import config
 from saguaro.native.ops.lib_loader import resolve_op_library
@@ -48,7 +48,7 @@ def _load_ops():
         lib_path = resolve_op_library(__file__, "_saguaro_core.so")
         if lib_path is None:
             raise RuntimeError("Could not find _saguaro_core.so")
-        _module = TEO.load_custom_op((lib_path)
+        _module = TEO.load_custom_op(lib_path)
         _available = True
         logger.info(f"VQEM ops loaded from {lib_path}")
     except Exception as e:
@@ -75,9 +75,9 @@ def ops_available() -> bool:
 
 
 def vqem_forward(
-    input_state: tf.Tensor,
-    mitigation_params: tf.Tensor,
-) -> tf.Tensor:
+    input_state,#: tf.Tensor,
+    mitigation_params#: tf.Tensor,
+):# -> tf.Tensor:
     """Apply VQEM error mitigation to quantum states.
 
     VQEM learns to correct systematic errors in quantum-enhanced
@@ -108,11 +108,11 @@ def vqem_forward(
 
 
 def vqem_train_step(
-    mitigation_params: tf.Tensor,
-    noisy_output: tf.Tensor,
-    ideal_output: tf.Tensor,
+    mitigation_params,#: tf.Tensor,
+    noisy_output,#: tf.Tensor,
+    ideal_output,#: tf.Tensor,
     learning_rate: float = 0.01,
-) -> tf.Tensor:
+):# -> tf.Tensor:
     """Train VQEM mitigation parameters.
 
     Updates the mitigation parameters to minimize the difference
@@ -145,7 +145,7 @@ def vqem_train_step(
     )
 
 
-def create_vqem_params(num_params: int | None = None) -> tf.Variable:
+def create_vqem_params(num_params: int | None = None):# -> tf.Variable:
     """Create initialized VQEM mitigation parameters.
 
     Args:
@@ -155,8 +155,8 @@ def create_vqem_params(num_params: int | None = None) -> tf.Variable:
         Trainable VQEM parameter variable.
     """
     num_params = num_params or config.VQEM_NUM_PARAMS
-    return tf.Variable(
-        tf.random.uniform([num_params], -0.1, 0.1),
+    return TEO.variable(
+        TEO.random_uniform([num_params], -0.1, 0.1),
         trainable=True,
         name="vqem_mitigation_params",
     )

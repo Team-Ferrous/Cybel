@@ -97,7 +97,8 @@ def holographic_bind(
     return _lib.high_noon_holographic_bind(a, b, name=name)
 
 
-@tf.RegisterGradient("SaguaroHolographicBind")
+#@tf.RegisterGradient("SaguaroHolographicBind")
+@TEO.custom_gradient
 def _holographic_bind_grad(op, grad):
     """Gradient for holographic bind is unbind."""
     a, b = op.inputs
@@ -130,7 +131,7 @@ def holographic_unbind(
 
     # Use the bind op with conjugated key for unbinding
     # unbind(c, k) = bind(c, reverse(k))
-    key_reversed = tf.reverse(key, axis=[-1])
+    key_reversed = TEO.reverse(key, axis=[-1])
     return _lib.high_noon_holographic_bind(composite, key_reversed, name=name)
 
 
@@ -144,7 +145,7 @@ def port_hamiltonian_step(
     j_matrix,
     r_matrix,
     grad_h,
-    external_input: tf.Tensor | None = None,
+    external_input: None = None, # tf.Tensor |
     dt: float = 0.01,
     name: str = "port_hamiltonian_step",
 ):
@@ -296,13 +297,13 @@ def get_gelu_chebyshev_coefficients(degree: int = 8):
                 -0.0002,  # c_7
                 0.0,  # c_8
             ],
-            dtype=tf.float32,
+            dtype=TEO.dtype_map(TEO.TEO_FLOAT) #tf.float32,
         )
     # Lower degree approximation
     coeffs = [0.5, 0.5, 0.0, -0.044]
     while len(coeffs) <= degree:
         coeffs.append(0.0)
-    return TEO.constant(coeffs[: degree + 1], dtype=tf.float32)
+    return TEO.constant(coeffs[: degree + 1], dtype=TEO.dtype_map(TEO.TEO_FLOAT))
 
 
 # =============================================================================
@@ -455,11 +456,11 @@ def quantum_holographic_memory(
     """
     # Handle both batched and unbatched memory
     if len(keys.shape) == 2:
-        keys = tf.expand_dims(keys, 0)
-        values = tf.expand_dims(values, 0)
+        keys       = TEO.expand_dims(keys, 0)
+        values     = TEO.expand_dims(values, 0)
         batch_size = TEO.shape(query)[0]
-        keys = tf.tile(keys, [batch_size, 1, 1])
-        values = tf.tile(values, [batch_size, 1, 1])
+        keys       = TEO.tile(keys, [batch_size, 1, 1])
+        values     = TEO.tile(values, [batch_size, 1, 1])
 
     if not _ensure_lib_loaded():
         raise RuntimeError(
@@ -489,7 +490,7 @@ def quantum_holographic_memory(
 # =============================================================================
 
 
-class UnifiedQuantumEnhancements(tf.keras.layers.Layer):
+class UnifiedQuantumEnhancements(TEO.Layer): #tf.keras.layers.Layer):
     """Unified quantum enhancements layer for the reasoning stack.
 
     Applies selected quantum-inspired enhancements to input:
@@ -554,10 +555,17 @@ class UnifiedQuantumEnhancements(tf.keras.layers.Layer):
                 trainable=True,
             )
             # Dissipation matrix (will be made positive semi-definite)
+            #self.r_diag = self.add_weight(
+            #    name="r_diag",
+            #    shape=(self.embedding_dim,),
+            #    initializer=tf.keras.initializers.Constant(0.01),
+            #    trainable=True,
+            #)
+            # Dissipation matrix (will be made positive semi-definite)
             self.r_diag = self.add_weight(
                 name="r_diag",
                 shape=(self.embedding_dim,),
-                initializer=tf.keras.initializers.Constant(0.01),
+                initializer=lambda shape: TEO.full(shape, 0.01),
                 trainable=True,
             )
             # Hamiltonian gradient projection
@@ -569,12 +577,12 @@ class UnifiedQuantumEnhancements(tf.keras.layers.Layer):
             )
 
         if self.use_qsvt_activations:
+            coeffs = get_gelu_chebyshev_coefficients(self.qsvt_degree)
+
             self.qsvt_coefficients = self.add_weight(
                 name="qsvt_coefficients",
                 shape=(self.qsvt_degree + 1,),
-                initializer=tf.keras.initializers.Constant(
-                    get_gelu_chebyshev_coefficients(self.qsvt_degree).numpy()
-                ),
+                initializer=lambda shape: TEO.constant(coeffs),
                 trainable=True,
             )
 
@@ -582,13 +590,14 @@ class UnifiedQuantumEnhancements(tf.keras.layers.Layer):
             self.reservoir_weights = self.add_weight(
                 name="reservoir_weights",
                 shape=(self.reservoir_dim, self.reservoir_dim + self.embedding_dim),
-                initializer=tf.keras.initializers.RandomNormal(stddev=0.1),
+                initializer=lambda shape: TEO.random_normal(shape, stddev=0.1),
                 trainable=False,  # Fixed reservoir
             )
+
             self.readout_weights = self.add_weight(
                 name="readout_weights",
                 shape=(self.embedding_dim, self.reservoir_dim),
-                initializer="glorot_uniform",
+                initializer=lambda shape: TEO.glorot_uniform(shape),
                 trainable=True,
             )
 
@@ -613,7 +622,7 @@ class UnifiedQuantumEnhancements(tf.keras.layers.Layer):
             # Make J skew-symmetric
             j_matrix = self.j_upper - TEO.transpose(self.j_upper)
             # Make R positive semi-definite (diagonal)
-            r_matrix = tf.linalg.diag(tf.nn.softplus(self.r_diag))
+            r_matrix = TEO.diag(TEO.softplus(self.r_diag))
             # Compute gradient of Hamiltonian
             grad_h = TEO.einsum("ij,blj->bli", self.h_proj, x)
             # Average over sequence for dynamics
@@ -623,13 +632,13 @@ class UnifiedQuantumEnhancements(tf.keras.layers.Layer):
                 x_mean, j_matrix, r_matrix, grad_h_mean, dt=0.01
             )
             # Residual connection
-            x = x + tf.expand_dims(x_evolved - x_mean, axis=1)
+            x = x + TEO.expand_dims(x_evolved - x_mean, axis=1)
 
         # QSVT activation
         if self.use_qsvt_activations:
             # Normalize to [-1, 1] range for Chebyshev
             # GRADIENT FIX: Add epsilon to prevent NaN/Inf gradients when norm → 0
-            x_norm = tf.nn.l2_normalize(x, axis=-1, epsilon=1e-8)
+            x_norm = TEO.l2_normalize(x, axis=-1, epsilon=1e-8)
             x_activated = qsvt_activation(
                 x_norm, self.qsvt_coefficients, degree=self.qsvt_degree
             )

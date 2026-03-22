@@ -42,10 +42,10 @@ def ops_available() -> bool:
 
 
 def nqs_decoder(
-    visible: tf.Tensor,
-    weights: tf.Tensor,
-    bias: tf.Tensor,
-) -> tf.Tensor:
+    visible,#: tf.Tensor,
+    weights,#: tf.Tensor,
+    bias#: tf.Tensor,
+):# -> tf.Tensor:
     """Phase 73: Neural Quantum State decoder.
 
     Args:
@@ -57,16 +57,16 @@ def nqs_decoder(
         Hidden layer tensor [batch, h_dim].
     """
     if not config.HAMILTONIAN_ENABLE_NQS:
-        return tf.zeros([tf.shape(visible)[0], bias.shape[0]])
+        return TEO.zeros([TEO.shape(visible)[0], bias.shape[0]])
     _load_ops()
     return _module.nqs_decoder(visible, weights, bias)
 
 
 def qcot_reason(
-    thought: tf.Tensor,
-    reasoning_weights: tf.Tensor,
+    thought,#: tf.Tensor,
+    reasoning_weights,#: tf.Tensor,
     steps: int | None = None,
-) -> tf.Tensor:
+): # -> tf.Tensor:
     """Phase 79: Quantum chain-of-thought reasoning.
 
     Args:
@@ -85,8 +85,8 @@ def qcot_reason(
 
 
 def waveform_attention(
-    input_tensor: tf.Tensor,
-) -> tf.Tensor:
+    input_tensor#: tf.Tensor,
+):# -> tf.Tensor:
     """Phase 80: Waveform-based attention pooling.
 
     Args:
@@ -96,14 +96,14 @@ def waveform_attention(
         Pooled output tensor [batch, dim].
     """
     if not config.USE_WAVEFORM_ATTENTION:
-        return tf.reduce_mean(input_tensor, axis=1)
+        return TEO.reduce_mean(input_tensor, axis=1)
     _load_ops()
     return _module.waveform_attention(input_tensor)
 
 
 def compute_coherence(
-    state: tf.Tensor,
-) -> tf.Tensor:
+    state#: tf.Tensor,
+):# -> tf.Tensor:
     """Phase 84: Compute coherence metric for training monitoring.
 
     Args:

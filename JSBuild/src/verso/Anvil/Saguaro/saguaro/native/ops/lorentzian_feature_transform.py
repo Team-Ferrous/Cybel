@@ -51,7 +51,7 @@ try:
         )
     else:
         raise AttributeError("lorentzian_feature_transform op not found in library")
-except (tf.errors.NotFoundError, OSError, AttributeError) as e:
+except (TEO.map_backend_error(OSError)) as e:
     logger.warning(f"Could not load the custom C++ LorentzianFeatureTransform op: {e}")
     lorentzian_feature_transform_op = None
 

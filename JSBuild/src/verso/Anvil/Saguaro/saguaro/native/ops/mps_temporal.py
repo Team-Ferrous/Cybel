@@ -24,11 +24,11 @@ def _mps_temporal_scan_fallback(inputs, site_weights, initial_state):
         result = TEO.einsum("bc,bcdk->bdk", left, site_t)
 
         output = TEO.reduce_mean(result, axis=2)
-        norm_sq = TEO.reduce_sum(tf.square(result), axis=[1, 2])
+        norm_sq = TEO.reduce_sum(TEO.square(result), axis=[1, 2])
         log_prob = 0.5 * TEO.log(norm_sq + 1e-12)
 
         denom = TEO.sqrt(TEO.maximum(norm_sq, 1e-12))
-        result_normed = tf.where(
+        result_normed = TEO.where(
             norm_sq[:, None, None] > 1e-12,
             result / denom[:, None, None],
             result,
@@ -39,7 +39,7 @@ def _mps_temporal_scan_fallback(inputs, site_weights, initial_state):
     init_output = TEO.zeros([batch_size, phys_dim], dtype=TEO.dtype_map(TEO.TEO_FLOAT))
     init_log_prob = TEO.zeros([batch_size], dtype=TEO.dtype_map(TEO.TEO_FLOAT))
     init_state = (initial_state, init_output, init_log_prob)
-    _, outputs, log_probs = tf.scan(step, time_major_weights, initializer=init_state)
+    _, outputs, log_probs = TEO.scan(step, time_major_weights, initializer=init_state)
     outputs = TEO.transpose(outputs, [1, 0, 2])
     log_probs = TEO.transpose(log_probs, [1, 0])
     return outputs, log_probs
@@ -72,7 +72,7 @@ def _mps_temporal_scan_with_gradient(
                 None,
             ]
 
-        with tf.GradientTape() as tape:
+        with TEO.GradientTape() as tape:
             tape.watch([site_weights, initial_state])
             fallback_outputs, fallback_log_probs = _mps_temporal_scan_fallback(
                 inputs, site_weights, initial_state

@@ -59,7 +59,7 @@ def _load_hd_streaming_ops() -> None:
     consolidated_lib_path = resolve_op_library(__file__, "_saguaro_core.so")
     if os.path.exists(consolidated_lib_path):
         try:
-            _hd_streaming_module = TEO.load_custom_op((consolidated_lib_path)
+            _hd_streaming_module = TEO.load_custom_op(consolidated_lib_path)
             hd_streaming_project_op = getattr(
                 _hd_streaming_module,
                 "hd_streaming_project",
@@ -134,12 +134,12 @@ def hd_streaming_available() -> bool:
 
 
 def hd_streaming_project(
-    hd_bundles: tf.Tensor,
-    projection_weights: tf.Tensor,
-    projection_bias: tf.Tensor,
+    hd_bundles,
+    projection_weights,
+    projection_bias,
     hd_dim: int,
     hidden_dim: int,
-) -> tf.Tensor:
+):
     """Project HD bundles to model hidden dimension.
 
     Pure C++ operation - no Python fallback.
@@ -170,9 +170,9 @@ def hd_streaming_project(
 
 
 def hd_streaming_project_grad(
-    grad_output: tf.Tensor,
-    hd_bundles: tf.Tensor,
-    projection_weights: tf.Tensor,
+    grad_output,
+    hd_bundles,
+    projection_weights,
     hd_dim: int,
     hidden_dim: int,
 ) -> tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
@@ -205,7 +205,7 @@ def hd_streaming_project_grad(
     )
 
 
-class HDStreamingAdapter(tf.keras.layers.Layer):
+class HDStreamingAdapter(TEO.Layer): #tf.keras.layers.Layer):
     """Keras layer adapting HD bundles to sequence format for ReasoningModule.
 
     Transforms: (batch, hd_dim) -> (batch, 1, hidden_dim)
@@ -274,7 +274,7 @@ class HDStreamingAdapter(tf.keras.layers.Layer):
 
         super().build(input_shape)
 
-    def call(self, hd_bundles: tf.Tensor, training: bool = False) -> tf.Tensor:
+    def call(self, hd_bundles, training: bool = False):
         """Project HD bundles to sequence format.
 
         Args:

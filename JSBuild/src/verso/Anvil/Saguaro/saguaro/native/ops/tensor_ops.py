@@ -1,8 +1,8 @@
 # tensor/ops.py
 
 TEO_FLOAT   = "float32"
-TEO_FLOAT64   = "float64"
-
+TEO_FLOAT64 = "float64"
+TEO_BOOL    = "bool"
 TEO_COMPLEX = "complex128"
 TEO_INT     = "int32"
 TEO_INT64   = "int64"
@@ -15,6 +15,200 @@ def Tensor():
     if b == "tensorflow":
         import tensorflow as tf
         return tf.Tensor
+    
+def scatter_nd(indices, updates, shape):
+    b = backend()
+    
+    if b == "tensorflow":
+        import tensorflow as tf
+        return tf.scatter_nd(indices, updates, shape)
+    
+    elif b == "torch":
+        import torch
+        out = torch.zeros(shape, dtype=updates.dtype, device=updates.device)
+        # Flatten for advanced indexing
+        idx = tuple(indices.T.tolist())
+        out[idx] = updates
+        return out
+    
+    elif b == "jax":
+        import jax.numpy as jnp
+        out = jnp.zeros(shape, dtype=updates.dtype)
+        out = out.at[tuple(indices.T)].set(updates)
+        return out
+    
+    elif b == "numpy":
+        import numpy as np
+        out = np.zeros(shape, dtype=updates.dtype)
+        out[tuple(indices.T)] = updates
+        return out
+    
+    else:
+        raise RuntimeError(f"Unsupported backend: {b}")
+    
+def stateless_uniform(shape, seed, minval=0.0, maxval=1.0, dtype=None):
+    b = backend()
+    
+    if b == "tensorflow":
+        import tensorflow as tf
+        return tf.random.stateless_uniform(
+            shape, seed=seed, minval=minval, maxval=maxval, dtype=dtype
+        )
+    elif b == "torch":
+        import torch
+        # Torch doesn't have stateless RNG by default; simulate with manual seed
+        g = torch.Generator()
+        g.manual_seed(seed[0] + seed[1]*2**32)  # combine two int32s like TF
+        return (maxval - minval) * torch.rand(shape, generator=g, dtype=dtype) + minval
+    elif b == "jax":
+        import jax.numpy as jnp
+        import jax.random as jr
+        key = jr.PRNGKey(seed[0] ^ seed[1])  # simple combination
+        return jr.uniform(key, shape, minval=minval, maxval=maxval, dtype=dtype)
+    elif b == "numpy":
+        import numpy as np
+        np.random.seed(seed[0] ^ seed[1])
+        return np.random.uniform(low=minval, high=maxval, size=shape).astype(dtype)
+    else:
+        raise RuntimeError(f"Unsupported backend: {b}")
+    
+def truncated_normal(shape, mean=0.0, stddev=1.0):
+    b = backend()
+    if b == "tensorflow":
+        import tensorflow as tf
+        return tf.random.truncated_normal(shape, mean=mean, stddev=stddev)
+    elif b == "torch":
+        import torch
+        # Torch doesn't have a direct truncated normal; approximate using normal with clamping
+        tmp = torch.normal(mean=mean, std=stddev, size=shape)
+        # Truncate at 2 stddev (common TF default)
+        return torch.clamp(tmp, mean - 2*stddev, mean + 2*stddev)
+    elif b == "jax":
+        import jax.numpy as jnp
+        import jax.random as jr
+        key = jr.PRNGKey(0)  # you can pass a key
+        tmp = jr.normal(key, shape) * stddev + mean
+        return jnp.clip(tmp, mean - 2*stddev, mean + 2*stddev)
+    elif b == "numpy":
+        import numpy as np
+        tmp = np.random.normal(loc=mean, scale=stddev, size=shape)
+        return np.clip(tmp, mean - 2*stddev, mean + 2*stddev)
+    else:
+        raise RuntimeError(f"Unsupported backend: {b}")
+
+def squeeze(x, axis):
+    b = backend()
+    if b == "tensorflow":
+        import tensorflow as tf
+        return tf.squeeze(x, axis=axis)
+    elif b == "torch":
+        import torch
+        return x.squeeze(dim=axis)
+    elif b == "jax":
+        import jax.numpy as jnp
+        return jnp.squeeze(x, axis=axis)
+    elif b == "numpy":
+        import numpy as np
+        return np.squeeze(x, axis=axis)
+    else:
+        raise RuntimeError(f"Unsupported backend: {b}")
+
+
+def set_seed(seed: int):
+    b = backend()
+    if b == "tensorflow":
+        import tensorflow as tf
+        tf.random.set_seed(seed)
+    elif b == "torch":
+        import torch
+        torch.manual_seed(seed)
+    elif b == "jax":
+        import jax
+        jax.random.PRNGKey(seed)  # JAX uses keys for randomness
+    elif b == "numpy":
+        import numpy as np
+        np.random.seed(seed)
+    else:
+        raise RuntimeError(f"Unsupported backend: {b}")
+
+
+def uniform_random(shape, minval=-1.0, maxval=1.0):
+    b = backend()
+    if b == "tensorflow":
+        import tensorflow as tf
+        return tf.random.uniform(shape, minval=minval, maxval=maxval)
+    elif b == "torch":
+        import torch
+        return (maxval - minval) * torch.rand(*shape) + minval
+    elif b == "jax":
+        import jax.numpy as jnp
+        import jax.random as jr
+        key = jr.PRNGKey(0)  # you can pass a key if needed
+        return jr.uniform(key, shape, minval=minval, maxval=maxval)
+    elif b == "numpy":
+        import numpy as np
+        return np.random.uniform(minval, maxval, size=shape)
+    else:
+        raise RuntimeError(f"Unsupported backend: {b}")
+    
+def ifft(x):
+    """Compute inverse FFT in a backend-agnostic way."""
+    b = backend()
+    if b == "tensorflow":
+        import tensorflow as tf
+        x_complex = tf.cast(x, tf.complex128)
+        return tf.signal.ifft(x_complex)
+    elif b == "torch":
+        import torch
+        x_complex = x.to(torch.complex128)
+        return torch.fft.ifft(x_complex)
+    elif b == "jax":
+        import jax.numpy as jnp
+        x_complex = x.astype(jnp.complex128)
+        return jnp.fft.ifft(x_complex)
+    elif b == "numpy":
+        import numpy as np
+        x_complex = x.astype(np.complex128)
+        return np.fft.ifft(x_complex)
+    else:
+        raise RuntimeError(f"Unsupported backend: {b}")
+
+
+def real(x):
+    """Return real part in a backend-agnostic way."""
+    b = backend()
+    if b == "tensorflow":
+        import tensorflow as tf
+        return tf.math.real(x)
+    elif b == "torch":
+        import torch
+        return x.real
+    elif b == "jax":
+        import jax.numpy as jnp
+        return jnp.real(x)
+    elif b == "numpy":
+        import numpy as np
+        return np.real(x)
+    else:
+        raise RuntimeError(f"Unsupported backend: {b}")
+    
+class Layer:
+    def __init__(self, name="layer", **kwargs):
+        self.name = name
+        self._weights = {}
+    
+    def add_weight(self, name, shape, initializer, trainable=True):
+        """Backend-agnostic weight creation."""
+        value = initializer(shape)
+        self._weights[name] = {"value": value, "trainable": trainable}
+        return value
+
+    def get_config(self):
+        return {"name": self.name}
+
+    def call(self, *args, **kwargs):
+        """Override in subclass for forward pass."""
+        raise NotImplementedError
     
 class TEOError(Exception):
     """Base error for TEO backend issues."""
@@ -347,6 +541,48 @@ def name_scope(name: str):
     else:
         raise RuntimeError(f"Unsupported backend: {b}")
     
+def tile(x, multiples):
+    b = backend()
+    if b == "tensorflow":
+        import tensorflow as tf
+        return tf.tile(x, multiples)
+    elif b == "torch":
+        import torch
+        return x.repeat(*multiples)
+    elif b == "jax":
+        import jax.numpy as jnp
+        return jnp.tile(x, multiples)
+    elif b == "numpy":
+        import numpy as np
+        return np.tile(x, multiples)
+    else:
+        raise RuntimeError(f"Unsupported backend: {b}")
+    
+def reverse(x, axis):
+    b = backend()
+    if b == "tensorflow":
+        import tensorflow as tf
+        return tf.reverse(x, axis=axis)
+    elif b == "torch":
+        import torch
+        if isinstance(axis, int):
+            axis = [axis]
+        for a in axis:
+            x = torch.flip(x, dims=[a])
+        return x
+    elif b == "jax":
+        import jax.numpy as jnp
+        if isinstance(axis, int):
+            axis = (axis,)
+        return jnp.flip(x, axis=axis)
+    elif b == "numpy":
+        import numpy as np
+        if isinstance(axis, int):
+            axis = (axis,)
+        return np.flip(x, axis=axis)
+    else:
+        raise RuntimeError(f"Unsupported backend: {b}")
+    
 def repeat(x, repeats: int, axis: int):
     b = backend()
     if b == "tensorflow":
@@ -381,22 +617,39 @@ def elu(x):
     else:
         raise RuntimeError(f"Unsupported backend: {b}")
 
-def repeat(x, repeats: int, axis: int):
+def sigmoid(x):
     b = backend()
     if b == "tensorflow":
         import tensorflow as tf
-        return tf.repeat(x, repeats=repeats, axis=axis)
+        return tf.nn.sigmoid(x)
     elif b == "torch":
         import torch
-        return x.repeat_interleave(repeats, dim=axis)
+        return torch.nn.functional.elu(x)
     elif b == "jax":
         import jax.numpy as jnp
-        return jnp.repeat(x, repeats, axis=axis)
+        return jnp.where(x > 0, x, jnp.exp(x) - 1)
     elif b == "numpy":
         import numpy as np
-        return np.repeat(x, repeats, axis=axis)
+        return np.where(x > 0, x, np.exp(x) - 1)
     else:
         raise RuntimeError(f"Unsupported backend: {b}")
+    
+def matmul(a, b):
+    bck = backend()
+    if bck == "tensorflow":
+        import tensorflow as tf
+        return tf.matmul(a, b)
+    elif bck == "torch":
+        import torch
+        return torch.matmul(a, b)
+    elif bck == "jax":
+        import jax.numpy as jnp
+        return jnp.matmul(a, b)
+    elif bck == "numpy":
+        import numpy as np
+        return np.matmul(a, b)
+    else:
+        raise RuntimeError(f"Unsupported backend: {bck}")
 
 def einsum(subscripts: str, *operands):
     b = backend()
@@ -435,6 +688,23 @@ def softmax(x, axis: int = -1):
     else:
         raise RuntimeError(f"Unsupported backend: {b}")
     
+def expand_dims(x, axis):
+    b = backend()
+    if b == "tensorflow":
+        import tensorflow as tf
+        return tf.expand_dims(x, axis)
+    elif b == "torch":
+        import torch
+        return torch.unsqueeze(x, dim=axis)
+    elif b == "jax":
+        import jax.numpy as jnp
+        return jnp.expand_dims(x, axis)
+    elif b == "numpy":
+        import numpy as np
+        return np.expand_dims(x, axis)
+    else:
+        raise RuntimeError(f"Unsupported backend: {b}")
+    
 def set_backend(name):
     global _BACKEND
     _BACKEND = name
@@ -464,7 +734,7 @@ def load_custom_op(path: str):
     b = backend()
     if b == "tensorflow":
         import tensorflow as tf
-        return TEO.load_custom_op((path)
+        return load_custom_op(path)
     elif b == "torch":
         import torch
         return torch.ops.load_library(path)
@@ -516,6 +786,99 @@ def zeros(shape, dtype=TEO_FLOAT):
     else:
         raise RuntimeError(f"Unsupported backend: {b}")
 
+def softplus(x):
+    b = backend()
+    if b == "tensorflow":
+        import tensorflow as tf
+        return tf.nn.softplus(x)
+    elif b == "torch":
+        import torch
+        return torch.nn.functional.softplus(x)
+    elif b == "jax":
+        import jax.numpy as jnp
+        return jnp.log1p(jnp.exp(x))
+    elif b == "numpy":
+        import numpy as np
+        return np.log1p(np.exp(x))
+    else:
+        raise RuntimeError(f"Unsupported backend: {b}")
+
+def l2_normalize(x, axis=-1, epsilon=1e-8):
+    b = backend()
+    if b == "tensorflow":
+        import tensorflow as tf
+        return tf.nn.l2_normalize(x, axis=axis, epsilon=epsilon)
+    elif b == "torch":
+        import torch
+        norm = torch.linalg.norm(x, dim=axis, keepdim=True)
+        return x / (norm + epsilon)
+    elif b == "jax":
+        import jax.numpy as jnp
+        norm = jnp.linalg.norm(x, axis=axis, keepdims=True)
+        return x / (norm + epsilon)
+    elif b == "numpy":
+        import numpy as np
+        norm = np.linalg.norm(x, axis=axis, keepdims=True)
+        return x / (norm + epsilon)
+    else:
+        raise RuntimeError(f"Unsupported backend: {b}")
+    
+def diag(x):
+    b = backend()
+    if b == "tensorflow":
+        import tensorflow as tf
+        return tf.linalg.diag(x)
+    elif b == "torch":
+        import torch
+        return torch.diag(x)
+    elif b == "jax":
+        import jax.numpy as jnp
+        return jnp.diag(x)
+    elif b == "numpy":
+        import numpy as np
+        return np.diag(x)
+    else:
+        raise RuntimeError(f"Unsupported backend: {b}")
+    
+def softplus(x):
+    b = backend()
+    if b == "tensorflow":
+        import tensorflow as tf
+        return tf.nn.softplus(x)
+    elif b == "torch":
+        import torch
+        return torch.nn.functional.softplus(x)
+    elif b == "jax":
+        import jax.numpy as jnp
+        return jnp.log1p(jnp.exp(x))
+    elif b == "numpy":
+        import numpy as np
+        return np.log1p(np.exp(x))
+    else:
+        raise RuntimeError(f"Unsupported backend: {b}")
+    
+def full(shape, value):
+    b = backend()
+
+    if b == "tensorflow":
+        import tensorflow as tf
+        return tf.fill(shape, value)
+
+    elif b == "torch":
+        import torch
+        return torch.full(shape, value)
+
+    elif b == "jax":
+        import jax.numpy as jnp
+        return jnp.full(shape, value)
+
+    elif b == "numpy":
+        import numpy as np
+        return np.full(shape, value)
+
+    else:
+        raise RuntimeError(f"Unsupported backend: {b}")
+    
 def concat(tensors, axis=0):
     b = backend()
     if b == "tensorflow":

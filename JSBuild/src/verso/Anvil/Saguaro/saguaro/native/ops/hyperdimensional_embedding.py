@@ -71,7 +71,7 @@ def hyperdimensional_embedding_available() -> bool:
 
 
 @tf.function
-def circular_convolution_tf(a: tf.Tensor, b: tf.Tensor) -> tf.Tensor:
+def circular_convolution_tf(a, b): # : tf.Tensor : tf.Tensor) -> tf.Tensor
     """Circular convolution via FFT (TensorFlow implementation).
 
     Computes a ⊛ b = IFFT(FFT(a) * FFT(b))
@@ -84,31 +84,31 @@ def circular_convolution_tf(a: tf.Tensor, b: tf.Tensor) -> tf.Tensor:
         Circular convolution result with same shape.
     """
     # Phase 4.1: Cast to complex128 for quantum precision
-    a_complex = tf.cast(a, tf.complex128)
-    b_complex = tf.cast(b, tf.complex128)
+    a_complex = TEO.cast(a, TEO.dtype_map(TEO.TEO_COMPLEX))
+    b_complex = TEO.cast(b, TEO.dtype_map(TEO.TEO_COMPLEX))
 
     # FFT along last dimension
-    a_fft = tf.signal.fft(a_complex)
-    b_fft = tf.signal.fft(b_complex)
+    a_fft = TEO.fft(a_complex)
+    b_fft = TEO.fft(b_complex)
 
     # Element-wise multiplication in frequency domain
     product_fft = a_fft * b_fft
 
     # Inverse FFT
-    result = tf.signal.ifft(product_fft)
+    result = TEO.ifft(product_fft)
 
     # Cast back to float32 for downstream compatibility
-    return tf.cast(tf.math.real(result), tf.float32)
+    return TEO.cast(TEO.real(result), TEO.dtype_map(TEO.TEO_FLOAT))
 
 
 @tf.function
 def holographic_bundle_tf(
-    token_ids: tf.Tensor,
-    base_vectors: tf.Tensor,
-    position_keys: tf.Tensor,
+    token_ids,#: tf.Tensor,
+    base_vectors,#: tf.Tensor,
+    position_keys,#: tf.Tensor,
     hd_dim: int,
     model_dim: int,
-) -> tf.Tensor:
+):# -> tf.Tensor:
     """Holographic bundling with FFT-based binding (TensorFlow implementation).
 
     For each sequence position:
@@ -127,50 +127,50 @@ def holographic_bundle_tf(
     Returns:
         Embeddings [batch, model_dim]
     """
-    batch_size = tf.shape(token_ids)[0]
-    seq_len = tf.shape(token_ids)[1]
+    batch_size = TEO.shape(token_ids)[0]
+    seq_len = TEO.shape(token_ids)[1]
 
     # Gather token embeddings: [batch, seq, hd_dim]
-    token_embeds = tf.gather(base_vectors, token_ids)
+    token_embeds = TEO.gather(base_vectors, token_ids)
 
     # Gather position keys: [seq, hd_dim] -> broadcast to [1, seq, hd_dim]
     pos_keys = position_keys[:seq_len]  # [seq, hd_dim]
-    pos_keys = tf.expand_dims(pos_keys, 0)  # [1, seq, hd_dim]
+    pos_keys = TEO.expand_dims(pos_keys, 0)  # [1, seq, hd_dim]
 
     # Bind tokens with positions via circular convolution
     # Process each sequence position
     def bind_position(idx):
         tok = token_embeds[:, idx, :]  # [batch, hd_dim]
         pos = pos_keys[0, idx, :]  # [hd_dim]
-        pos = tf.expand_dims(pos, 0)  # [1, hd_dim]
-        pos = tf.tile(pos, [batch_size, 1])  # [batch, hd_dim]
+        pos = TEO.expand_dims(pos, 0)  # [1, hd_dim]
+        pos = TEO.tile(pos, [batch_size, 1])  # [batch, hd_dim]
         return circular_convolution_tf(tok, pos)  # [batch, hd_dim]
 
     # Stack bound embeddings
-    bound_embeds = tf.map_fn(
+    bound_embeds = TEO.map_fn(
         bind_position,
-        tf.range(seq_len),
-        fn_output_signature=tf.TensorSpec([None, hd_dim], tf.float32),
+        TEO.range(seq_len),
+        fn_output_signature=tf.TensorSpec([None, hd_dim], TEO.dtype_map(TEO.TEO_FLOAT)),
     )  # [seq, batch, hd_dim]
 
     # Transpose to [batch, seq, hd_dim]
-    bound_embeds = tf.transpose(bound_embeds, [1, 0, 2])
+    bound_embeds = TEO.transpose(bound_embeds, [1, 0, 2])
 
     # Sum bundle: [batch, hd_dim]
-    bundle = tf.reduce_sum(bound_embeds, axis=1)
+    bundle = TEO.reduce_sum(bound_embeds, axis=1)
 
     # Project to model dimension via strided averaging
     stride = hd_dim // model_dim
-    projected = tf.reshape(bundle, [batch_size, model_dim, stride])
-    return tf.reduce_mean(projected, axis=-1)
+    projected = TEO.reshape(bundle, [batch_size, model_dim, stride])
+    return TEO.reduce_mean(projected, axis=-1)
 
 
 
 @tf.function
 def ctqw_spread_tf(
-    embeddings: tf.Tensor,
+    embeddings,#: tf.Tensor,
     steps: int = 3,
-) -> tf.Tensor:
+):# -> tf.Tensor:
     """CTQW semantic spreading (TensorFlow implementation).
 
     Applies diffusion-style spreading for semantic smoothing.
@@ -187,8 +187,8 @@ def ctqw_spread_tf(
 
     for _ in range(steps):
         # Circular shift neighbors
-        prev = tf.roll(result, shift=1, axis=-1)
-        next_ = tf.roll(result, shift=-1, axis=-1)
+        prev = TEO.roll(result, shift=1, axis=-1)
+        next_ = TEO.roll(result, shift=-1, axis=-1)
 
         # Diffusion step
         result = 0.5 * result + 0.25 * (prev + next_)
@@ -202,12 +202,12 @@ def ctqw_spread_tf(
 
 
 def holographic_bundle(
-    token_ids: tf.Tensor,
-    base_vectors: tf.Tensor,
-    position_keys: tf.Tensor,
+    token_ids,#: tf.Tensor,
+    base_vectors,#: tf.Tensor,
+    position_keys,#: tf.Tensor,
     hd_dim: int,
     model_dim: int,
-) -> tf.Tensor:
+): # -> tf.Tensor:
     """Compute holographic bundle embedding.
 
     Uses C++ implementation if available, otherwise TensorFlow.
@@ -240,9 +240,9 @@ def holographic_bundle(
 
 
 def ctqw_spread(
-    embeddings: tf.Tensor,
+    embeddings,#: tf.Tensor,
     steps: int = 3,
-) -> tf.Tensor:
+):# -> tf.Tensor:
     """Apply CTQW semantic spreading.
 
     Uses C++ implementation if available, otherwise TensorFlow.
@@ -257,7 +257,7 @@ def ctqw_spread(
     """
     if _HDE_NATIVE_AVAILABLE and _hde_ctqw_spread is not None:
         # Wrap C++ op with custom gradient using TF fallback for backprop
-        @tf.custom_gradient
+        @TEO.custom_gradient
         def ctqw_with_grad(x):
             # Forward: use C++ op
             output = _hde_ctqw_spread(x, steps=steps)
@@ -265,7 +265,7 @@ def ctqw_spread(
             def grad(dy):
                 # Backward: use TF implementation which has defined gradients
                 # The TF fallback is differentiable
-                with tf.GradientTape() as tape:
+                with TEO.GradientTape() as tape:
                     tape.watch(x)
                     tf_output = ctqw_spread_tf(x, steps)
                 return tape.gradient(tf_output, x, output_gradients=dy)

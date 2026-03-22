@@ -1000,17 +1000,17 @@ class TEO_LorentzianGATLayer:
         self._backend = backend_name or backend()  # default global backend
 
         # Initialize weights using TEO
-        self.transform_weights = TEO.random_uniform(
+        self.transform_weights = random_uniform(
             (feature_dim, feature_dim), dtype=dtype_map(TEO_FLOAT)
         )
         self.transform_bias = zeros((feature_dim,), dtype=dtype_map(TEO_FLOAT))
 
-        self.activation_weights = TEO.random_uniform(
+        self.activation_weights = random_uniform(
             (feature_dim, feature_dim), dtype=dtype_map(TEO_FLOAT)
         )
         self.activation_bias = zeros((feature_dim,), dtype=dtype_map(TEO_FLOAT))
 
-        self.output_weights = TEO.random_uniform(
+        self.output_weights = random_uniform(
             (feature_dim, feature_dim), dtype=dtype_map(TEO_FLOAT)
         )
         self.output_bias = zeros((feature_dim,), dtype=dtype_map(TEO_FLOAT))
