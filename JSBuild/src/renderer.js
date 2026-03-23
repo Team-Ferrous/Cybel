@@ -1,6 +1,14 @@
 // renderer.js
 import { AutoTokenizer, AutoModelForCausalLM } from "https://cdn.jsdelivr.net/npm/@xenova/transformers/dist/transformers.min.js"; //"@xenova/transformers";
-//import { InstanceEngine } from './instance_engine'
+
+async function updateQRCode() {
+    try {
+        const qrBase64 = await window.api.makeQRCode(); // waits for IPC
+        document.getElementById("qrImage").src = qrBase64; // set <img>
+    } catch (err) {
+        console.error("Failed to generate QR:", err);
+    }
+}
 
 document.querySelectorAll("input[type='range']").forEach(slider => {
 slider.addEventListener("input", (e) => {
@@ -695,9 +703,28 @@ async function createAgent(config = {}) {
         if (!result.success) alert("Agent creation failed: " + result.error);
         else console.log("Agent created:", agentId);
     });*/
-    
+
     window.api.spawn(config);
 }
+
+/*function showQRCode(data) {
+  const modal = document.getElementById("module-qr");
+  const qrContainer = document.getElementById("qrcode");
+
+  qrContainer.innerHTML = "";
+
+  new QRCode(qrContainer, {
+    text: data,
+    width: 256,
+    height: 256
+  });
+
+  modal.style.display = "block";
+}*/
+
+document.getElementById("qrClose").onclick = () => {
+  document.getElementById("module-qr").style.display = "none";
+};
 
 function deleteAgent(agentId) {
   const agentRoot = document.querySelector(`[data-agent-id="${agentId}"]`);
@@ -2021,6 +2048,7 @@ window.addWorkflowStep    = addWorkflowStep;
 window.executeWorkflow    = executeWorkflow;
 window.closeModal         = closeModal;
 window.switchTab          = switchTab;
+window.updateQRCode       = updateQRCode;
 window.deleteBot          = deleteBot;
 window.handleChatSubmit   = handleChatSubmit;
 window.updateWorkflowDropdowns = updateWorkflowDropdowns;

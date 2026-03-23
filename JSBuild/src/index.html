@@ -9,6 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
     <link   href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link   rel="stylesheet" href="./main.css">
     <script src="./renderer.js"                type="module"></script>
@@ -110,10 +111,10 @@
                 <i data-lucide="hat-glasses" class="w-5 h-5"></i>
                 <span class="font-semibold">Agent Management</span>
             </button>
-            <!--<button onclick="switchTab('creative')" id="nav-creative" class="w-full text-left px-6 py-3 flex items-center gap-3 transition-all inactive-nav">
+            <button onclick="switchTab('creative')" id="nav-creative" class="w-full text-left px-6 py-3 flex items-center gap-3 transition-all inactive-nav">
                 <i data-lucide="sparkles" class="w-5 h-5"></i>
                 <span class="font-semibold">Creative Mode</span>
-            </button>-->
+            </button>
             <button onclick="switchTab('appearance')" id="nav-appearance" class="w-full text-left px-6 py-3 flex items-center gap-3 transition-all inactive-nav">
                 <i data-lucide="palette" class="w-5 h-5"></i>
                 <span class="font-semibold">Appearance</span>
@@ -126,6 +127,10 @@
                 <i data-lucide="cpu" class="w-5 h-5"></i>
                 <span class="font-semibold">Engine Config</span>
             </button>
+            <button onclick="switchTab('qr')" id="nav-qr" class="w-full text-left px-6 py-3 flex items-center gap-3 transition-all inactive-nav">
+                <i data-lucide="qr-code" class="w-5 h-5"></i>
+                <span class="font-semibold">Link Mobile Device</span>
+            </button>
             <hr class="border-accent/50">
             <!--TBA, Chat History-->
         </div>
@@ -137,7 +142,6 @@
 
     <!-- Main Content Area -->
     <main class="flex-1 relative z-10 overflow-hidden flex flex-col bg-accent/50">
-        
         <!-- MODULE 1: CHAT INTERFACE (Shortened, with Globe) -->
         <section id="module-chat" class="module-section active flex-col h-full w-full relative overflow-hidden">
             <!-- 3D Globe Background -->
@@ -942,6 +946,17 @@
             Execute Worflow
         </button>
     </div>
+    </section>
+    <section id="module-qr" class="module-section glass-panel rounded-xl p-8 max-w-md w-full text-center border-amber-500/50 shadow-[0_0_50px_rgba(245,158,11,0.2)]">
+        <span id="qrClose">&times;</span>
+        <h2 class="text-xl font-bold mb-4">Link Mobile Device</h2>
+        <img id="qrImage" width="256" height="256" class="mx-auto mb-4"/>
+        <p class="mb-4">
+            Scan this code with your mobile device to connect it to the engine.
+        </p>
+        <button onclick="updateQRCode()" class="mt-4 px-4 py-2 bg-blue-600 rounded">
+            Generate QR
+        </button>
     </section>
     </main>
     </body>

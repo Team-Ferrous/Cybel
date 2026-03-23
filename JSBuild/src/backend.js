@@ -47,6 +47,14 @@ let CONFIG = {
     agent_instances:   engine.instances,
 };
 
+async function makeQRCode(){
+    // Generate QR code as a Base64 data URL
+    const require = createRequire(import.meta.url);
+    const QRCode = require("qrcode");
+    const url = "https://google.com"; // or userId
+    return await QRCode.toDataURL(url); // returns "data:image/png;base64,..."
+}
+
 async function requestOAuthCode() {
     return new Promise(resolve => {
         const authWin = new BrowserWindow({
@@ -1010,5 +1018,6 @@ export  {
     getOAIEmbedding,
     embeddings,
     pushToConversationStack,
-    getConversationHistory
+    getConversationHistory,
+    makeQRCode
 };

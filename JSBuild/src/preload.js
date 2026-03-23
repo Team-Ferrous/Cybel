@@ -11,6 +11,7 @@ contextBridge.exposeInMainWorld("api", {
     deleteDocument:       (doc)                      => ipcRenderer.invoke("engine:delete_document",    doc),
     replicateDocument:    (doc)                      => ipcRenderer.invoke("engine:replicate_document", doc),
     mergeDocument:        (doc)                      => ipcRenderer.invoke("engine:merge_document",     doc),
+    makeQRCode:           ()                         => ipcRenderer.invoke("engine:qrcode"),
     exportDocument:       (doc)                      => ipcRenderer.invoke("engine:export_document",    doc),
     updateCharacter:      (character)                => ipcRenderer.invoke("engine:updateCharacter",    character),
     spawnInstance: (config)                          => ipcRenderer.invoke("engine:spawn_instance",     config),
@@ -35,3 +36,13 @@ contextBridge.exposeInMainWorld("api", {
     hfLogin: ()                                      => ipcRenderer.invoke('hf-login'),
     msLogin: ()                                      => ipcRenderer.invoke('ms-login'),
   });
+
+  contextBridge.exposeInMainWorld("analytics", {
+  trackEvent: (name, payload) => {
+    fetch("https://your-server.com/analytics", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ event: name, ...payload })
+    });
+  }
+});
