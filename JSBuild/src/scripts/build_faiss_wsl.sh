@@ -51,8 +51,14 @@ sudo -E ldconfig
 echo "✅ FAISS installed to $INSTALL_DIR"
 
 # --- 3️⃣ Patch Node binding.gyp ---
-NODE_FAISS_DIR=~/faiss-node-native  # <-- adjust if needed
-BINDING_GYP="$NODE_FAISS_DIR/binding.gyp"
+NODE_FAISS_DIR=~/faiss-node-native
+
+if [ ! -d "$NODE_FAISS_DIR" ]; then
+    echo "📦 Cloning Node FAISS bindings..."
+    git clone https://github.com/ewfian/faiss-node.git "$NODE_FAISS_DIR"
+fi
+
+BINDING_GYP="$NODE_FAISS_DIR/native/binding.gyp"
 
 if [ ! -f "$BINDING_GYP" ]; then
     echo "❌ Could not find binding.gyp at $BINDING_GYP"
@@ -79,6 +85,18 @@ rm -rf build
 npm rebuild --build-from-source
 echo "🎉 FAISS Node module is ready! Installing npm modules"
 npm install
+
+# find the built binary
+FAISS_NODE=$(find build -name "*.node" | head -n 1)
+
+echo "📦 Copying FAISS binary to resources..."
+PROJECT_ROOT=~/cybel/JSBuild/src
+NATIVE_DIR="$PROJECT_ROOT/native"
+
+mkdir -p "$NATIVE_DIR"
+
+echo "📦 Copying FAISS binary into project..."
+cp "$FAISS_NODE" "$NATIVE_DIR/faiss.node"
 
 #if $PIP_INSTALLED then
 cd ../python
