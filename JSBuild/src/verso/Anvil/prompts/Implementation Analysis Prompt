@@ -1,0 +1,210 @@
+# Implementation Prompt: Analyze Codebase & Implement AES into Anvil/Saguaro
+
+> **Purpose**: After you have the "Anvil Engineering Standard (AES)" from deep research, use this prompt with the AES attached to analyze the codebase and generate a concrete implementation roadmap.
+
+---
+
+## System Instruction
+
+You are a senior software architect performing a **gap analysis and implementation planning** exercise. You have two inputs:
+
+1. **The Anvil Engineering Standard (AES)** — a unified standards document (attached/pasted below)
+2. **The Anvil/Saguaro codebase** — described in the context section below
+
+Your task is to:
+1. Analyze the codebase against every section of the AES
+2. Identify compliance gaps, violations, and missing capabilities
+3. Produce a **prioritized implementation roadmap** with concrete, file-level changes
+4. Design how the AES should be **mechanically enforced** through Saguaro's verification engine
+
+---
+
+## Codebase Context
+
+### Project Identity
+- **Anvil** is an AI coding agent (multi-agent architecture, REPL-based)  
+- **Saguaro** is the semantic code intelligence engine (indexing, semantic search, verification, impact analysis)
+- **HighNoon** is the C++ LLM inference framework (CPU-first, SIMD-centric)
+
+### Architecture
+```
+Anvil/
+├── core/              # Agent core: loops, planning, execution, tools
+│   └── native/        # C++ native extensions (SIMD ops, TensorFlow custom ops)
+├── saguaro/           # Semantic code intelligence engine
+│   ├── indexing/       # Code indexing, embeddings, vector search
+│   ├── ops/            # Python wrappers for C++ operations
+│   ├── storage/        # Vector store, index persistence
+│   └── dni/            # Direct Native Interface (agent communication)
+├── agents/            # Agent role definitions, orchestration
+├── cli/               # Command-line interface, REPL
+├── config/            # Configuration system (settings.py)
+├── tools/             # Agent tools (file ops, code analysis, search)
+├── domains/           # Domain knowledge modules
+├── prompts/           # Prompt templates and prompt engineering
+│   ├── GEMINI.md      # Current standards foundation
+│   └── shared_prompt_foundation.md  # Shared audit prompt
+├── docs/              # Documentation and workflows
+│   └── workflows/     # Agent workflow SOPs
+├── tests/             # Test suite
+├── infrastructure/    # Build, deployment, CI/CD
+├── benchmarks/        # Performance benchmarks
+├── Saguaro/           # Saguaro C++ source (libsaguaro)
+│   ├── src/           # C++ source files
+│   └── include/       # C++ headers
+└── scripts/           # Utility scripts
+```
+
+### Key Technical Facts
+- **Languages**: Python 3.12+, C++17
+- **Compute model**: CPU-first, SIMD-first (AVX2 primary, AVX-512/NEON secondary)
+- **No GPU dependency**: All hot paths must be CPU-optimized
+- **Testing framework**: `pytest` for Python, CMake-based for C++
+- **Linting**: `ruff` for Python
+- **Code intelligence**: Saguaro provides `query`, `verify`, `skeleton`, `slice`, `impact`, `deadcode` commands
+- **Existing verification**: Saguaro has a `verify` command with engines: `native` (regex patterns), `ruff` (linter), `semantic` (drift detection)
+- **Agent governance**: Existing GEMINI.md and shared_prompt_foundation.md define current rules
+
+### Current Standards Enforcement
+The project currently enforces standards through:
+1. **`prompts/GEMINI.md`** — Agent-facing policy document (read by AI at session start)
+2. **`prompts/shared_prompt_foundation.md`** — Shared audit prompt foundation
+3. **`saguaro verify`** — Automated verification with native/ruff/semantic engines
+4. **`.saguaro.rules`** — Rule definitions for the native verification engine
+5. **`ruff.toml`** — Python linter configuration
+6. **Manual agent protocols** — Red-team, spec-interview, chronicle
+
+---
+
+## What You Must Produce
+
+### 1. Gap Analysis Report
+
+For each major AES section, produce a table:
+
+| AES Section | AES Requirement | Current State | Gap | Priority |
+|---|---|---|---|---|
+| §3.2 | All public functions MUST have type hints | Partial — some core/ files lack hints | MEDIUM | P2 |
+| ... | ... | ... | ... | ... |
+
+Priority levels:
+- **P0**: Fundamental capability missing, blocks other improvements
+- **P1**: Significant gap with real quality/safety impact
+- **P2**: Important but non-blocking improvement
+- **P3**: Polish and completeness
+
+### 2. Implementation Roadmap
+
+Organize into phases:
+
+#### Phase 0: Foundation (Standards Infrastructure)
+What needs to happen BEFORE any code changes:
+- Where does the AES document live in the repo?
+- How does it get loaded into agent context?
+- What Saguaro verification rules need to be created?
+
+#### Phase 1: Mechanical Enforcement (Saguaro Integration)
+Convert AES rules into machine-checkable verification:
+- New `saguaro verify` engine rules for each enforceable AES mandate
+- `.saguaro.rules` additions/modifications
+- `ruff.toml` configuration changes
+- New custom ruff rules or plugins if needed
+- Pre-commit hook configurations
+
+#### Phase 2: Agent Governance Updates
+Update prompts and workflows to reference AES:
+- `prompts/GEMINI.md` rewrite
+- `prompts/shared_prompt_foundation.md` updates
+- New workflow SOPs in `docs/workflows/`
+- AGENTS.md updates
+
+#### Phase 3: Codebase Remediation
+Fix existing violations, ordered by priority:
+- P0 violations first
+- File-by-file change descriptions
+- Estimated effort per change
+
+#### Phase 4: Domain-Specific Enhancements  
+Add domain-specific verification:
+- ML/DL-specific checks
+- Quantum computing checks
+- Numerical stability checks
+- SIMD compliance checks
+
+#### Phase 5: Continuous Compliance
+Ongoing enforcement mechanisms:
+- CI/CD integration
+- Chronicle-based drift monitoring
+- Automated compliance reporting
+
+### 3. Saguaro Integration Specification
+
+This is the most critical section. For each mechanically-enforceable AES rule, specify:
+
+```
+Rule ID: AES-3.2.1
+AES Text: "All public functions MUST have type hints"
+Engine: ruff
+Implementation: Enable ruff rule ANN201, ANN202, ANN204
+Config Change: ruff.toml → add to [lint.select]
+Severity: P2 / DAL-C
+Auto-fixable: Partial (ruff can add return type stubs)
+```
+
+Group these as:
+- **Ruff-enforceable** (Python linting rules)
+- **Native-enforceable** (regex/pattern rules in .saguaro.rules)
+- **Semantic-enforceable** (require Saguaro's semantic engine)
+- **Agent-enforceable** (can only be checked by agent reasoning)
+- **Human-enforceable** (require manual review)
+
+### 4. Prompt Rewrite Specification
+
+Produce the new structure for:
+
+#### prompts/GEMINI.md (Complete Rewrite)
+- Must reference AES sections by ID
+- Must include the unified severity framework
+- Must be scannable (tables, not walls of text)
+- Must preserve existing concepts that align with AES
+- Target: under 300 lines (reference AES for full detail)
+
+#### prompts/shared_prompt_foundation.md (Update)
+- Align severity matrix with AES framework
+- Update Golden Signals if AES expands them
+- Reference new phase model if AES modifies it
+
+### 5. Verification Strategy
+
+How to verify that the implementation itself is correct:
+- What does "full AES compliance" look like measurably?
+- What metrics and dashboards are needed?
+- What does the `saguaro verify` output look like at full compliance?
+- How do you prevent standards drift over time?
+
+---
+
+## Analysis Constraints
+
+1. **Be specific about files.** Don't say "update the config." Say "modify `ruff.toml` → add rules X, Y, Z to `[lint.select]`."
+
+2. **Respect the existing architecture.** Don't propose new frameworks or tools unless absolutely necessary. Work within the existing Anvil/Saguaro/HighNoon stack.
+
+3. **Prioritize mechanical enforcement.** Any rule that CAN be checked by a machine SHOULD be checked by a machine. Advisory-only rules are the weakest form of compliance.
+
+4. **Consider token budget.** The AES itself might be large. Design the prompt/governance system so agents receive a condensed version at session start, with ability to query specific sections via Saguaro.
+
+5. **Phase realistically.** Not everything can be done at once. Phase 0-1 should be achievable in days, Phase 2-3 in a week, Phase 4-5 ongoing.
+
+6. **Map to existing Saguaro capabilities.** The verification engine already has `native`, `ruff`, and `semantic` engines. New rules should fit these engines or propose specific new engine capabilities.
+
+---
+
+## Attached: The Anvil Engineering Standard (AES)
+
+> [!IMPORTANT]  
+> Paste the complete AES document (from the deep research output) below this line before submitting this prompt.
+
+---
+
+*[PASTE AES DOCUMENT HERE]*

@@ -1,0 +1,43 @@
+aes_doc_to_rule_map:
+  - source: aes_analysis/v2/deep-research-report v2.md
+    policy_role: canonical
+    directives:
+      - Architecture blocks, evidence-driven delivery, and runtime gates are authoritative.
+    rule_ids:
+      - AES-ARCH-1
+      - AES-ARCH-2
+      - AES-ARCH-4
+      - AES-TR-1
+      - AES-TR-2
+      - AES-TR-3
+      - AES-REV-1
+      - AES-AG-1
+      - AES-AG-2
+      - AES-OBS-1
+      - AES-OBS-2
+  - source: aes_analysis/v2/Anvil Engineering Standard v2.txt
+    policy_role: canonical
+    directives:
+      - Thresholds and runtime obligations default to v2 when v1 disagrees.
+    rule_ids:
+      - AES-CPLX-1
+      - AES-ERR-1
+      - AES-SUP-1
+      - AES-SUP-2
+      - AES-SUP-3
+      - AES-SUP-4
+  - source: aes_analysis/v1/AES_Primary.md
+    policy_role: supplemental
+    directives:
+      - Use only deterministic, non-conflicting supplements where v2 is silent or less specific.
+    rule_ids:
+      - AES-CPP-4
+      - AES-HPC-4
+      - AES-QC-5
+      - AES-PHYS-3
+  - source: standards/traceability/PROMPT_TO_RULE_MAP.yaml
+    policy_role: provenance_only
+    directives:
+      - Prompt-era mappings remain evidence of origin but are not canonical policy.
+    rule_ids:
+      - AES-PRM-1

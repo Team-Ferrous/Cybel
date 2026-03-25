@@ -1,0 +1,17 @@
+aal_levels:
+  AAL-0:
+    independent_reviews: 2
+    iv_and_v_required: true
+    human_approval_blocking: true
+  AAL-1:
+    independent_reviews: 1
+    iv_and_v_required: true
+    human_approval_blocking: true
+  AAL-2:
+    independent_reviews: 1
+    iv_and_v_required: false
+    human_approval_blocking: false
+  AAL-3:
+    independent_reviews: 0
+    iv_and_v_required: false
+    human_approval_blocking: false

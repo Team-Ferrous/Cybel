@@ -37,7 +37,7 @@ def choose_dtype(device):
     return torch.float32
 
 
-def main():
+def run_newbie_pipeline(prompt):
 
     device = detect_device()
     dtype = choose_dtype(device)
@@ -60,7 +60,7 @@ def main():
     if device == "cuda":
         pipe.enable_attention_slicing()
 
-    prompt = "1girl"
+    #prompt = "1girl"
 
     result = pipe(
         prompt,

@@ -1,0 +1,742 @@
+[
+  {
+    "task_id": "task_1769144637",
+    "task_type": "question",
+    "description": "explain how the coconut native bridge works",
+    "files_modified": [],
+    "tools_used": [
+      "evidence_gathering"
+    ],
+    "success": true,
+    "execution_time": 317.81613540649414,
+    "iterations": 1,
+    "timestamp": 1769144954.936372,
+    "approach": "Unified loop: question",
+    "key_steps": [
+      "evidence_gathering"
+    ],
+    "difficulties": [],
+    "tests_passed": true,
+    "syntax_valid": true,
+    "semantic_signature": null,
+    "related_patterns": null
+  },
+  {
+    "task_id": "task_1769146649",
+    "task_type": "question",
+    "description": "explain how the coconut native bridge works",
+    "files_modified": [],
+    "tools_used": [
+      "evidence_gathering"
+    ],
+    "success": true,
+    "execution_time": 654.6477499008179,
+    "iterations": 1,
+    "timestamp": 1769147304.386617,
+    "approach": "Unified loop: question",
+    "key_steps": [
+      "evidence_gathering"
+    ],
+    "difficulties": [],
+    "tests_passed": true,
+    "syntax_valid": true,
+    "semantic_signature": null,
+    "related_patterns": null
+  },
+  {
+    "task_id": "task_1769150125",
+    "task_type": "question",
+    "description": "explain how the coconut native bridge works",
+    "files_modified": [],
+    "tools_used": [
+      "evidence_gathering"
+    ],
+    "success": true,
+    "execution_time": 133.35188698768616,
+    "iterations": 1,
+    "timestamp": 1769150258.5724146,
+    "approach": "Unified loop: question",
+    "key_steps": [
+      "evidence_gathering"
+    ],
+    "difficulties": [],
+    "tests_passed": true,
+    "syntax_valid": true,
+    "semantic_signature": null,
+    "related_patterns": null
+  },
+  {
+    "task_id": "task_1769179487",
+    "task_type": "question",
+    "description": "explain how the coconut native bridge works",
+    "files_modified": [],
+    "tools_used": [
+      "evidence_gathering"
+    ],
+    "success": true,
+    "execution_time": 364.7249231338501,
+    "iterations": 1,
+    "timestamp": 1769179852.6933515,
+    "approach": "Unified loop: question",
+    "key_steps": [
+      "evidence_gathering"
+    ],
+    "difficulties": [],
+    "tests_passed": true,
+    "syntax_valid": true,
+    "semantic_signature": null,
+    "related_patterns": null
+  },
+  {
+    "task_id": "task_1769181202",
+    "task_type": "question",
+    "description": "explain how the coconut native bridge works",
+    "files_modified": [],
+    "tools_used": [
+      "evidence_gathering"
+    ],
+    "success": true,
+    "execution_time": 130.85105633735657,
+    "iterations": 1,
+    "timestamp": 1769181333.237586,
+    "approach": "Unified loop: question",
+    "key_steps": [
+      "evidence_gathering"
+    ],
+    "difficulties": [],
+    "tests_passed": true,
+    "syntax_valid": true,
+    "semantic_signature": null,
+    "related_patterns": null
+  },
+  {
+    "task_id": "task_1769217200",
+    "task_type": "question",
+    "description": "explain how the coconut native bridge works",
+    "files_modified": [],
+    "tools_used": [
+      "evidence_gathering"
+    ],
+    "success": true,
+    "execution_time": 237.15443992614746,
+    "iterations": 1,
+    "timestamp": 1769217437.8241584,
+    "approach": "Unified loop: question",
+    "key_steps": [
+      "evidence_gathering"
+    ],
+    "difficulties": [],
+    "tests_passed": true,
+    "syntax_valid": true,
+    "semantic_signature": null,
+    "related_patterns": null
+  },
+  {
+    "task_id": "task_1769221058",
+    "task_type": "question",
+    "description": "explain how the coconut native bridge works",
+    "files_modified": [],
+    "tools_used": [
+      "evidence_gathering"
+    ],
+    "success": true,
+    "execution_time": 365.2171754837036,
+    "iterations": 1,
+    "timestamp": 1769221423.2344558,
+    "approach": "Unified loop: question",
+    "key_steps": [
+      "evidence_gathering"
+    ],
+    "difficulties": [],
+    "tests_passed": true,
+    "syntax_valid": true,
+    "semantic_signature": null,
+    "related_patterns": null
+  },
+  {
+    "task_id": "task_1769273731",
+    "task_type": "question",
+    "description": "explain how the coconut native bridge works",
+    "files_modified": [],
+    "tools_used": [
+      "evidence_gathering"
+    ],
+    "success": true,
+    "execution_time": 220.16231322288513,
+    "iterations": 1,
+    "timestamp": 1769273951.312113,
+    "approach": "Unified loop: question",
+    "key_steps": [
+      "evidence_gathering"
+    ],
+    "difficulties": [],
+    "tests_passed": true,
+    "syntax_valid": true,
+    "semantic_signature": null,
+    "related_patterns": null
+  },
+  {
+    "task_id": "task_1769278718",
+    "task_type": "question",
+    "description": "explain how the coconut native bridge works",
+    "files_modified": [],
+    "tools_used": [
+      "evidence_gathering"
+    ],
+    "success": true,
+    "execution_time": 514.5899090766907,
+    "iterations": 1,
+    "timestamp": 1769279232.920565,
+    "approach": "Unified loop: question",
+    "key_steps": [
+      "evidence_gathering"
+    ],
+    "difficulties": [],
+    "tests_passed": true,
+    "syntax_valid": true,
+    "semantic_signature": null,
+    "related_patterns": null
+  },
+  {
+    "task_id": "task_1769298885",
+    "task_type": "question",
+    "description": "explain how the coconut native bridge works",
+    "files_modified": [],
+    "tools_used": [
+      "evidence_gathering"
+    ],
+    "success": true,
+    "execution_time": 137.2107970714569,
+    "iterations": 1,
+    "timestamp": 1769299022.997377,
+    "approach": "Unified loop: question",
+    "key_steps": [
+      "evidence_gathering"
+    ],
+    "difficulties": [],
+    "tests_passed": true,
+    "syntax_valid": true,
+    "semantic_signature": null,
+    "related_patterns": null
+  },
+  {
+    "task_id": "task_1769300114",
+    "task_type": "question",
+    "description": "explain how the coconut native bridge works",
+    "files_modified": [],
+    "tools_used": [
+      "evidence_gathering"
+    ],
+    "success": true,
+    "execution_time": 132.92395544052124,
+    "iterations": 1,
+    "timestamp": 1769300247.6517508,
+    "approach": "Unified loop: question",
+    "key_steps": [
+      "evidence_gathering"
+    ],
+    "difficulties": [],
+    "tests_passed": true,
+    "syntax_valid": true,
+    "semantic_signature": null,
+    "related_patterns": null
+  },
+  {
+    "task_id": "task_1769301659",
+    "task_type": "question",
+    "description": "explain how the coconut native bridge works",
+    "files_modified": [],
+    "tools_used": [
+      "evidence_gathering"
+    ],
+    "success": true,
+    "execution_time": 1648.8382647037506,
+    "iterations": 1,
+    "timestamp": 1769303308.5345285,
+    "approach": "Unified loop: question",
+    "key_steps": [
+      "evidence_gathering"
+    ],
+    "difficulties": [],
+    "tests_passed": true,
+    "syntax_valid": true,
+    "semantic_signature": null,
+    "related_patterns": null
+  },
+  {
+    "task_id": "task_1769305982",
+    "task_type": "question",
+    "description": "explain how the coconut native bridge works",
+    "files_modified": [],
+    "tools_used": [
+      "evidence_gathering"
+    ],
+    "success": true,
+    "execution_time": 248.65431714057922,
+    "iterations": 1,
+    "timestamp": 1769306231.6469676,
+    "approach": "Unified loop: question",
+    "key_steps": [
+      "evidence_gathering"
+    ],
+    "difficulties": [],
+    "tests_passed": true,
+    "syntax_valid": true,
+    "semantic_signature": null,
+    "related_patterns": null
+  },
+  {
+    "task_id": "task_1769374937",
+    "task_type": "question",
+    "description": "explain how the coconut native bridge works",
+    "files_modified": [],
+    "tools_used": [
+      "evidence_gathering"
+    ],
+    "success": true,
+    "execution_time": 289.8608458042145,
+    "iterations": 1,
+    "timestamp": 1769375227.6193535,
+    "approach": "Unified loop: question",
+    "key_steps": [
+      "evidence_gathering"
+    ],
+    "difficulties": [],
+    "tests_passed": true,
+    "syntax_valid": true,
+    "semantic_signature": null,
+    "related_patterns": null
+  },
+  {
+    "task_id": "task_1769375466",
+    "task_type": "question",
+    "description": "explain how the coconut native bridge works",
+    "files_modified": [],
+    "tools_used": [
+      "evidence_gathering"
+    ],
+    "success": true,
+    "execution_time": 173.41631031036377,
+    "iterations": 1,
+    "timestamp": 1769375639.988533,
+    "approach": "Unified loop: question",
+    "key_steps": [
+      "evidence_gathering"
+    ],
+    "difficulties": [],
+    "tests_passed": true,
+    "syntax_valid": true,
+    "semantic_signature": null,
+    "related_patterns": null
+  },
+  {
+    "task_id": "task_1769376546",
+    "task_type": "question",
+    "description": "explain how the coconut native bridge works",
+    "files_modified": [],
+    "tools_used": [
+      "evidence_gathering"
+    ],
+    "success": true,
+    "execution_time": 953.4917225837708,
+    "iterations": 1,
+    "timestamp": 1769377499.7464159,
+    "approach": "Unified loop: question",
+    "key_steps": [
+      "evidence_gathering"
+    ],
+    "difficulties": [],
+    "tests_passed": true,
+    "syntax_valid": true,
+    "semantic_signature": null,
+    "related_patterns": null
+  },
+  {
+    "task_id": "task_1769378196",
+    "task_type": "question",
+    "description": "explain how the coconut native bridge works",
+    "files_modified": [],
+    "tools_used": [
+      "evidence_gathering"
+    ],
+    "success": true,
+    "execution_time": 360.81963658332825,
+    "iterations": 1,
+    "timestamp": 1769378557.3147216,
+    "approach": "Unified loop: question",
+    "key_steps": [
+      "evidence_gathering"
+    ],
+    "difficulties": [],
+    "tests_passed": true,
+    "syntax_valid": true,
+    "semantic_signature": null,
+    "related_patterns": null
+  },
+  {
+    "task_id": "task_1769378673",
+    "task_type": "question",
+    "description": "explain how the coconut native bridge works",
+    "files_modified": [],
+    "tools_used": [
+      "evidence_gathering"
+    ],
+    "success": true,
+    "execution_time": 230.79704117774963,
+    "iterations": 1,
+    "timestamp": 1769378904.5598981,
+    "approach": "Unified loop: question",
+    "key_steps": [
+      "evidence_gathering"
+    ],
+    "difficulties": [],
+    "tests_passed": true,
+    "syntax_valid": true,
+    "semantic_signature": null,
+    "related_patterns": null
+  },
+  {
+    "task_id": "task_1769379409",
+    "task_type": "question",
+    "description": "explain how the coconut native bridge works",
+    "files_modified": [],
+    "tools_used": [
+      "evidence_gathering"
+    ],
+    "success": true,
+    "execution_time": 271.6981897354126,
+    "iterations": 1,
+    "timestamp": 1769379680.866421,
+    "approach": "Unified loop: question",
+    "key_steps": [
+      "evidence_gathering"
+    ],
+    "difficulties": [],
+    "tests_passed": true,
+    "syntax_valid": true,
+    "semantic_signature": null,
+    "related_patterns": null
+  },
+  {
+    "task_id": "task_1769388611",
+    "task_type": "question",
+    "description": "explain how the coconut native bridge works",
+    "files_modified": [],
+    "tools_used": [
+      "evidence_gathering"
+    ],
+    "success": true,
+    "execution_time": 521.6477644443512,
+    "iterations": 1,
+    "timestamp": 1769389133.4583704,
+    "approach": "Unified loop: question",
+    "key_steps": [
+      "evidence_gathering"
+    ],
+    "difficulties": [],
+    "tests_passed": true,
+    "syntax_valid": true,
+    "semantic_signature": null,
+    "related_patterns": null
+  },
+  {
+    "task_id": "task_1769398732",
+    "task_type": "question",
+    "description": "explain how the coconut native bridge works",
+    "files_modified": [],
+    "tools_used": [
+      "evidence_gathering"
+    ],
+    "success": true,
+    "execution_time": 449.0832645893097,
+    "iterations": 1,
+    "timestamp": 1769399181.1878705,
+    "approach": "Unified loop: question",
+    "key_steps": [
+      "evidence_gathering"
+    ],
+    "difficulties": [],
+    "tests_passed": true,
+    "syntax_valid": true,
+    "semantic_signature": null,
+    "related_patterns": null
+  },
+  {
+    "task_id": "task_1769405229",
+    "task_type": "question",
+    "description": "explain how the coconut native bridge works",
+    "files_modified": [],
+    "tools_used": [
+      "evidence_gathering"
+    ],
+    "success": true,
+    "execution_time": 252.58754205703735,
+    "iterations": 1,
+    "timestamp": 1769405482.0961244,
+    "approach": "Unified loop: question",
+    "key_steps": [
+      "evidence_gathering"
+    ],
+    "difficulties": [],
+    "tests_passed": true,
+    "syntax_valid": true,
+    "semantic_signature": null,
+    "related_patterns": null
+  },
+  {
+    "task_id": "task_1769405864",
+    "task_type": "question",
+    "description": "explain how the coconut native bridge works",
+    "files_modified": [],
+    "tools_used": [
+      "evidence_gathering"
+    ],
+    "success": true,
+    "execution_time": 535.0745141506195,
+    "iterations": 1,
+    "timestamp": 1769406400.015745,
+    "approach": "Unified loop: question",
+    "key_steps": [
+      "evidence_gathering"
+    ],
+    "difficulties": [],
+    "tests_passed": true,
+    "syntax_valid": true,
+    "semantic_signature": null,
+    "related_patterns": null
+  },
+  {
+    "task_id": "task_1769526452",
+    "task_type": "question",
+    "description": "explain how the coconut native bridge works",
+    "files_modified": [],
+    "tools_used": [],
+    "success": true,
+    "execution_time": 419.7940058708191,
+    "iterations": 1,
+    "timestamp": 1769526872.5431323,
+    "approach": "Unified loop: question",
+    "key_steps": [],
+    "difficulties": [],
+    "tests_passed": true,
+    "syntax_valid": true,
+    "semantic_signature": null,
+    "related_patterns": null
+  },
+  {
+    "task_id": "task_1769537761",
+    "task_type": "question",
+    "description": "explain how this granite agent works and how we could upgrade it from here. No code changes, just analysis and a technical roadmap.",
+    "files_modified": [],
+    "tools_used": [],
+    "success": true,
+    "execution_time": 352.42138838768005,
+    "iterations": 1,
+    "timestamp": 1769538114.095653,
+    "approach": "Unified loop: question",
+    "key_steps": [],
+    "difficulties": [],
+    "tests_passed": true,
+    "syntax_valid": true,
+    "semantic_signature": null,
+    "related_patterns": null
+  },
+  {
+    "task_id": "task_1769549068",
+    "task_type": "question",
+    "description": "explain how this granite agent works and how we could upgrade it from here. No code changes, just analysis and a technical roadmap.",
+    "files_modified": [],
+    "tools_used": [],
+    "success": true,
+    "execution_time": 456.51135063171387,
+    "iterations": 1,
+    "timestamp": 1769549524.9531593,
+    "approach": "Unified loop: question",
+    "key_steps": [],
+    "difficulties": [],
+    "tests_passed": true,
+    "syntax_valid": true,
+    "semantic_signature": null,
+    "related_patterns": null
+  },
+  {
+    "task_id": "task_1769563274",
+    "task_type": "question",
+    "description": "Explain the purpose and functionality of the `core/unified_chat_loop.py` file. Describe its main classes, methods, and how it integrates with other parts of the agent.",
+    "files_modified": [],
+    "tools_used": [],
+    "success": true,
+    "execution_time": 645.1655652523041,
+    "iterations": 1,
+    "timestamp": 1769563919.9575276,
+    "approach": "Unified loop: question",
+    "key_steps": [],
+    "difficulties": [],
+    "tests_passed": true,
+    "syntax_valid": true,
+    "semantic_signature": null,
+    "related_patterns": null
+  },
+  {
+    "task_id": "task_1769565156",
+    "task_type": "question",
+    "description": "explain how this granite agent works and how we could upgrade it from here. No code changes, just analysis and a technical roadmap.",
+    "files_modified": [],
+    "tools_used": [],
+    "success": true,
+    "execution_time": 410.3140344619751,
+    "iterations": 1,
+    "timestamp": 1769565566.3395782,
+    "approach": "Unified loop: question",
+    "key_steps": [],
+    "difficulties": [],
+    "tests_passed": true,
+    "syntax_valid": true,
+    "semantic_signature": null,
+    "related_patterns": null
+  },
+  {
+    "task_id": "task_1769571445",
+    "task_type": "question",
+    "description": "Explain the purpose and functionality of the `core/unified_chat_loop.py` file. Describe its main classes, methods, and how it integrates with other parts of the agent.",
+    "files_modified": [],
+    "tools_used": [],
+    "success": true,
+    "execution_time": 792.5453135967255,
+    "iterations": 1,
+    "timestamp": 1769572237.9386563,
+    "approach": "Unified loop: question",
+    "key_steps": [],
+    "difficulties": [],
+    "tests_passed": true,
+    "syntax_valid": true,
+    "semantic_signature": null,
+    "related_patterns": null
+  },
+  {
+    "task_id": "task_1769575409",
+    "task_type": "question",
+    "description": "Explain the purpose and functionality of the `core/unified_chat_loop.py` file. Describe its main classes, methods, and how it integrates with other parts of the agent.",
+    "files_modified": [],
+    "tools_used": [],
+    "success": true,
+    "execution_time": 1134.5786736011505,
+    "iterations": 1,
+    "timestamp": 1769576544.5513363,
+    "approach": "Unified loop: question",
+    "key_steps": [],
+    "difficulties": [],
+    "tests_passed": true,
+    "syntax_valid": true,
+    "semantic_signature": null,
+    "related_patterns": null
+  },
+  {
+    "task_id": "task_1769614282",
+    "task_type": "question",
+    "description": "Explain the purpose and functionality of the `core/unified_chat_loop.py` file. Describe its main classes, methods, and how it integrates with other parts of the agent.",
+    "files_modified": [],
+    "tools_used": [],
+    "success": true,
+    "execution_time": 1366.250591993332,
+    "iterations": 1,
+    "timestamp": 1769615648.7052324,
+    "approach": "Unified loop: question",
+    "key_steps": [],
+    "difficulties": [],
+    "tests_passed": true,
+    "syntax_valid": true,
+    "semantic_signature": null,
+    "related_patterns": null
+  },
+  {
+    "task_id": "task_1769636207",
+    "task_type": "question",
+    "description": "Explain the purpose and functionality of the `core/unified_chat_loop.py` file. Describe its main classes, methods, and how it integrates with other parts of the agent.",
+    "files_modified": [],
+    "tools_used": [],
+    "success": true,
+    "execution_time": 113.25775647163391,
+    "iterations": 1,
+    "timestamp": 1769636321.0306633,
+    "approach": "Unified loop: question",
+    "key_steps": [],
+    "difficulties": [],
+    "tests_passed": true,
+    "syntax_valid": true,
+    "semantic_signature": null,
+    "related_patterns": null
+  },
+  {
+    "task_id": "task_1769637190",
+    "task_type": "question",
+    "description": "Explain the purpose and functionality of the `core/unified_chat_loop.py` file. Describe its main classes, methods, and how it integrates with other parts of the agent.",
+    "files_modified": [],
+    "tools_used": [],
+    "success": true,
+    "execution_time": 117.81179571151733,
+    "iterations": 1,
+    "timestamp": 1769637307.8308713,
+    "approach": "Unified loop: question",
+    "key_steps": [],
+    "difficulties": [],
+    "tests_passed": true,
+    "syntax_valid": true,
+    "semantic_signature": null,
+    "related_patterns": null
+  },
+  {
+    "task_id": "task_1769641622",
+    "task_type": "question",
+    "description": "Explain the purpose and functionality of the `core/unified_chat_loop.py` file. Describe its main classes, methods, and how it integrates with other parts of the agent.",
+    "files_modified": [],
+    "tools_used": [],
+    "success": true,
+    "execution_time": 111.66897463798523,
+    "iterations": 1,
+    "timestamp": 1769641734.1800892,
+    "approach": "Unified loop: question",
+    "key_steps": [],
+    "difficulties": [],
+    "tests_passed": true,
+    "syntax_valid": true,
+    "semantic_signature": null,
+    "related_patterns": null
+  },
+  {
+    "task_id": "task_1769649130",
+    "task_type": "question",
+    "description": "Explain the purpose and functionality of the `core/unified_chat_loop.py` file. Describe its main classes, methods, and how it integrates with other parts of the agent.",
+    "files_modified": [],
+    "tools_used": [],
+    "success": true,
+    "execution_time": 428.6481590270996,
+    "iterations": 1,
+    "timestamp": 1769649558.6603026,
+    "approach": "Unified loop: question",
+    "key_steps": [],
+    "difficulties": [],
+    "tests_passed": true,
+    "syntax_valid": true,
+    "semantic_signature": null,
+    "related_patterns": null
+  },
+  {
+    "task_id": "task_1769652965",
+    "task_type": "question",
+    "description": "Explain the purpose and functionality of the `core/unified_chat_loop.py` file. Describe its main classes, methods, and how it integrates with other parts of the agent.",
+    "files_modified": [],
+    "tools_used": [],
+    "success": true,
+    "execution_time": 31.460797786712646,
+    "iterations": 1,
+    "timestamp": 1769652996.8764305,
+    "approach": "Unified loop: question",
+    "key_steps": [],
+    "difficulties": [],
+    "tests_passed": true,
+    "syntax_valid": true,
+    "semantic_signature": null,
+    "related_patterns": null
+  }
+]

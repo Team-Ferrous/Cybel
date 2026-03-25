@@ -1,0 +1,97 @@
+requests
+ollama
+pytest
+pytest-mock
+pyyaml
+jsonschema>=4.26
+# Core framework
+tensorflow==2.19.1
+prompt_toolkit>=3.0
+rich>=13.0
+
+# Data loading and preprocessing
+datasets==3.6.0
+transformers
+tf-models-official==2.19.1
+tensorflow-model-optimization==0.8.0
+keras-tuner
+numpy==1.26.4
+scipy
+h5py
+psutil
+tqdm
+bleach
+sippy
+pandas
+xlrd>=2.0
+rarfile
+
+# Analysis and visualization
+matplotlib
+Pillow
+seaborn
+umap-learn
+
+# Classical ML utilities
+scikit-learn
+
+# Spec service
+fastapi
+uvicorn
+pyreadr
+openpyxl
+flask
+httpx
+
+# Phase 4: fANOVA Enhancements
+shap>=0.43      # Shapley-value importance attribution
+
+# Phase 6: Enterprise Infrastructure
+ray[tune]>=2.9  # Distributed HPO with ASHA, PBT, BOHB schedulers
+prometheus_client>=0.19  # Metrics export for Grafana dashboards
+
+# Agentic Roadmap Dependencies
+mcp
+mcp[cli]
+docker
+autoflake
+black
+mypy
+# Browser automation
+patchright>=0.3.0
+ddgs>=9.10.0
+duckduckgo_search>=8.1.1
+
+# Document processing
+pypdf>=5.0
+python-pptx>=1.0
+pdf2image>=1.17
+html2text>=2024.2
+lxml>=5.0
+defusedxml>=0.7
+
+# AI/LLM providers
+llama-cpp-python>=0.3
+
+# Data & Finance
+yfinance>=0.2
+arxiv>=2.0
+
+# Security & Auth
+cryptography>=44.0
+pyopenssl>=24.0
+ntlm-auth>=1.5
+
+# Other utilities
+imageio>=2.35
+pydantic>=2.10
+docutils>=0.21
+
+# Parsing (multi-language SSAI perception)
+# tree-sitter-languages 1.10.x expects pre-0.22 tree-sitter constructor APIs.
+tree-sitter>=0.21.0,<0.22.0
+tree-sitter-languages==1.10.2
+
+# Local packages
+# Saguaro now runs as an in-tree top-level package (`saguaro/`).
+gguf>=0.17.0

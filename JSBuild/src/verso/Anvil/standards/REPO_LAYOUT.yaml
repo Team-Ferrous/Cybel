@@ -1,0 +1,191 @@
+version: 1
+authoritative_roots:
+  - agents
+  - audit
+  - benchmarks
+  - cli
+  - config
+  - core
+  - data
+  - docs
+  - domains
+  - infrastructure
+  - prompts
+  - saguaro
+  - scripts
+  - shared_kernel
+  - specs
+  - standards
+  - tests
+  - tools
+  - AGENTS.md
+  - GEMINI.md
+  - README.md
+  - anvil.py
+  - main.py
+ignored_roots:
+  - .anvil
+  - .git
+  - .hypothesis
+  - .mypy_cache
+  - .pytest_cache
+  - .ruff_cache
+  - .saguaro
+  - Saguaro
+  - anvil.egg-info
+  - build
+  - core/native/build
+  - dist
+  - runs
+  - saguaro/native/build
+  - saguaro/native/build_release
+  - saguaro/native/build_test
+  - venv
+zones:
+  - name: native_kernel
+    description: Native AVX2/OpenMP compute and compatibility wrappers.
+    roots:
+      - core/native
+      - core/simd
+      - saguaro/native
+    allow_file_kinds:
+      - header
+      - native_source
+      - python
+      - config
+    allowed_dependencies:
+      - native_kernel
+      - generated
+      - external
+  - name: native_analysis
+    description: Repository intelligence, analysis, indexing, storage, and graph services.
+    roots:
+      - saguaro/agents
+      - saguaro/analysis
+      - saguaro/build_system
+      - saguaro/coordination
+      - saguaro/indexing
+      - saguaro/parsing
+      - saguaro/query
+      - saguaro/refactor
+      - saguaro/sentinel
+      - saguaro/services
+      - saguaro/state
+      - saguaro/storage
+      - saguaro/api.py
+      - saguaro/health.py
+    allow_file_kinds:
+      - python
+      - header
+      - native_source
+      - config
+      - documentation
+    allowed_dependencies:
+      - native_analysis
+      - native_kernel
+      - governance
+      - external
+      - generated
+  - name: python_control
+    description: Orchestration, CLI, application control plane, and non-native runtime logic.
+    roots:
+      - agents
+      - audit
+      - benchmarks
+      - cli
+      - config
+      - core
+      - domains
+      - infrastructure
+      - prompts
+      - scripts
+      - shared_kernel
+      - tools
+      - anvil.py
+      - main.py
+    allow_file_kinds:
+      - python
+      - config
+      - documentation
+      - script
+      - header
+      - native_source
+    allowed_dependencies:
+      - python_control
+      - native_analysis
+      - native_kernel
+      - governance
+      - external
+      - generated
+  - name: governance
+    description: Policy, standards, architecture docs, and governed human-readable contracts.
+    roots:
+      - docs
+      - specs
+      - standards
+      - AGENTS.md
+      - GEMINI.md
+      - README.md
+    allow_file_kinds:
+      - documentation
+      - config
+      - script
+      - other
+    allowed_dependencies:
+      - governance
+      - external
+      - generated
+  - name: test
+    description: Validation fixtures and regression coverage.
+    roots:
+      - tests
+    allow_file_kinds:
+      - python
+      - native_source
+      - header
+      - documentation
+      - config
+    allowed_dependencies:
+      - test
+      - python_control
+      - native_analysis
+      - native_kernel
+      - governance
+      - external
+      - generated
+  - name: generated
+    description: Generated or staged artifacts not treated as owned architecture.
+    roots:
+      - .anvil
+      - .saguaro
+      - anvil.egg-info
+      - build
+      - core/native/build
+      - runs
+      - saguaro/native/build
+      - saguaro/native/build_release
+      - saguaro/native/build_test
+    allow_file_kinds:
+      - other
+      - config
+      - documentation
+      - python
+      - header
+      - native_source
+    allowed_dependencies:
+      - generated
+      - external
+  - name: external
+    description: Vendored, legacy, or environment-owned content outside the authoritative tree.
+    roots:
+      - Saguaro
+      - venv
+    allow_file_kinds:
+      - other
+      - config
+      - documentation
+      - python
+      - header
+      - native_source
+    allowed_dependencies:
+      - external

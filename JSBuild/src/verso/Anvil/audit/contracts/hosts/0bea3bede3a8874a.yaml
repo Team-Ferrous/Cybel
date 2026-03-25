@@ -1,0 +1,14 @@
+schema_version: native_qsg_suite.host_contract.v1
+contract_id: 0bea3bede3a8874a
+host_fingerprint: 0bea3bede3a8874a
+logical_cpus: 16
+required_visible_threads: 16
+cpu_governor: performance
+thp_modes:
+  - never
+  - madvise
+topology:
+  numa_nodes: 1
+notes:
+  - Certified benchmark host contract for the 16-thread Versa workstation.
+  - Gold and calibrate profiles require launch-time full visibility with no affinity repair.

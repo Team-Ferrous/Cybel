@@ -1,0 +1,107 @@
+{
+  "benchmark_harness_hash": "sha256:4f64658843b71c73168630e6d70b866a1fc24be1953b8b9adcedda31f8fb7755",
+  "calibration_stats": {
+    "decode_tps_cv_pct": 0.0,
+    "decode_tps_mad": 0.0,
+    "decode_tps_median": 18.17294919473895,
+    "kernel_metrics": {
+      "attention_decode": {
+        "mad_ms": 0.0,
+        "median_ms": 5.365076824091375
+      },
+      "attention_out_proj": {
+        "mad_ms": 0.0,
+        "median_ms": 12.729649897664785
+      },
+      "attention_proj": {
+        "mad_ms": 0.0,
+        "median_ms": 20.28886612970382
+      },
+      "attention_rope_kv": {
+        "mad_ms": 0.0,
+        "median_ms": 0.8400393417105079
+      },
+      "embedding_lookup": {
+        "mad_ms": 0.0,
+        "median_ms": 0.054796342737972736
+      },
+      "ffn_down": {
+        "mad_ms": 0.0,
+        "median_ms": 0.0
+      },
+      "ffn_gate_up": {
+        "mad_ms": 0.0,
+        "median_ms": 0.0
+      },
+      "ffn_norm": {
+        "mad_ms": 0.0,
+        "median_ms": 0.0
+      },
+      "final_norm": {
+        "mad_ms": 0.0,
+        "median_ms": 0.0635294709354639
+      },
+      "lm_head": {
+        "mad_ms": 0.0,
+        "median_ms": 213.46871566493064
+      },
+      "moe": {
+        "mad_ms": 0.0,
+        "median_ms": 599.4245975743979
+      },
+      "sanitize": {
+        "mad_ms": 0.0,
+        "median_ms": 0.5762233631685376
+      },
+      "ssm_conv": {
+        "mad_ms": 0.0,
+        "median_ms": 31.609953730367124
+      },
+      "ssm_output": {
+        "mad_ms": 0.0,
+        "median_ms": 219.874496338889
+      },
+      "ssm_projection": {
+        "mad_ms": 0.0,
+        "median_ms": 444.6562104858458
+      },
+      "ssm_recurrent": {
+        "mad_ms": 0.0,
+        "median_ms": 78.20086227729917
+      }
+    },
+    "measured_runs": 1,
+    "quality_metrics": {
+      "coherence": {
+        "mad": 0.0,
+        "median": 0.5
+      },
+      "confidence": {
+        "mad": 0.0,
+        "median": 0.0
+      },
+      "perplexity": {
+        "mad": 0.0,
+        "median": 285.9148959830799
+      }
+    },
+    "ttft_ms_mad": 0.0,
+    "ttft_ms_median": 2820.315717952326
+  },
+  "contract_hashes": {
+    "host_contract_sha256": "sha256:1957dfd295e701530e894a21163eb8a2fc184ac256a38cef5456cb24c63b44bc",
+    "profile_signature_sha256": "sha256:b57d8e8c2b7c3b85b05736d78bbccd86a772a51eed9b6b9b520627ed5d38d823"
+  },
+  "generated_at": "2026-03-09T21:26:16.108838+00:00",
+  "host_contract_id": "0bea3bede3a8874a",
+  "host_fingerprint": "0bea3bede3a8874a",
+  "model": "granite4:tiny-h",
+  "model_digest": "sha256:491ba81786c46a345a5da9a60cdb9f9a3056960c8411dd857153c194b1f91313",
+  "profile_schema_version": "native_qsg_suite.v1",
+  "schema_version": "native_qsg_suite.tuning_contract.v1",
+  "thread_config": {
+    "batch_threads": 8,
+    "decode_threads": 8,
+    "ubatch": 16
+  }
+}

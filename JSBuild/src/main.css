@@ -1,9 +1,15 @@
+.agent-ui {
+    overflow-y: auto;
+    height: 100%;
+}
+
 /* Add this to your existing <style> section */
 .markdown-content {
     color: #cffafe;
     font-size: 0.875rem;
     line-height: 1.625;
 }
+
 
 .markdown-content p {
     margin-bottom: 0.75rem;
@@ -224,6 +230,19 @@ body {
     gap:6px;
     white-space:nowrap;
 }
+
+.local-select{
+    display: none;
+}
+.verso-select
+{
+    display: none;
+}
+.grok-select
+{
+    display: none;
+}
+
 .workflow-step{
     display:grid;
     grid-template-columns:40px 1fr 1fr 30px;

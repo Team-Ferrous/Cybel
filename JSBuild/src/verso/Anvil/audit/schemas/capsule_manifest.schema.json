@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "native_qsg_audit.capsule_manifest.v1",
+  "title": "Native QSG Capsule Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run_id",
+    "generated_at",
+    "categories",
+    "artifacts"
+  ],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "run_id": {"type": "string"},
+    "generated_at": {"type": "string"},
+    "categories": {"type": "object"},
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "artifact_id",
+          "question",
+          "path",
+          "summary",
+          "required",
+          "exists",
+          "metadata"
+        ],
+        "properties": {
+          "artifact_id": {"type": "string"},
+          "question": {"type": "string"},
+          "path": {"type": "string"},
+          "summary": {"type": "string"},
+          "required": {"type": "boolean"},
+          "exists": {"type": "boolean"},
+          "metadata": {"type": "object"}
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,110 @@
+prompt_to_rule_map:
+  - source: prompts/Deep Research Prompt
+    directive: Keep the full 11-section AES structure and RFC 2119 strictness as the canonical policy frame
+    rule_ids: [AES-ARCH-4, AES-TR-1, AES-REV-3]
+    enforcement: agent
+    implementation_files:
+      - standards/AES.md
+      - standards/AES_RULES.json
+      - standards/AES_SOURCE_BASELINES.md
+    test_artifacts:
+      - tests/test_aes_artifacts.py
+
+  - source: prompts/Implementation Analysis Prompt
+    directive: Deterministic phase sequencing and enforceability taxonomy must be encoded in runtime artifacts
+    rule_ids: [AES-ARCH-1, AES-ARCH-4, AES-REV-2]
+    enforcement: agent
+    implementation_files:
+      - specs/phase0_aes_foundation.md
+      - core/aes/aal_classifier.py
+      - core/aes/domain_detector.py
+      - core/aes/rule_registry.py
+    test_artifacts:
+      - tests/test_aes_classifier.py
+      - tests/test_aes_runtime_contracts.py
+
+  - source: prompts/GEMINI.md
+    directive: Chronicle, red-team, and Saguaro-first operational rules must become runtime policy and auditable hook behavior
+    rule_ids: [AES-AG-2, AES-AG-3, AES-OBS-1, AES-OBS-2]
+    enforcement: agent
+    implementation_files:
+      - core/prompts/system_prompt_builder.py
+      - infrastructure/hooks/registry.py
+      - core/unified_chat_loop.py
+    test_artifacts:
+      - tests/test_aes_prompt_builder.py
+      - tests/test_hooks.py
+      - tests/test_unified_chat_loop.py
+
+  - source: prompts/shared_prompt_foundation.md
+    directive: Shared severity matrix, runtime phase model, and closure contract must survive as machine-readable governance state
+    rule_ids: [AES-TR-1, AES-TR-2, AES-AG-1, AES-REV-2]
+    enforcement: agent
+    implementation_files:
+      - standards/AES_CONDENSED.md
+      - standards/schemas/traceability.schema.json
+      - standards/schemas/evidence_bundle.schema.json
+      - standards/review_matrix.yaml
+    test_artifacts:
+      - tests/test_aes_artifacts.py
+      - tests/test_aes_runtime_contracts.py
+
+  - source: standards/AES_CONDENSED.md
+    directive: Always-on prompt payload must carry the concise mandates, anti-patterns, applicable rule IDs, and required artifacts
+    rule_ids: [AES-AG-1, AES-AG-2, AES-TR-2]
+    enforcement: agent
+    implementation_files:
+      - core/prompts/system_prompt_builder.py
+      - core/prompts/prompt_manager.py
+      - core/agent.py
+    test_artifacts:
+      - tests/test_aes_prompt_builder.py
+      - tests/test_aes_runtime_contracts.py
+
+  - source: standards/domain_rules/ml.md
+    directive: Load ML-specific controls only when the domain detector finds ML markers
+    rule_ids: [AES-ML-1, AES-ML-2, AES-ML-4, AES-ML-5]
+    enforcement: agent
+    implementation_files:
+      - core/aes/domain_detector.py
+      - core/aes/checks/ml_checks.py
+      - core/prompts/system_prompt_builder.py
+    test_artifacts:
+      - tests/test_aes_classifier.py
+      - tests/test_aes_runtime_contracts.py
+
+  - source: standards/domain_rules/quantum.md
+    directive: Load quantum-specific controls only when the domain detector finds quantum markers
+    rule_ids: [AES-QC-2, AES-QC-3, AES-QC-4, AES-QC-5]
+    enforcement: agent
+    implementation_files:
+      - core/aes/domain_detector.py
+      - core/aes/checks/quantum_checks.py
+      - core/prompts/system_prompt_builder.py
+    test_artifacts:
+      - tests/test_aes_classifier.py
+      - tests/test_aes_runtime_contracts.py
+
+  - source: standards/domain_rules/physics.md
+    directive: Load physics-specific controls only when the domain detector finds simulation markers
+    rule_ids: [AES-PHYS-1, AES-PHYS-3]
+    enforcement: agent
+    implementation_files:
+      - core/aes/domain_detector.py
+      - core/aes/checks/physics_checks.py
+      - core/prompts/system_prompt_builder.py
+    test_artifacts:
+      - tests/test_aes_classifier.py
+      - tests/test_aes_runtime_contracts.py
+
+  - source: standards/domain_rules/hpc.md
+    directive: Load HPC-specific controls only when the domain detector finds SIMD, OpenMP, or kernel markers
+    rule_ids: [AES-CPP-1, AES-CPP-2, AES-HPC-1, AES-HPC-2, AES-HPC-3, AES-HPC-4]
+    enforcement: agent
+    implementation_files:
+      - core/aes/domain_detector.py
+      - core/aes/checks/hpc_checks.py
+      - core/prompts/system_prompt_builder.py
+    test_artifacts:
+      - tests/test_aes_classifier.py
+      - tests/test_aes_runtime_contracts.py

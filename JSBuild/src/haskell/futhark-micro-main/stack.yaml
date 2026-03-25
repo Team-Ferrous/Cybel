@@ -1,0 +1,29 @@
+name: futhark-micro
+version: 0.1.0
+github: "yourusername/futhark-micro"
+license: MIT
+author: "Your Name"
+maintainer: "you@example.com"
+extra-source-files:
+  - README.md
+
+dependencies:
+  - base >= 4.16 && < 5
+  - transformers
+  - mtl
+  - massiv >= 0.6
+  - futhark  # if you have a Haskell package exposing Futhark Context / FutIO
+
+executables:
+  futhark-micro-exe:
+    main: Main.hs
+    source-dirs: src
+    ghc-options: -Wall
+    extra-libraries:
+      - diff
+      - blur
+      - resize
+    extra-lib-dirs:
+      - ./futhark/lib
+    include-dirs:
+      - ./futhark/include

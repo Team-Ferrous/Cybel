@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "native_qsg_audit.failure_record.v1",
+  "title": "Native QSG Audit Failure Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "run_id",
+    "attempt_id",
+    "model",
+    "error",
+    "error_type",
+    "failure_kind",
+    "gate_issues",
+    "normalized_issues",
+    "traceback",
+    "timestamp"
+  ],
+  "properties": {
+    "run_id": {"type": "string"},
+    "attempt_id": {"type": "string"},
+    "model": {"type": "string"},
+    "error": {"type": "string"},
+    "error_type": {"type": "string"},
+    "failure_kind": {
+      "type": "string",
+      "enum": ["gate_failure", "execution_failure"]
+    },
+    "gate_issues": {"type": "array", "items": {"type": "string"}},
+    "normalized_issues": {"type": "array", "items": {"type": "string"}},
+    "traceback": {"type": "string"},
+    "timestamp": {"type": "string"}
+  }
+}

@@ -3,6 +3,7 @@ const path = require('path');
 const fs = require('fs');
 
 const faissPath = path.resolve(__dirname, '../faiss-node-native');
+const pythonPath = path.resolve(__dirname, '../python');
 
 // Check folder exists
 if (!fs.existsSync(faissPath)) {
@@ -26,3 +27,11 @@ try {
 }
 
 console.log('✅  FAISS build completed successfully.');
+
+// Try Python setup
+try {
+  execSync('pip install -r requirements.txt', { cwd: pythonPath, stdio: 'inherit' });
+} catch (e) {
+  console.error('❌  PythonLibs build failed.');
+}
+console.log('✅  Python Libs installed to repo successfully.');

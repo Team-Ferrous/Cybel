@@ -1,0 +1,107 @@
+{
+  "benchmark_harness_hash": "sha256:4f64658843b71c73168630e6d70b866a1fc24be1953b8b9adcedda31f8fb7755",
+  "calibration_stats": {
+    "decode_tps_cv_pct": 0.0,
+    "decode_tps_mad": 0.0,
+    "decode_tps_median": 6.388929953481212,
+    "kernel_metrics": {
+      "attention_decode": {
+        "mad_ms": 0.0,
+        "median_ms": 8.681335137225688
+      },
+      "attention_out_proj": {
+        "mad_ms": 0.0,
+        "median_ms": 63.824068987742066
+      },
+      "attention_proj": {
+        "mad_ms": 0.0,
+        "median_ms": 123.73741017654538
+      },
+      "attention_rope_kv": {
+        "mad_ms": 0.0,
+        "median_ms": 3.177205682732165
+      },
+      "embedding_lookup": {
+        "mad_ms": 0.0,
+        "median_ms": 0.07388729136437178
+      },
+      "ffn_down": {
+        "mad_ms": 0.0,
+        "median_ms": 325.1316253146975
+      },
+      "ffn_gate_up": {
+        "mad_ms": 0.0,
+        "median_ms": 2340.94770226582
+      },
+      "ffn_norm": {
+        "mad_ms": 0.0,
+        "median_ms": 6.195237976498902
+      },
+      "final_norm": {
+        "mad_ms": 0.0,
+        "median_ms": 0.09468954522162676
+      },
+      "lm_head": {
+        "mad_ms": 0.0,
+        "median_ms": 808.7750483537093
+      },
+      "moe": {
+        "mad_ms": 0.0,
+        "median_ms": 0.0
+      },
+      "sanitize": {
+        "mad_ms": 0.0,
+        "median_ms": 2.253747428767383
+      },
+      "ssm_conv": {
+        "mad_ms": 0.0,
+        "median_ms": 37.0397821534425
+      },
+      "ssm_output": {
+        "mad_ms": 0.0,
+        "median_ms": 305.52334850654006
+      },
+      "ssm_projection": {
+        "mad_ms": 0.0,
+        "median_ms": 818.8372161239386
+      },
+      "ssm_recurrent": {
+        "mad_ms": 0.0,
+        "median_ms": 62.514825840480626
+      }
+    },
+    "measured_runs": 1,
+    "quality_metrics": {
+      "coherence": {
+        "mad": 0.0,
+        "median": 0.0
+      },
+      "confidence": {
+        "mad": 0.0,
+        "median": 0.0
+      },
+      "perplexity": {
+        "mad": 0.0,
+        "median": 1562620.7987225978
+      }
+    },
+    "ttft_ms_mad": 0.0,
+    "ttft_ms_median": 5227.611338952556
+  },
+  "contract_hashes": {
+    "host_contract_sha256": "sha256:1957dfd295e701530e894a21163eb8a2fc184ac256a38cef5456cb24c63b44bc",
+    "profile_signature_sha256": "sha256:b57d8e8c2b7c3b85b05736d78bbccd86a772a51eed9b6b9b520627ed5d38d823"
+  },
+  "generated_at": "2026-03-09T21:26:16.110742+00:00",
+  "host_contract_id": "0bea3bede3a8874a",
+  "host_fingerprint": "0bea3bede3a8874a",
+  "model": "qwen3.5:4b",
+  "model_digest": "sha256:81fb60c7daa80fc1123380b98970b320ae233409f0f71a72ed7b9b0d62f40490",
+  "profile_schema_version": "native_qsg_suite.v1",
+  "schema_version": "native_qsg_suite.tuning_contract.v1",
+  "thread_config": {
+    "batch_threads": 8,
+    "decode_threads": 8,
+    "ubatch": 32
+  }
+}

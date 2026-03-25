@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "native_qsg_audit.variance_budget.v1",
+  "title": "Native QSG Variance Budget",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run_id",
+    "generated_at",
+    "topology_hash",
+    "overall",
+    "model_budgets",
+    "noise_signals",
+    "recommendations"
+  ],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "run_id": {"type": "string"},
+    "generated_at": {"type": "string"},
+    "topology_hash": {"type": "string"},
+    "overall": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["within_budget", "rerun_recommended"],
+      "properties": {
+        "within_budget": {"type": "boolean"},
+        "rerun_recommended": {"type": "boolean"}
+      }
+    },
+    "model_budgets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "model",
+          "decode_tps_cv_pct",
+          "ttft_ms_cv_pct",
+          "decode_time_accounted_pct",
+          "budgets",
+          "within_budget"
+        ],
+        "properties": {
+          "model": {"type": "string"},
+          "decode_tps_cv_pct": {"type": "number"},
+          "ttft_ms_cv_pct": {"type": "number"},
+          "decode_time_accounted_pct": {"type": "number"},
+          "budgets": {"type": "object"},
+          "within_budget": {"type": "boolean"}
+        }
+      }
+    },
+    "noise_signals": {"type": "object"},
+    "recommendations": {"type": "array", "items": {"type": "string"}}
+  }
+}

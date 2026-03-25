@@ -1,10 +1,30 @@
-#Comm API/Chennel
+# --- API / Communication ---
 flask
-#SPARC3D_SDF Requirements
-kaolin 
-#NewBie AI Reqs
-diffusers 
-transformers 
-accelerate 
-safetensors 
-#torch #ugh....
+
+# --- Local Agentic RAG ---
+./agentic-file-search
+
+# --- Core ML stack ---
+torch==2.2.0
+torchvision 
+torchaudio @ https://download.pytorch.org/whl/cu121 #--index-url https://download.pytorch.org/whl/cu121
+accelerate
+transformers
+safetensors
+
+# --- NEWBIE IMAGE GENERATION ---
+diffusers
+
+# --- SPARC3D SDF ---
+kaolin @ https://nvidia-kaolin.s3.us-east-2.amazonaws.com/torch-2.8.0_cu129.html
+# Kaolin must match torch + CUDA version 
+
+
+# --- Optional / experimental ---
+# jax     # GPU-accelerated computations
+# preswald
+# merkly  # Tree Data Structure Library
+# thrml   # Probablistic Thermal Graph Augmentation
+# oqtopus # Probablistic Quantum Graph Augmentation
+# pygad   # Genetic Algorithm Optimizer
+

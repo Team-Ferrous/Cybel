@@ -1,0 +1,39 @@
+{
+  "abi_false": {
+    "continuous_runtime_owner": "python_compatibility_shim",
+    "hot_path_proof": {
+      "continuous_runtime_native_abi": "false",
+      "continuous_runtime_owner": "python_compatibility_shim",
+      "continuous_runtime_phase1_ready": "false",
+      "executed_cpp_only": "false",
+      "numpy_hot_path_calls": "0",
+      "phase1_blockers": "missing_native_serve_runtime_abi,python_scheduler_loop_active",
+      "python_hot_path_calls": "3",
+      "python_or_numpy_hot_path": "detected"
+    },
+    "native_runtime_abi_ready": false,
+    "phase1_blockers": [
+      "missing_native_serve_runtime_abi",
+      "python_scheduler_loop_active"
+    ],
+    "qsg_python_hot_path_calls": 3
+  },
+  "abi_true": {
+    "continuous_runtime_owner": "native_runtime",
+    "hot_path_proof": {
+      "continuous_runtime_native_abi": "true",
+      "continuous_runtime_owner": "native_runtime",
+      "continuous_runtime_phase1_ready": "false",
+      "executed_cpp_only": "false",
+      "numpy_hot_path_calls": "0",
+      "phase1_blockers": "python_scheduler_loop_active",
+      "python_hot_path_calls": "3",
+      "python_or_numpy_hot_path": "detected"
+    },
+    "native_runtime_abi_ready": true,
+    "phase1_blockers": [
+      "python_scheduler_loop_active"
+    ],
+    "qsg_python_hot_path_calls": 3
+  }
+}

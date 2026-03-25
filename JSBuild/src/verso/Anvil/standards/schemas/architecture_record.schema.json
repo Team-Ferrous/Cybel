@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["record_id", "title", "decision", "tradeoffs", "affected_paths"],
+  "properties": {
+    "record_id": {"type": "string"},
+    "title": {"type": "string"},
+    "decision": {"type": "string"},
+    "tradeoffs": {"type": "array", "items": {"type": "string"}},
+    "affected_paths": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": true
+}

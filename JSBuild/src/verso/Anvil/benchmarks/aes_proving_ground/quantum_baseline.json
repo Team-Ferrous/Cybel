@@ -1,0 +1,6 @@
+{
+  "domain": "quantum",
+  "case": "parameterized_circuit",
+  "min_shots": 128,
+  "required_evidence_fields": ["noise_model", "shots", "shot_confidence_target", "transpiler_settings"]
+}

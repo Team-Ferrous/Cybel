@@ -1,0 +1,65 @@
+version: 1
+updated_at: "2026-03-12T00:00:00Z"
+summary:
+  objective: >-
+    Establish one authoritative source root per native execution layer so duplicate
+    detection, build orchestration, and retirement decisions are traceable.
+  authority_rule: one_retained_implementation_per_capability
+comparative_native_rewrite_policy:
+  preferred_native_authority: Saguaro
+  wrapper_policy: thin_python_wrapper_only
+  wrapper_budget:
+    default_max_wrapper_layers: 1
+    require_verification_refs: true
+  notes:
+    - Comparative winners promoted as native rewrites land in authoritative native roots first.
+    - Python remains a thin orchestration and binding layer rather than the long-term execution authority.
+layers:
+  - layer_id: anvil_runtime_c_api
+    authority: core/native
+    public_interfaces:
+      - core/native/CMakeLists.txt
+      - core/native/build_native.sh
+      - core/native/model_graph_wrapper.py
+      - core/native/native_ops.py
+    compatibility_roots:
+      - core/native/split
+    retirement_roots: []
+    notes:
+      - Anvil runtime keeps ownership of ctypes/C-ABI exports and host-runtime tuning.
+  - layer_id: saguaro_python_runtime
+    authority: saguaro
+    public_interfaces:
+      - saguaro/native/__init__.py
+      - saguaro/ops/lib_loader.py
+      - saguaro/cli.py
+    compatibility_roots: []
+    retirement_roots: []
+    notes:
+      - Lowercase package remains the installed Python/runtime authority.
+  - layer_id: saguaro_native_kernels
+    authority: Saguaro
+    public_interfaces:
+      - Saguaro/CMakeLists.txt
+      - Saguaro/src
+      - Saguaro/include
+    compatibility_roots:
+      - saguaro/native/ops
+      - core/simd
+    retirement_roots: []
+    notes:
+      - Uppercase Saguaro is the planned authoritative kernel source root during convergence.
+  - layer_id: transitional_compatibility
+    authority: standards/op_lineage.yaml
+    public_interfaces:
+      - standards/op_lineage.yaml
+      - standards/shim_expiry.yaml
+    compatibility_roots:
+      - core/simd
+      - anvil.py
+      - main.py
+    retirement_roots:
+      - core/simd
+      - main.py
+    notes:
+      - Transitional shims stay only while parity evidence and canaries remain active.

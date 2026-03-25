@@ -1,0 +1,5 @@
+
+*.bmp
+*.jpg
+predictions.txt
+predictions_mtree.txt

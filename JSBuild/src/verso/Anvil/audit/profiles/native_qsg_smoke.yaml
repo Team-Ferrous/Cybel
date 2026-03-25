@@ -1,0 +1,51 @@
+schema_version: native_qsg_suite.v1
+profile_name: smoke
+models:
+  - granite4:tiny-h
+  - qwen3.5:4b
+  - qwen3.5:9b
+max_parallel_models: 1
+strict_host: false
+require_saguaro: true
+require_perf: false
+host_contract_id: auto
+affinity_policy: repair_allowed
+tuning_contract_policy: optional
+preflight_strictness: optimize
+assurance_level: AAL-1
+evidence_class: exploratory
+force_parallel_decode: true
+forbid_autoregressive_fallback: true
+enabled_lanes:
+  - canonical_all_on
+  - continuous_scheduler
+  - kernel_microbench
+  - quality_eval
+canonical_decode_threads:
+  - null
+canonical_batch_threads:
+  - null
+scenario_pack:
+  canonical_prompt: "Explain in two sentences how native telemetry helps isolate CPU inference regressions."
+  canonical_max_new_tokens: 24
+  canonical_context_length: 1024
+  warmup_runs: 0
+  measured_runs: 1
+  thread_matrix_ubatch: [32]
+  continuous_concurrency: [1, 2]
+  continuous_prompt_classes: [short]
+  continuous_scheduler_policies: [fcfs]
+kernel_microbench:
+  warmups: 3
+  iterations: 12
+  synthetic_lengths: [32, 64]
+  target_kernels:
+    - attention_proj
+    - ffn_gate_up
+    - lm_head
+quality_eval:
+  perplexity_corpus: benchmarks/corpora/perplexity_corpus.jsonl
+  confidence_corpus: benchmarks/corpora/confidence_corpus.jsonl
+  rubric_corpus: benchmarks/corpora/coherence_rubric.jsonl
+  accuracy_corpus: benchmarks/corpora/accuracy_corpus.jsonl
+  max_samples_per_family: 2

@@ -1,0 +1,65 @@
+#!/usr/bin/env python3
+"""Directory-independent launcher for in-tree Saguaro."""
+
+from __future__ import annotations
+
+import os
+import sys
+from pathlib import Path
+
+
+def _has_saguaro_cli(root: Path) -> bool:
+    return (root / "Saguaro" / "saguaro" / "cli.py").exists() or (
+        root / "saguaro" / "cli.py"
+    ).exists()
+
+
+def _resolve_anvil_root() -> Path:
+    # Primary path: this script lives at <anvil_root>/bin/saguaro.
+    script_path = Path(__file__).resolve()
+    candidate = script_path.parent.parent
+    if _has_saguaro_cli(candidate):
+        return candidate
+
+    # Fallback: explicit environment override.
+    env_root = os.environ.get("ANVIL_HOME")
+    if env_root:
+        env_path = Path(env_root).expanduser().resolve()
+        if _has_saguaro_cli(env_path):
+            return env_path
+
+    raise RuntimeError(
+        "Could not locate Anvil root containing Saguaro/saguaro/cli.py "
+        "(or legacy saguaro/cli.py). "
+        "Set ANVIL_HOME or reinstall launcher."
+    )
+
+
+def _maybe_reexec_in_project_venv(anvil_root: Path) -> None:
+    venv_python = anvil_root / "venv" / "bin" / "python"
+    if not venv_python.exists():
+        return
+
+    current = Path(sys.executable).resolve()
+    expected = venv_python.resolve()
+    if current == expected:
+        return
+
+    os.execv(str(expected), [str(expected), str(Path(__file__).resolve()), *sys.argv[1:]])
+
+
+def main() -> int:
+    anvil_root = _resolve_anvil_root()
+    _maybe_reexec_in_project_venv(anvil_root)
+    sys.path.insert(0, str(anvil_root))
+    saguaro_pkg_root = anvil_root / "Saguaro"
+    if saguaro_pkg_root.exists():
+        sys.path.insert(0, str(saguaro_pkg_root))
+    from saguaro.cli import main as saguaro_main
+
+    saguaro_main()
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

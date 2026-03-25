@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "native_qsg_audit.mission_graph.v1",
+  "title": "Native QSG Mission Graph",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "profile_name",
+    "compare_to",
+    "variance_report_only",
+    "closure_advisory",
+    "capsule_enabled",
+    "required_runtime_gates",
+    "required_artifacts",
+    "nodes",
+    "edges"
+  ],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "profile_name": {"type": "string"},
+    "compare_to": {"type": "string"},
+    "variance_report_only": {"type": "boolean"},
+    "closure_advisory": {"type": "boolean"},
+    "capsule_enabled": {"type": "boolean"},
+    "required_runtime_gates": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "required_artifacts": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "nodes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "node_id",
+          "phase",
+          "kind",
+          "enabled",
+          "blocking",
+          "artifact",
+          "depends_on"
+        ],
+        "properties": {
+          "node_id": {"type": "string"},
+          "phase": {"type": "string"},
+          "kind": {"type": "string"},
+          "enabled": {"type": "boolean"},
+          "blocking": {"type": "boolean"},
+          "artifact": {"type": "string"},
+          "depends_on": {
+            "type": "array",
+            "items": {"type": "string"}
+          }
+        }
+      }
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["src", "dst"],
+        "properties": {
+          "src": {"type": "string"},
+          "dst": {"type": "string"}
+        }
+      }
+    }
+  }
+}

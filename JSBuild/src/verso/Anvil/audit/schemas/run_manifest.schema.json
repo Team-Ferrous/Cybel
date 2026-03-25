@@ -1,0 +1,158 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "native_qsg_audit.run_manifest.v2",
+  "title": "Native QSG Audit Run Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run_id",
+    "started_at",
+    "models",
+    "model_sequence",
+    "thread_matrix",
+    "planned_attempts",
+    "runtime_provenance",
+    "model_contracts",
+    "warmup_runs",
+    "measured_runs",
+    "prompt_hash"
+  ],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "run_id": {"type": "string"},
+    "started_at": {"type": "string"},
+    "repo_root": {"type": "string"},
+    "models": {"type": "array", "items": {"type": "string"}},
+    "model_sequence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["index", "model"],
+        "properties": {
+          "index": {"type": "integer", "minimum": 0},
+          "model": {"type": "string"}
+        }
+      }
+    },
+    "thread_matrix": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["decode_threads", "batch_threads", "ubatch"],
+        "properties": {
+          "decode_threads": {"type": ["integer", "null"]},
+          "batch_threads": {"type": ["integer", "null"]},
+          "ubatch": {"type": ["integer", "null"]}
+        }
+      }
+    },
+    "warmup_runs": {"type": "integer", "minimum": 0},
+    "measured_runs": {"type": "integer", "minimum": 0},
+    "benchmark_config": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "max_new_tokens",
+        "context_length",
+        "sampling_profile",
+        "audit_surface",
+        "coherence_first",
+        "min_new_tokens_before_eos",
+        "require_openmp",
+        "require_avx2",
+        "require_mmap",
+        "host_access",
+        "collect_hw_counters",
+        "require_grover",
+        "require_coconut",
+        "autotune"
+      ],
+      "properties": {
+        "max_new_tokens": {"type": "integer", "minimum": 1},
+        "context_length": {"type": "integer", "minimum": 1},
+        "sampling_profile": {"type": "string"},
+        "audit_surface": {"type": "string"},
+        "coherence_first": {"type": "boolean"},
+        "min_new_tokens_before_eos": {"type": ["integer", "null"], "minimum": 0},
+        "require_openmp": {"type": "boolean"},
+        "require_avx2": {"type": "boolean"},
+        "require_mmap": {"type": "boolean"},
+        "host_access": {"type": "string"},
+        "collect_hw_counters": {"type": "string"},
+        "require_grover": {"type": "boolean"},
+        "require_coconut": {"type": "boolean"},
+        "autotune": {"type": "string"}
+      }
+    },
+    "prompt_hash": {"type": "string"},
+    "planned_attempts": {"type": "integer", "minimum": 0},
+    "runtime_provenance": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "captured_at",
+        "repo_root",
+        "cwd",
+        "argv",
+        "git",
+        "python",
+        "host",
+        "env",
+        "native_library"
+      ],
+      "properties": {
+        "captured_at": {"type": "string"},
+        "repo_root": {"type": "string"},
+        "cwd": {"type": "string"},
+        "argv": {"type": "array", "items": {"type": "string"}},
+        "git": {
+          "type": "object",
+          "additionalProperties": true,
+          "required": ["commit", "dirty"],
+          "properties": {
+            "commit": {"type": "string"},
+            "dirty": {"type": "boolean"}
+          }
+        },
+        "python": {
+          "type": "object",
+          "additionalProperties": true,
+          "required": ["executable", "version", "virtual_env"],
+          "properties": {
+            "executable": {"type": "string"},
+            "version": {"type": "string"},
+            "virtual_env": {"type": "string"}
+          }
+        },
+        "host": {
+          "type": "object",
+          "additionalProperties": true,
+          "required": [
+            "hostname",
+            "machine",
+            "platform",
+            "cpu_model",
+            "logical_cpus",
+            "visible_threads",
+            "host_fingerprint"
+          ],
+          "properties": {
+            "hostname": {"type": "string"},
+            "machine": {"type": "string"},
+            "platform": {"type": "string"},
+            "cpu_model": {"type": "string"},
+            "logical_cpus": {"type": "integer", "minimum": 1},
+            "visible_threads": {"type": "integer", "minimum": 1},
+            "host_fingerprint": {"type": "string"}
+          }
+        },
+        "env": {"type": "object"},
+        "native_library": {"type": "object"}
+      }
+    },
+    "model_contracts": {"type": "object"}
+  }
+}

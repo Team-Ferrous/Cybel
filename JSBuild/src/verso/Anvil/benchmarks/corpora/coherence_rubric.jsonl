@@ -1,0 +1,2 @@
+{"sample_id":"rubric-001","prompt":"In 3-4 sentences, explain how AVX2 and OpenMP improve CPU LLM inference throughput and latency, using concrete mechanisms and avoiding repetition.","must_include":["AVX2","OpenMP"],"must_not_include":["<think>","</think>"],"min_words":24}
+{"sample_id":"rubric-002","prompt":"In 3-4 sentences, explain why model digests and native build identifiers matter for benchmark reproducibility.","must_include":["digest","build"],"must_not_include":["<think>","</think>"],"min_words":24}

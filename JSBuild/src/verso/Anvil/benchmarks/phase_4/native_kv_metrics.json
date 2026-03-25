@@ -1,0 +1,106 @@
+{
+  "phase_id": 4,
+  "phase_name": "KV Cache Redesign for CPU",
+  "artifact_date": "2026-03-10",
+  "scope": "standalone_native_kv_cache",
+  "max_seq_len": 8200,
+  "parked_state_supported": false,
+  "parked_state_note": "No sequence-scoped parked-state or cold-page resume evidence exists in the standalone KV ABI.",
+  "status": "ok",
+  "page_tokens": 4096,
+  "kv_dim": 16,
+  "metrics": {
+    "initial": {
+      "active_page_slots": 0,
+      "resident_page_count": 0,
+      "shared_page_slots": 0,
+      "snapshot_count": 0,
+      "active_tokens": 0,
+      "committed_token_capacity": 0,
+      "copy_on_write_events": 0,
+      "prefix_share_events": 0,
+      "page_tokens": 4096,
+      "fragmentation_ratio": 0.0
+    },
+    "after_prefix": {
+      "active_page_slots": 1,
+      "resident_page_count": 1,
+      "shared_page_slots": 0,
+      "snapshot_count": 0,
+      "active_tokens": 4096,
+      "committed_token_capacity": 4096,
+      "copy_on_write_events": 0,
+      "prefix_share_events": 0,
+      "page_tokens": 4096,
+      "fragmentation_ratio": 0.0
+    },
+    "after_snapshot": {
+      "active_page_slots": 1,
+      "resident_page_count": 1,
+      "shared_page_slots": 1,
+      "snapshot_count": 1,
+      "active_tokens": 4096,
+      "committed_token_capacity": 4096,
+      "copy_on_write_events": 0,
+      "prefix_share_events": 1,
+      "page_tokens": 4096,
+      "fragmentation_ratio": 0.0
+    },
+    "after_cow": {
+      "active_page_slots": 1,
+      "resident_page_count": 2,
+      "shared_page_slots": 0,
+      "snapshot_count": 1,
+      "active_tokens": 4096,
+      "committed_token_capacity": 4096,
+      "copy_on_write_events": 1,
+      "prefix_share_events": 1,
+      "page_tokens": 4096,
+      "fragmentation_ratio": 0.0
+    },
+    "after_boundary_append": {
+      "active_page_slots": 2,
+      "resident_page_count": 3,
+      "shared_page_slots": 0,
+      "snapshot_count": 1,
+      "active_tokens": 4097,
+      "committed_token_capacity": 8192,
+      "copy_on_write_events": 1,
+      "prefix_share_events": 1,
+      "page_tokens": 4096,
+      "fragmentation_ratio": 0.4998779296875
+    },
+    "after_restore": {
+      "active_page_slots": 1,
+      "resident_page_count": 1,
+      "shared_page_slots": 1,
+      "snapshot_count": 1,
+      "active_tokens": 4096,
+      "committed_token_capacity": 4096,
+      "copy_on_write_events": 1,
+      "prefix_share_events": 2,
+      "page_tokens": 4096,
+      "fragmentation_ratio": 0.0
+    },
+    "after_release": {
+      "active_page_slots": 1,
+      "resident_page_count": 1,
+      "shared_page_slots": 0,
+      "snapshot_count": 0,
+      "active_tokens": 4096,
+      "committed_token_capacity": 4096,
+      "copy_on_write_events": 1,
+      "prefix_share_events": 2,
+      "page_tokens": 4096,
+      "fragmentation_ratio": 0.0
+    }
+  },
+  "observations": {
+    "snapshot_count_after_snapshot": 1,
+    "copy_on_write_events_after_mutation": 1,
+    "shared_page_slots_after_snapshot": 1,
+    "active_page_slots_after_boundary_append": 2,
+    "fragmentation_ratio_after_boundary_append": 0.4998779296875,
+    "fragmentation_formula_expected": 0.4998779296875
+  }
+}

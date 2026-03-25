@@ -1,0 +1,102 @@
+{
+    "start_state": "START",
+    "end_states": [
+        "END"
+    ],
+    "states": {
+        "START": [
+            {
+                "token": "{",
+                "next": "OBJECT_OPEN"
+            }
+        ],
+        "OBJECT_OPEN": [
+            {
+                "token": "}",
+                "next": "END"
+            },
+            {
+                "token": "\"",
+                "next": "KEY"
+            }
+        ],
+        "KEY": [
+            {
+                "token": "\"",
+                "next": "KEY_END"
+            },
+            {
+                "rule": "ANY_STRING",
+                "next": "KEY"
+            }
+        ],
+        "KEY_END": [
+            {
+                "token": ":",
+                "next": "COLON"
+            }
+        ],
+        "COLON": [
+            {
+                "token": "\"",
+                "next": "VALUE_STRING"
+            },
+            {
+                "token": "{",
+                "next": "OBJECT_OPEN"
+            },
+            {
+                "token": "[",
+                "next": "ARRAY_OPEN"
+            },
+            {
+                "rule": "NUMBER",
+                "next": "VALUE_END"
+            },
+            {
+                "token": "true",
+                "next": "VALUE_END"
+            },
+            {
+                "token": "false",
+                "next": "VALUE_END"
+            },
+            {
+                "token": "null",
+                "next": "VALUE_END"
+            }
+        ],
+        "VALUE_STRING": [
+            {
+                "token": "\"",
+                "next": "VALUE_END"
+            },
+            {
+                "rule": "ANY_STRING",
+                "next": "VALUE_STRING"
+            }
+        ],
+        "VALUE_END": [
+            {
+                "token": ",",
+                "next": "COMMA"
+            },
+            {
+                "token": "}",
+                "next": "END"
+            }
+        ],
+        "COMMA": [
+            {
+                "token": "\"",
+                "next": "KEY"
+            }
+        ],
+        "ARRAY_OPEN": [
+            {
+                "token": "]",
+                "next": "VALUE_END"
+            }
+        ]
+    }
+}

@@ -1,5 +1,14 @@
 // renderer.js
-import { hub } from './model_switcher.js';
+import { AutoTokenizer, AutoModelForCausalLM } from "https://cdn.jsdelivr.net/npm/@xenova/transformers/dist/transformers.min.js"; //"@xenova/transformers";
+
+async function updateQRCode() {
+    try {
+        const qrBase64 = await window.api.makeQRCode(); // waits for IPC
+        document.getElementById("qrImage").src = qrBase64; // set <img>
+    } catch (err) {
+        console.error("Failed to generate QR:", err);
+    }
+}
 
 document.querySelectorAll("input[type='range']").forEach(slider => {
 slider.addEventListener("input", (e) => {
@@ -19,6 +28,21 @@ slider.addEventListener("input", (e) => {
 });
 });
 
+// --- 1. Navigation ---
+function switchTab(tabId) {
+    document.querySelectorAll('.module-section').forEach(el => el.classList.remove('active'));
+    document.getElementById('module-' + tabId).classList.add('active');
+    document.querySelectorAll('nav button').forEach(btn => {
+        btn.classList.remove('active-nav');
+        btn.classList.add('inactive-nav');
+    });
+    const activeBtn = document.getElementById('nav-' + tabId);
+    activeBtn.classList.remove('inactive-nav');
+    activeBtn.classList.add('active-nav');
+
+    resizeCanvases();
+}
+
 function loadAppearance() {
 const stored = localStorage.getItem("appearanceConfig");
 if (!stored) return;
@@ -27,7 +51,6 @@ const { accent, theme, background } = JSON.parse(stored);
 
     // Apply accent
     if (accent) document.documentElement.style.setProperty('--accent', accent);
-
     // Apply theme
     if (theme) document.body.dataset.theme = theme;
     const avatarImage = document.getElementById("avatarImage");
@@ -54,6 +77,10 @@ const { accent, theme, background } = JSON.parse(stored);
         saveAppearance();
     }
 
+    if (theme) {
+        document.body.dataset.theme = theme;
+        updateThemeButtons(theme);
+    }
     // Make inline body styles match
     document.body.style.backgroundColor = getComputedStyle(document.body)
                                             .getPropertyValue('--bg-primary');
@@ -61,41 +88,65 @@ const { accent, theme, background } = JSON.parse(stored);
                                     .getPropertyValue('--text-primary');
 }
 
-// Run after DOM is ready
-document.addEventListener("DOMContentLoaded", loadAppearance);
-document.addEventListener("DOMContentLoaded", () => {
-    document.querySelectorAll("[data-action]").forEach(btn => {
-    btn.addEventListener("click", async () => {
-        const action = btn.dataset.action;
-        const files = await ipcRenderer.invoke("open-file-dialog");
-        if (!files || files.length === 0) return;
-        console.log(action, files);
-        });
+function initModelSelects() {
+    const container = document.querySelector(".agent-instance");
+    if (!container) return;
+
+    const map = {
+        "groq-model-toggle":  "#groq-select",
+        "local-model-toggle": ".local-select",
+        "grok-model-toggle":  ".grok-select",
+        "verso-model-toggle": ".verso-select"
+    };
+
+    // hide all selects
+    Object.values(map).forEach(sel => {
+        const el = container.querySelector(sel);
+        if (!el) return;
+        el.style.display = "none";
+        el.disabled = true;
     });
 
-    document.querySelector("#saveBtn").addEventListener("click", async () => {
-        const files = await window.api.saveFileDialog();
-        console.log(files);
-    });
+    const checked = container.querySelector("input[type='radio']:checked");
+    if (!checked) return;
 
-    document.querySelector("#loadBtn").addEventListener("click", async () => {
-            const files = await window.api.openFileDialog();
-            if (!files || files.length === 0) return;
+    const selectId = map[[...checked.classList].find(c => map[c])];
+    const selectEl = container.querySelector(selectId);
 
-            const instanceId = "default"; // or let the user select/create an instance
-            const result = await window.api.ingestDocuments(instanceId, files);
-            if (result.success) {
-                console.log(`Ingested ${result.ingested} chunks into instance ${instanceId}`);
-            } else {
-                console.error("Ingestion failed:", result.message);
-            }
-    });
-})
+    if (selectEl) {
+        selectEl.style.display = "block";
+        selectEl.disabled = false;
+    }
+}
+
 
     // -------------------------------
     // Local Model Selector Manager
     // -------------------------------
-    const localSelector = document.getElementById("local-model-selector");
+    document.querySelector("#saveBtn").addEventListener("click", async () => {
+        const files = await window.api.saveDocument(selectedSlot);
+        console.log(files);
+    });
+
+    document.querySelector("#loadBtn").addEventListener("click", async () => {
+        const files = await window.api.loadDocument();
+        return files;
+    });
+
+    document.querySelector("#mergeBtn").addEventListener("click", async () => {
+        resA  = await window.api.loadDocument();
+        resB  = await window.api.loadDocument();
+        if (!confirm("Terminate this agent instance?")) return;
+        const files = await window.api.mergeDocument({baseTitle: resA, mergeTitle: resB, outputTitle: (resA.name + "_output")});
+        console.log(files);
+    });
+
+    //document.getElementById("#delete-agent-btn").addEventListener("click", () => {
+        //    window.api.deleteAgent();
+        //});
+
+    const localSelector  = document.getElementById("local-model-selector");
+    const localSelectorV = document.getElementById("vs-model-selector");
 
     // Keep a list of installed local models
     let installedModels = [];
@@ -128,6 +179,24 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     }
+
+// Initialize dropdown: mark installed models green, others red
+    async function initVSLocalSelector() {
+        installedModels =  []
+        
+        // TBA: make Installed Models call this and apply the results 
+        //await modelHub.getLocalModels(); // ["Mistral 7b", "dolphin3", ...]
+        Array.from(localSelectorV.options).forEach(option => {
+            const isLocal      = installedModels.includes(option.text);
+            option.style.color = isLocal ? "limegreen" : "red";
+            option.title       = isLocal ? "Loaded locally" : "Available remotely";
+
+            // auto-load green models
+            if (isLocal) {
+                loadModel(option.text);
+            }
+        });
+    }    
 
     // Update option color / status dynamically
     function updateOptionStatus(modelName, isLocal) {
@@ -184,10 +253,12 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // Call this on app startup
-    initLocalSelector();
-
+ 
     const input  = document.getElementById("groq-key-input");
     const button = document.getElementById("groq-key-confirm");
+    const buttonGK = document.getElementById("grok-key-confirm");
+    const buttonVS = document.getElementById("verso-key-confirm");
+
     const modeSelector = document.getElementById("modeSelector");
 
     const groqPanels      = document.getElementById("groq-panels");
@@ -217,6 +288,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    let apiKeySelector    = document.getElementById("api-token-input")
+    let apiKeySelectorV   = document.getElementById("api-token-inputV")
+    apiKeySelector.value  = localStorage.getItem("api_key")
+    apiKeySelectorV.value = localStorage.getItem("api_key")
 
     modeSelector.addEventListener("change", (e) => {
         const mode = e.target.value;
@@ -227,6 +302,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (grokPanels)  grokPanels.style.display   = "none";
             if (versoPanels) versoPanels.style.display  = "none";
             if(versoOptsPanels) versoOptsPanels.style.display = "none"
+            localStorage.setItem("modeSelector", "groq");
         }
         if(mode === "grok"){
             if (groqPanels)  groqPanels.style.display  = "none";
@@ -235,7 +311,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (grokPanels)  grokPanels.style.display  = "block";
             if (versoPanels) versoPanels.style.display  = "none";
             if(versoOptsPanels) versoOptsPanels.style.display = "none"
-
+            localStorage.setItem("modeSelector", "grok");
         }
         if (mode === "local") {
             if (groqPanels)  groqPanels.style.display  = "none";
@@ -244,6 +320,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (grokPanels)  grokPanels.style.display  = "none";
             if (versoPanels) versoPanels.style.display  = "none";
             if(versoOptsPanels) versoOptsPanels.style.display = "none"
+            localStorage.setItem("modeSelector", "local");
         }
         if (mode === "verso") {
             if (groqPanels)  groqPanels.style.display  = "none";
@@ -251,9 +328,18 @@ document.addEventListener("DOMContentLoaded", () => {
             if (localPanels) localPanels.style.display = "none";
             if (grokPanels)  grokPanels.style.display  = "none";
             if (versoPanels) versoPanels.style.display  = "block";
+            if(versoOptsPanels) versoOptsPanels.style.display = "block"
+            localStorage.setItem("modeSelector", "verso");
         }
+        localStorage.setItem("modeSelector", e.target.value);
+        window.api.setGenerationMode(e.target.value);
     });
-
+    const btn = document.getElementById("groq-key-confirm");
+    btn.innerText = "Download Model";
+    btn.onclick = initDownloads()
+    modeSelector.dispatchEvent(new Event('change'));
+    initLocalSelector();
+    initVSLocalSelector();
 
     // Optional: remember last selection
     const savedMode = localStorage.getItem("modeSelector");
@@ -262,75 +348,123 @@ document.addEventListener("DOMContentLoaded", () => {
         modeSelector.dispatchEvent(new Event("change"));
     }
 
-    modeSelector.addEventListener("change", (e) => {
-        localStorage.setItem("modeSelector", e.target.value);
+    function showToast(message) {
+        const toast = document.createElement("div");
+        toast.textContent = message;
+        toast.className = "toast";
+        document.body.appendChild(toast);
+
+        setTimeout(() => {
+            toast.remove();
+        }, 2000);
+    }
+
+    button.addEventListener("click", () => {
+        const key = input.value.trim();
+        if (!key) {
+            showToast("Please enter a Groq key.");
+            return;
+        }
+        window.api.setTokenKey(key);
+        localStorage.setItem("token-key", key)
     });
 
-    modeSelector.addEventListener("change", (e) => {
-        localStorage.setItem("modeSelector", e.target.value);
+    buttonGK.addEventListener("click", () => {
+        const key = input.value.trim();
+        if (!key) {
+            showToast("Please enter a Grok key.");
+            localStorage.setItem(key)
+            return;
+        }
+        window.api.setTokenKey(key);
+        localStorage.setItem("token-key", key)
     });
 
-function showToast(message) {
-    const toast = document.createElement("div");
-    toast.textContent = message;
-    toast.className = "toast";
-    document.body.appendChild(toast);
+    buttonVS.addEventListener("click", () => {
+        const key = input.value.trim();
+        if (!key) {
+            showToast("Please enter a Verso key.");
+            return;
+        }
+        window.api.setTokenKey(key);
+                localStorage.setItem("token-key", key)
 
-    setTimeout(() => {
-        toast.remove();
-    }, 2000);
-}
-button.addEventListener("click", () => {
+    });
+
+    button.addEventListener("click", () => {
     const key = input.value.trim();
     if (!key) {
         showToast("Please enter a Groq key.");
         return;
     }
-
     // Example: store in localStorage
-    localStorage.setItem("groqKey", key);
+    localStorage.setItem("token-key", key);
 
     // Or send to main process if Electron
-    window.api.setGroqKey(key);
-    showToast("Groq key saved!");
+    window.api.setTokenKey(key);
+    showToast("Token key saved!");
 });
 
-const storedKey = localStorage.getItem("groqKey");
+const storedKey = localStorage.getItem("tokenKey");
 if (storedKey) input.value = storedKey;
-
 
 const bgChatContainer = document.getElementById('bg-chat');
 document.addEventListener('change', (e) => {
-if (!e.target.classList.contains('local-model-toggle')) return;
+    const target = e.target;
+    if (!target.classList.contains('local-model-toggle') &&
+        !target.classList.contains('grok-model-toggle') &&
+        !target.classList.contains('verso-model-toggle')) return;
 
-const container = e.target.closest('.agent-instance');
-if (!container) return;
+    const container = target.closest('.agent-instance');
+    if (!container) return;
 
-const groqSelect = container.querySelector('#groq-select');
-const localSelect = container.querySelector('#local-select');
+    const groqSelect = container.querySelector('#groq-select');
+    const localSelect = container.querySelector('#local-select');
+    const grokSelect = container.querySelector('#grok-select');
+    const versoSelect = container.querySelector('#verso-select');
 
-if (e.target.checked) {
-    groqSelect.style.display = 'none';
-    groqSelect.disabled = true;
+    // Hide everything initially
+    [groqSelect, localSelect, grokSelect, versoSelect].forEach(el => {
+        if (!el) return;
+        el.style.display = 'none';
+        el.disabled = true;
+    });
 
-    localSelect.style.display = '';
-    localSelect.disabled = false;
-} else {
-    groqSelect.style.display = '';
-    groqSelect.disabled = false;
-
-    localSelect.style.display = 'none';
-    localSelect.disabled = true;
-}
+    // Show the selected toggle’s select, or default to #groq-select if none
+    if (container.querySelector('.local-model-toggle:checked')) {
+        localSelect.style.display = 'block';
+        localSelect.disabled = false;
+    } else if (container.querySelector('.grok-model-toggle:checked')) {
+        grokSelect.style.display = 'block';
+        grokSelect.disabled = false;
+    } else if (container.querySelector('.verso-model-toggle:checked')) {
+        versoSelect.style.display = 'block';
+        versoSelect.disabled = false;
+    } else {
+        groqSelect.style.display = 'block';
+        groqSelect.disabled = false;
+    }
 });
 
 // Optional: Initialize new agents with proper toggle
 function initializeAgent(agentEl) {
-    const checkbox = agentEl.querySelector('.local-model-toggle');
-    if (!checkbox) return;
+    const checkbox  = agentEl.querySelector('.local-model-toggle');
+    const checkboxG = agentEl.querySelector('.grok-model-toggle');
+    const checkboxV = agentEl.querySelector('.verso-model-toggle');
+    const groqSelect = agentEl.querySelector('#groq-select');
+    initModelSelects();
+    if (!checkbox || !checkboxG || !checkboxV || groqSelect.value === "None") return;
 
     // Trigger the toggle once to set initial state
     checkbox.dispatchEvent(new Event('change'));
+    checkboxG.dispatchEvent(new Event('change'));
+    checkboxV.dispatchEvent(new Event('change'));
+}
+
+function updateAddStepButton() {
+    const addStepBtn = document.getElementById("add-step-btn");
+    const agentsExist = document.querySelectorAll(".agent").length > 0; // adjust selector
+    addStepBtn.disabled = !agentsExist;
 }
 
 // Example: spawning a new agent VISUALLY
@@ -338,7 +472,6 @@ function addAgent() {
     const template = document.getElementById('agent-template');
     const clone = template.content.cloneNode(true);
     const container = clone.querySelector('.agent-instance');
-
     document.getElementById('workflow-steps').appendChild(clone);
     initializeAgent(container);
 
@@ -348,34 +481,38 @@ function addAgent() {
 }
 
 // Enable / disable + Step button based on agent existence VISUALLY
-function updateAddStepButton() {
+/*function updateAddStepButton() {
     const agents = document.querySelectorAll('.agent-instance');
     addStepBtn.disabled = agents.length === 0;
-}
+}*/
 let workflowStepCounter = 0;
 
-function addWorkflowStep(){
-
+function addWorkflowStep() {
     const template = document.getElementById("workflow-step-template");
     const container = document.getElementById("workflow-steps");
 
     const clone = template.content.cloneNode(true);
 
     const stepIndex = ++workflowStepCounter;
-
     const indexLabel = clone.querySelector(".workflow-index");
     indexLabel.textContent = stepIndex;
 
     const removeBtn = clone.querySelector(".workflow-remove");
 
-    removeBtn.addEventListener("click", (e)=>{
+    removeBtn.addEventListener("click", (e) => {
         e.target.closest(".workflow-step").remove();
         reindexWorkflow();
+        updateAddStepButton(); // <-- update '+ Add Step' button after removing
     });
 
-    populateAgentDropdown(clone);
-
     container.appendChild(clone);
+    populateAgentDropdown(clone);
+    // -----------------------------
+    // Conditional logic for buttons
+    // -----------------------------
+
+    // Only show remove button if there's more than 1 step
+    removeBtn.style.display = workflowStepCounter > 1 ? "inline-block" : "none";
 }
 
 function populateAgentDropdown(stepClone){
@@ -397,9 +534,7 @@ function populateAgentDropdown(stepClone){
 }
 
 function getAgentByName(name) {
-
     const agents = window.agents || [];
-
     return agents.find(a => a.name === name);
 }
 
@@ -413,41 +548,14 @@ async function runAgent(agent, input) {
     Respond as the agent.
     `;
 
-    const response = await window.api.generateAgentResponse(prompt, agent.model);
+    const response = await window.api.generateAgentResponse(agent.id, agent.model, prompt);
     return response;
 }
 
-
-// --- 1. Navigation ---
-function switchTab(tabId) {
-    document.querySelectorAll('.module-section').forEach(el => el.classList.remove('active'));
-    document.getElementById('module-' + tabId).classList.add('active');
-
-    document.querySelectorAll('nav button').forEach(btn => {
-        btn.classList.remove('active-nav');
-        btn.classList.add('inactive-nav');
-    });
-    const activeBtn = document.getElementById('nav-' + tabId);
-    activeBtn.classList.remove('inactive-nav');
-    activeBtn.classList.add('active-nav');
-
-    resizeCanvases();
-}
-document.addEventListener("DOMContentLoaded", () => {
-    const neuralModule = document.getElementById("bg-chat");
-        if (neuralModule) {
-        // Make sure the section is visible before initializing
-        setTimeout(() => {
-            if (!window.currentBG) {
-                window.currentBG = initMatrixRain();
-            }
-        }, 100); // small delay to let CSS render
-    }
-});
-
 let agentCounter = 0;
+let currentBG    = null; 
 
-    function switchBG(type) {
+function switchBG(type) {
     // Clean previous
     var bg = undefined
     if (bg != undefined && currentBG?.cleanup) {
@@ -520,56 +628,168 @@ function loadSavedAppearance() {
         setTheme(savedTheme);
         saveAppearance();
     }
+    
+    if (savedTheme) {
+        document.body.dataset.theme = savedTheme;
+        updateThemeButtons(savedTheme);
+    }
 }
 function updateWorkflowDropdowns() {
 const selects = document.querySelectorAll(".workflow-agent");
-selects.forEach(sel => {
-const option = document.createElement("option");
-option.value = agentId;
-option.textContent = agentConfig.id; // or a friendly name
-sel.appendChild(option);
-});
+        selects.forEach(sel => {
+        const option = document.createElement("option");
+        option.value = agentId;
+        option.textContent = agentConfig.id; // or a friendly name
+        sel.appendChild(option);
+    });
 }
 
-function createAgent() {
-    const template = document.getElementById("agent-template");
+async function createAgent(config = {}) {
+    let engine = window.api.getEngineInstance();
+    const template  = document.getElementById("agent-template");
     const agentList = document.getElementById("agent-list");
+
+    // Clone the template
     const clone = template.content.cloneNode(true);
-    const agentId = "agent_" + (++agentCounter);
     const agentRoot = clone.querySelector(".agent-instance");
+
+    // Assign unique agent ID
+    const agentId = "agent_" + (++agentCounter);
     agentRoot.dataset.agentId = agentId;
-    const modelSelect = clone.querySelector(".agent-model");
-    const localToggle = clone.querySelector(".local-model-toggle");
-    localToggle.addEventListener("change", () => {
-    modelSelect.disabled = localToggle.checked;
-    if(localToggle.checked){
-        modelSelect.style.opacity = "0.5";
-    } else {
-        modelSelect.style.opacity = "1";
-    }
-    });
 
+    // Set default values or override from config
+    agentRoot.querySelector(".agent-name").value = config.name || `Agent ${agentCounter}`;
+    agentRoot.querySelector(".agent-prompt").value = config.prompt || "";
+    agentRoot.querySelector(".agent-title").textContent = config.title || "Agent Configuration";
+
+    // Append to DOM
     agentList.appendChild(clone);
-    setAgentExists(true); // enable + Step once agent exists
 
-    const agentConfig = {
-    id: agentId,
-    provider: localToggle.checked ? "local" : modelSelect.value,
-    tools: [], // later: read from Tools checkboxes
-    mode: "active",
-    embeddingDim: 1536, // default or configurable
-    secretKey: null // optional for provider API key
-    };
+    // Hook up buttons dynamically
+    const buttons = agentRoot.querySelectorAll(".config-buttons button");
 
-    // Spawn the instance in your InstanceEngine
-    engine.spawn(agentConfig)
-    .then(result => {
-        if (!result.success) {
-            alert("Agent creation failed: " + result.error);
-        } else {
-            console.log("Agent instance created:", result.instance);
+    buttons.forEach(btn => {
+        if (btn.textContent.includes("Import")) {
+            btn.addEventListener("click", () => window.api.loadConfig(agentId));
+        } else if (btn.textContent.includes("Export")) {
+            btn.addEventListener("click", () => window.api.saveConfig(agentId));
+        } else if (btn.textContent.includes("Delete")) {
+            btn.addEventListener("click", () => deleteAgent(agentId));
         }
     });
+
+    // Model toggles
+    const localToggle = agentRoot.querySelector(".local-model-toggle");
+    const modelSelects = agentRoot.querySelectorAll(".agent-model");
+
+    localToggle.addEventListener("change", () => {
+        modelSelects.forEach(select => {
+            if (select.id === "local-select") {
+                select.disabled = !localToggle.checked;
+                select.style.display = localToggle.checked ? "inline-block" : "none";
+            } else {
+                select.disabled = localToggle.checked;
+            }
+        });
+    });
+    updateWorkflowControls();
+    window.api.spawn(config);
+
+    // Spawn agent in engine
+    /*if(engine == null){
+        engine = new InstanceEngine();
+    }*/
+    /*engine.spawn({
+        id: agentId,
+        provider: config.provider || "local",
+        mode: "active",
+        tools: [],
+        embeddingDim: 1536
+    }).then(result => {
+        if (!result.success) alert("Agent creation failed: " + result.error);
+        else console.log("Agent created:", agentId);
+    });*/
+}
+
+/*function showQRCode(data) {
+  const modal = document.getElementById("module-qr");
+  const qrContainer = document.getElementById("qrcode");
+
+  qrContainer.innerHTML = "";
+
+  new QRCode(qrContainer, {
+    text: data,
+    width: 256,
+    height: 256
+  });
+
+  modal.style.display = "block";
+}*/
+
+document.getElementById("qrClose").onclick = () => {
+  document.getElementById("module-qr").style.display = "none";
+};
+
+function deleteAgent(agentId) {
+  const agentRoot = document.querySelector(`[data-agent-id="${agentId}"]`);
+  if (!agentRoot) {
+    console.error("Agent element not found for ID:", agentId);
+    return;
+  }
+
+  const confirmed = confirm("Terminate this agent?");
+  if (!confirmed) return;
+
+  agentRoot.remove();
+  engine.destroy(agentId); // also tell backend
+}
+
+/*function resetAgentSlot(slot) {
+    slot.dataset.agentId = "";
+    slot.querySelector(".agent-name").value = "";
+    slot.querySelector(".agent-prompt").value = "";
+
+    const selects = slot.querySelectorAll(".agent-model");
+    selects.forEach(s => s.selectedIndex = 0);
+    const toggles = slot.querySelectorAll("input[type='checkbox']");
+    toggles.forEach(t => t.checked = false);
+}*/
+
+function resetAgentSlot(slot) {
+    const slotId = slot.id;
+
+    slot.className = "p-4 border-b border-accent/50 empty-slot glass-panel";
+    slot.innerHTML = `
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 5v14M5 12h14"/>
+        </svg>
+        <span onclick="openCreateBotModal('${slotId}')">Empty Slot</span>
+    `;
+}
+
+async function deleteBot(agentId, agentRoot) {
+    let engine = window.api.getEngineInstance();
+    const confirmed = confirm("Terminate this bot instance?");
+    if (!confirmed) return;
+
+    try {
+        if (engine && engine.destroy) {
+            await engine.destroy(agentId);
+        }
+
+        resetAgentSlot(agentRoot);
+        //agentRoot.remove();
+        console.log("Bot removed:", agentId);
+
+        if (document.querySelectorAll(".agent-instance").length === 0) {
+            setAgentExists(false);
+        }
+
+    } catch (err) {
+        console.error("Bot deletion failed:", err);
+        alert("Failed to terminate Bot.");
+
+    }
 }
 
 const addStepBtn = document.querySelector('.workflow-add');
@@ -578,8 +798,8 @@ const addStepBtn = document.querySelector('.workflow-add');
 let agentExists = false;
 
 function setAgentExists(exists) {
-agentExists = exists;
-addStepBtn.disabled = !agentExists; // disable if no agent
+    agentExists = exists;
+    addStepBtn.disabled = !agentExists; // disable if no agent
 }
 
 // Optional: initialize button state on load
@@ -612,49 +832,12 @@ function loadSavedAccent() {
         if (color === saved) el.classList.add('active');
     });
 }
-// --- Init ---
-window.addEventListener('DOMContentLoaded', () => {
-    lucide.createIcons();
-    loadSavedAppearance();
-    loadSavedTheme();
-    loadSavedAccent();
-    //initChatBackground();
 
-    // After globe is built, apply saved accent to it
-    const savedAccent = localStorage.getItem('cybel-accent');
-    if (savedAccent) updateGlobeAccent();
+/*document.querySelector("#ingestBtn").addEventListener("click", () => {
+    window.api.openGDDialog();
+});*/
 
-    const dropZoneEl = document.getElementById('bg-drop-zone');
-    dropZoneEl.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        dropZoneEl.classList.add('border-cyan-400');
-    });
-    dropZoneEl.addEventListener('dragleave', () => {
-        dropZoneEl.classList.remove('border-cyan-400');
-    });
-    dropZoneEl.addEventListener('drop', (e) => {
-        e.preventDefault();
-        dropZoneEl.classList.remove('border-cyan-400');
-        dropZoneEl.querySelector('p').innerText = "Image Loaded: custom_bg.png";
-        dropZoneEl.querySelector('i').classList.add('text-green-400');
-        dropZoneEl.querySelector('i').classList.remove('text-cyan-600');
-    });
-});
-// Hook into module activation
-function activateModule(id) {
-    document.querySelectorAll('.module-section').forEach(s => s.classList.remove('active'));
-    const section = document.getElementById(id);
-    section.classList.add('active');
-    if (id === 'bg-chat') {
-        if (!currentBG) currentBG = initMatrixRain();
-    }else if (id === 'module-management') {
-        if (!currentBG) currentBG = initMatrixRain();
-        currentBG.start(); // start rain **after module becomes visible**
-    } else if (currentBG) {
-        currentBG.cleanup(); // stop rain when switching away
-        currentBG = null;
-    }
-}
+
 
 // --- 2. Chat Background: Holographic Globe ---
 function initMatrixRain() {
@@ -1169,10 +1352,6 @@ async function handleChatSubmit(e) {
     const text    = input.value.trim();
     if (!text) return;
 
-    /*const keyText = groqKeyInput.value.trim();*/
-    /*if(keyText){
-        await window.api.setGroqKey(text);
-    }*/
     // 1. Show user message
     history.insertAdjacentHTML('beforeend', `
         <div class="flex gap-4 justify-end">
@@ -1193,7 +1372,7 @@ async function handleChatSubmit(e) {
             <div class="w-8 h-8 rounded-full overflow-hidden text-accent flex items-center justify-center border border-accent/30">
                 <img
                             id="avatarImage"
-                            src=""${avatarSrc}""
+                            src="${avatarSrc}"
                             alt="AI Avatar"
                             class="w-full h-full object-cover"
                 />
@@ -1206,7 +1385,10 @@ async function handleChatSubmit(e) {
     lucide.createIcons();
     history.scrollTop = history.scrollHeight;
     try {
-        // Send message via IPC
+        if (!window.api || !window.api.sendMessage) {
+            throw new Error("CYBEL API bridge not available");
+        }
+
         const content = await window.api.sendMessage(text);
 
         if (!content) {
@@ -1266,6 +1448,13 @@ function handleFileUpload(input) {
 
 // --- 6. Create Bot Logic ---
 let selectedBotType = null;
+let selectedSlot = null;
+
+function setSelectedSlot(id) {
+    selectedSlot = id;
+    document.getElementById("selected-bot").textContent = selectedSlot;
+}
+
 function saveAppearance() {
     const bgSelect = document.getElementById('bgSelector');
     const appearance = {
@@ -1279,316 +1468,174 @@ function saveAppearance() {
     localStorage.setItem("appearanceConfig", JSON.stringify(appearance));
 }
 
-function openCreateBotModal() {
-    document.getElementById('create-bot-modal').classList.remove('hidden');
+function openCreateBotModal(id) {
+    selectedSlot = id;
+
+    const modal = document.getElementById('create-bot-modal');
+    modal.classList.remove('hidden');
+
     setTimeout(() => {
-        document.getElementById('create-bot-modal').classList.remove('opacity-0');
-        document.getElementById('create-bot-modal').querySelector('.modal-content').classList.remove('scale-95');
-        document.getElementById('create-bot-modal').querySelector('.modal-content').classList.add('scale-100');
+        modal.classList.remove('opacity-0');
+        modal.querySelector('.modal-content').classList.remove('scale-95');
+        modal.querySelector('.modal-content').classList.add('scale-100');
     }, 10);
+}
+
+
+function renderBotCard(bot) {
+
+    const slot = document.getElementById(bot.id);
+    slot.className = "py-3 px-4 border border-accent/50 card glass-panel p-4";
+    slot.innerHTML = `
+        <div class="card-header">
+            <div class="bot-icon">🤖</div>
+            <div class="status-dot"></div>
+        </div>
+
+        <div class="agent-tag">${bot.type.toUpperCase()}</div>
+        <div class="bot-name">${bot.name}|${document.getElementById('character-selector').value}</div>
+
+        <div class="bot-desc">
+            Instance initialized. Awaiting directive input.
+        </div>
+
+        <div class="card-footer">
+            <button onclick="switchTab('chat')" class="icon-btn">></button>
+            <!--<button class="icon-btn">📋</button>-->
+            <button onclick="deleteBot('${bot.id}', this.parentElement.parentElement)" class="icon-btn">🗑️</button>
+            <button onclick="openCreateBotModal('${bot.id}')" class="launch-btn">CONFIG</button>
+        </div>
+    `;
+}
+
+async function createBotInstance(name, type) {
+
+    const botData = {
+        id: selectedSlot,
+        name: name,
+        type: type,
+        description: "New instance awaiting initialization..."
+    };
+
+    if (window.api && window.api.createBot) {
+        await window.api.createBot(botData);
+    }
+
+    renderBotCard(botData);
 }
 
 function selectBotType(type) {
     selectedBotType = type;
     document.getElementById('type-character').classList.remove('selected');
-    document.getElementById('type-agent').classList.remove('selected');
+    document.getElementById('type-utility').classList.remove('selected');
     document.getElementById('type-' + type).classList.add('selected');
     window.api.updateCharacter(selectedBotType);
 }
 
 function confirmCreateBot() {
+
     const name = document.getElementById('new-bot-name').value;
-    if (!name) { alert("Please enter an Instance Designation."); return; }
-    if (!selectedBotType) { alert("Please select a Cognitive Architecture."); return; }
+
+    if (!name) {
+        alert("Please enter an Instance Designation.");
+        return;
+    }
+
+    if (!selectedBotType) {
+        alert("Please select a Cognitive Architecture.");
+        return;
+    }
+
     closeModal('create-bot-modal');
-    showModal('Initializing Instance', `Instance <strong>${name}</strong> (${selectedBotType.toUpperCase()} mode) is being provisioned...`);
+
+    showModal(
+        'Initializing Instance',
+        `Instance <strong>${name}</strong> (${selectedBotType.toUpperCase()} mode) is being provisioned...`
+    );
+
+    createBotInstance(name, selectedBotType);
 }
 
-// --- 7. Creative Mode Logic (Restored) ---
-let creativeStep = 1;
+    // --- 7. Creative Mode Logic (Restored) ---
+    let creativeStep = 1;
 
-function setCreativeInput(type) {
-    creativeStep = 2;
-    updateCreativeView();
-}
-
-function setCreativeOutput(type) {
-    creativeStep = 3;
-    updateCreativeView();
-}
-
-function prevCreativeStep() {
-    if (creativeStep > 1) creativeStep--;
-    updateCreativeView();
-}
-
-function updateCreativeView() {
-    document.getElementById('creative-step-1').classList.add('hidden');
-    document.getElementById('creative-step-2').classList.add('hidden');
-    document.getElementById('creative-step-3').classList.add('hidden');
-    
-    document.getElementById(`creative-step-${creativeStep}`).classList.remove('hidden');
-
-    const ind2 = document.getElementById('step-ind-2');
-    const ind3 = document.getElementById('step-ind-3');
-    
-    if (creativeStep >= 2) {
-        ind2.classList.remove('bg-gray-800', 'text-gray-400');
-        ind2.classList.add('bg-accent', 'text-black');
-    } else {
-        ind2.classList.add('bg-gray-800', 'text-gray-400');
-        ind2.classList.remove('bg-accent', 'text-black');
+    function setCreativeInput(type) {
+        creativeStep = 2;
+        updateCreativeView();
     }
 
-    if (creativeStep >= 3) {
-        ind3.classList.remove('bg-gray-800', 'text-gray-400');
-        ind3.classList.add('bg-accent', 'text-black');
-    } else {
-        ind3.classList.add('bg-gray-800', 'text-gray-400');
-        ind3.classList.remove('bg-accent', 'text-black');
+    function setCreativeOutput(type) {
+        creativeStep = 3;
+        updateCreativeView();
     }
-}
 
-function executeCreative() {
-    showModal('Generation Initiated', 'The engine has received the parameters.');
-    creativeStep = 1;
-    updateCreativeView();
-}
+    function prevCreativeStep() {
+        if (creativeStep > 1) creativeStep--;
+        updateCreativeView();
+    }
 
-// --- 8. Engine Logic (Restored) ---
-function runBenchmark() {
-    const btn = event.currentTarget;
-    const originalText = btn.innerHTML;
-    btn.innerHTML = '<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> RUNNING...';
-    lucide.createIcons();
-    setTimeout(() => {
-        btn.innerHTML = originalText;
-        lucide.createIcons();
-        showModal('Benchmark Complete', 'Performance: 45.2 tokens/sec.');
+    function updateCreativeView() {
+        document.getElementById('creative-step-1').classList.add('hidden');
+        document.getElementById('creative-step-2').classList.add('hidden');
+        document.getElementById('creative-step-3').classList.add('hidden');
+        
+        document.getElementById(`creative-step-${creativeStep}`).classList.remove('hidden');
+
+        const ind2 = document.getElementById('step-ind-2');
+        const ind3 = document.getElementById('step-ind-3');
+        
+        if (creativeStep >= 2) {
+            ind2.classList.remove('bg-gray-800', 'text-gray-400');
+            ind2.classList.add('bg-accent', 'text-black');
+        } else {
+            ind2.classList.add('bg-gray-800', 'text-gray-400');
+            ind2.classList.remove('bg-accent', 'text-black');
+        }
+
+        if (creativeStep >= 3) {
+            ind3.classList.remove('bg-gray-800', 'text-gray-400');
+            ind3.classList.add('bg-accent', 'text-black');
+        } else {
+            ind3.classList.add('bg-gray-800', 'text-gray-400');
+            ind3.classList.remove('bg-accent', 'text-black');
+        }
+    }
+
+    function executeCreative() {
+        showModal('Generation Initiated', 'The engine has received the parameters.');
+        creativeStep = 1;
+        updateCreativeView();
+    }
+
+    // --- 9. Stats Loop & Helpers ---
+    setInterval(() => {
+        const tempEl = document.getElementById('stat-temp');
+        if(tempEl) {
+            let t = parseFloat(tempEl.innerText) + (Math.random() * 0.4 - 0.2);
+            tempEl.innerText = t.toFixed(1) + "°C";
+            tempEl.className = t > 45 ? "font-mono text-red-500" : "font-mono text-green-400";
+        }
+        const latEl = document.getElementById('stat-latency');
+        if(latEl) {
+            let l = 3 + Math.random() * 4;
+            latEl.innerText = l.toFixed(1) + "ms";
+        }
     }, 2000);
-}
 
-// --- 9. Stats Loop & Helpers ---
-setInterval(() => {
-    const tempEl = document.getElementById('stat-temp');
-    if(tempEl) {
-        let t = parseFloat(tempEl.innerText) + (Math.random() * 0.4 - 0.2);
-        tempEl.innerText = t.toFixed(1) + "°C";
-        tempEl.className = t > 45 ? "font-mono text-red-500" : "font-mono text-green-400";
+    function resizeCanvases() {
+        window.dispatchEvent(new Event('resize'));
     }
-    const latEl = document.getElementById('stat-latency');
-    if(latEl) {
-        let l = 3 + Math.random() * 4;
-        latEl.innerText = l.toFixed(1) + "ms";
-    }
-}, 2000);
 
-function resizeCanvases() {
-    window.dispatchEvent(new Event('resize'));
-}
+    function getCurrentThemeAvatar() {
+        // Default avatar and color
+        let avatar = "./assets/avatar_blue.png";
+        let color = "#06b6d4"; // default accent color
 
-let avatar = null;
-function setCurrentThemeAvatar(av){
-    avatar = av;
-}
-function getCurrentThemeAvatar() {
-// Default avatar and color
-let avatar = "./assets/avatar_blue.png";
-let color = "#06b6d4"; // default accent color
-
-const bgSelectS = document.getElementById('bgSelector');
-if (bgSelectS && bgSelectS.value) {
-color = bgSelectS.value;
-    // Map of accent colors to avatars
-const avatarMap = {
-"#06b6d4": "./assets/avatar_blue.png",
-"#3b82f6": "./assets/avatar_blue.png",
-"#f59e0b": "./assets/avatar_gold.png",
-"#22c55e": "./assets/avatar_green.png",
-"#b34639": "./assets/avatar_red.png",
-"#3C8E38": "./assets/avatar_emerald.png",
-"#7E4D5D": "./assets/avatar_rose.png",
-"#B87232": "./assets/avatar_gold.png",
-"#5F268D": "./assets/avatar_logicgate.png",
-"#627A5B": "./assets/avatar_emerald.png",
-"#914D79": "./assets/avatar_pink.png",
-"#9E8850": "./assets/avatar_yellow.png",
-"#712925": "./assets/avatar_ultron.png",
-"#2B2C2B": "./assets/avatar_black.png"
-};
-
-// Pick avatar based on color, fallback to default
-if (avatarMap[color]) {
-avatar = avatarMap[color];
-}
-
-return avatar;
-}
-return null;
-}
-const canvas = document.getElementById('bg-bot');
-const ctx = canvas.getContext('2d');
-
-// 1. Set actual canvas size (not CSS)
-canvas.width = canvas.offsetWidth;
-canvas.height = canvas.offsetHeight;
-
-// 2. Font & fill style
-ctx.font = '16px monospace';
-ctx.fillStyle = 'lime';
-
-// 3. Initialize drops AFTER width is set
-const fontSize = 16;
-const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-const columns = Math.floor(canvas.width / fontSize);
-const drops = Array(columns).fill(0);
-
-// 4. Draw loop
-function draw() {
-ctx.fillStyle = 'rgba(0,0,0,0.05)'; // fade
-ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-ctx.fillStyle = 'lime';
-for (let i = 0; i < drops.length; i++) {
-const text = letters[Math.floor(Math.random() * letters.length)];
-ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-
-drops[i] = (drops[i] * fontSize > canvas.height && Math.random() > 0.975) ? 0 : drops[i] + 1;
-}
-}
-
-setInterval(draw, 50);
-// Init
-window.addEventListener('DOMContentLoaded', () => {
-    lucide.createIcons();
-        // Mode selector
-    const modeSelector = document.getElementById("modeSelector");
-    document.getElementById('hf-login').addEventListener('click', () => hub.loginHuggingFace());
-    document.getElementById('ms-login').addEventListener('click', () => hub.loginModelScope());
-    document.getElementById('login-token').addEventListener('click', () => hub.login);
-
-    if (modeSelector) {
-    modeSelector.addEventListener("change", (e) => {
-        window.api.setMode(e.target.value);
-    });
-    }
-    
-            const themeButtons = document.querySelectorAll('[data-theme]');
-                themeButtons.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    // Remove selected from all
-                    themeButtons.forEach(b => b.classList.remove('selected', 'bg-accent', 'text-white'));
-                    
-                    // Add selected styling
-                    btn.classList.add('selected', 'bg-accent', 'text-white');
-
-                    if (btn.dataset.theme === "dark") {
-                        document.documentElement.classList.remove("light");
-                        document.documentElement.classList.add("dark");
-                        document.body.dataset.theme = "dark";
-                    } else {
-                        document.documentElement.classList.remove("dark");
-                        document.documentElement.classList.add("light");
-                        document.body.dataset.theme = "light";
-                    }
-                });
-            });
-
-            // Accent color swatches
-            const colorSwatches = document.querySelectorAll('[data-color]');
-                colorSwatches.forEach(swatch => {
-                swatch.addEventListener('click', () => {
-                    const color = swatch.dataset.color;
-                    document.documentElement.style.setProperty('--accent', color);
-
-                    // Remove selected from all
-                    colorSwatches.forEach(s => s.classList.remove('selected', 'ring-4', 'ring-white'));
-                    // Add selected to clicked
-                    swatch.classList.add('selected', 'ring-4', 'ring-white');
-                });
-            });
-    
-            document.querySelectorAll('.SaveLoadOption').forEach(btn => {
-            btn.addEventListener('click', async () => {
-                const title = 'MyDoc'; // Replace with your selected document
-                let res;
-
-                switch (btn.innerText) {
-                case 'SAVE':
-                    res = await window.api.saveDocument({ title, content: 'Hello World' });
-                    break;
-                case 'LOAD':
-                    res = await window.api.loadDocument(title);
-                    break;
-                case 'DELETE':
-                    res = await window.api.deleteDocument(title);
-                    break;
-                case 'REPLICATE':
-                    let t = title + "_copy";
-                    res = await window.api.replicateDocument(t);
-                    break;
-                case 'MERGE':
-                    res = await window.api.mergeDocument(
-                    { title, content: 'Doc1 content' },
-                    { title: title + '_2', content: 'Doc2 content' },
-                    title + '_merged'
-                    );
-                    break;
-                case 'EXPORT':
-                    res = await window.api.exportDocument({ title, content: 'Hello' }, 'C:\\Users\\User\\Desktop\\export.json');
-                    break;
-                }
-
-                console.log(res);
-            });
-            });
-
-
-            //globeMaterial.color.set(color);
-            const bgSelect = document.getElementById('bgSelector');
-            function switchBG(type) {
-                // Clean previous
-                if (currentBG?.cleanup) {
-                    currentBG.cleanup();
-                    currentBG = null;
-                }
-                const accent = getComputedStyle(document.documentElement)
-                    .getPropertyValue('--accent')
-                    .trim();
-                switch (type) {
-                    case "Orbital View (3D)":
-                        currentBG = initChatBackground();
-                        currentBG.setAccent(accent);
-                        break;
-
-                    case "Neural Network (3D)":
-                        currentBG = initCircuitBackground();
-                        currentBG.setAccent(accent);
-                        break;
-
-                    case "Matrix Rain (2d)":
-                        currentBG = initMatrixRain();
-                        setBackground("2d");
-                        break;
-                        
-                    case "Cold Rain (3d)":
-                        currentBG = initRainBackground();
-                        currentBG.setAccent(accent);
-                        break;
-
-                    case "Solid Black (Perf)":
-                        if (currentBG?.cleanup) {
-                            currentBG.cleanup();
-                            currentBG = null;
-                        }
-                        break;
-
-                    case "Custom":
-                        currentBG = initImageBackground(file);
-                }
-            }
-
-            const avatarMap = {
+        const bgSelectS = document.getElementById('bgSelector');
+        if (bgSelectS && bgSelectS.value) {
+                color = bgSelectS.value;
+                    // Map of accent colors to avatars
+                const avatarMap = {
                 "#06b6d4": "./assets/avatar_blue.png",
                 "#3b82f6": "./assets/avatar_blue.png",
                 "#f59e0b": "./assets/avatar_gold.png",
@@ -1603,124 +1650,124 @@ window.addEventListener('DOMContentLoaded', () => {
                 "#9E8850": "./assets/avatar_yellow.png",
                 "#712925": "./assets/avatar_ultron.png",
                 "#2B2C2B": "./assets/avatar_black.png"
-            };
-            saveAppearance();
+                };
 
-            const avatarImage = document.getElementById("avatarImage");
-
-            colorSwatches.forEach(swatch => {
-            swatch.addEventListener("click", () => {
-                    const color = swatch.dataset.color;
-
-                    document.documentElement.style.setProperty("--accent", color);
-                    const bgSelectS = document.getElementById('bgSelector');
-                    switchBG(bgSelectS.value)
-                    // swap avatar
-                    if (avatarMap[color]) {
-                    avatarImage.src = avatarMap[color];
+                // Pick avatar based on color, fallback to default
+                if (avatarMap[color]) {
                     avatar = avatarMap[color];
-                    }
-
-                    // update selected ring
-                    colorSwatches.forEach(s => 
-                    s.classList.remove("ring-4", "ring-white")
-                    );
-                    swatch.classList.add("ring-4", "ring-white");
-                });
-            });
-
-            bgSelect.addEventListener('change', e => switchBG(e.target.value));
-                // Temperature slider
-                const tempRange = document.getElementById('tempRange');
-                const tempValue = document.getElementById('tempValue');
-                if (tempRange && tempValue) {
-                tempRange.addEventListener('input', () => {
-                    tempValue.textContent = tempRange.value;
-                });
+                }
+                return avatar;
             }
-
-            // Context window slider
-            const contextRange = document.getElementById('contextRange');
-            const contextValue = document.getElementById('contextValue');
-            if (contextRange && contextValue) {
-                contextRange.addEventListener('input', () => {
-                    contextValue.textContent = contextRange.value;
-                });
-            }
-        });
-
-    function handleImageFile(file) {
-        if (!file || !file.type.startsWith("image/")) return;
-
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            if (currentBG?.cleanup) currentBG.cleanup();
-            currentBG = initImageBackground(event.target.result);
-        };
-        reader.readAsDataURL(file);
+            return null;
     }
 
-    const selector = document.getElementById("modeSelector");
-    selector.addEventListener("change", (e) => {
-        window.api.updateEngine({ mode: selector.value });
-    });
+    const canvas = document.getElementById('bg-bot');
+    const ctx = canvas.getContext('2d');
 
-    const cselector = document.getElementById("character-selector");
-    selector.addEventListener("change", (e) => {
-        window.api.updateCharacter({ mode: selector.value });
-    });
-    // Drag and drop for appearance
-    const dropZone  = document.getElementById('bg-drop-zone');
-    const fileInput = document.getElementById('bg-file-input');
+    // 1. Set actual canvas size (not CSS)
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
 
-    // Click = open picker
-    dropZone.addEventListener('click', () => {
-        fileInput.click();
-    });
+    // 2. Font & fill style
+    ctx.font = '16px monospace';
+    ctx.fillStyle = 'lime';
 
-    // File picker
-    fileInput.addEventListener('change', (e) => {
-        handleImageFile(e.target.files[0]);
-    });
-    dropZone.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        dropZone.classList.add('border-accent');
-    });
-    dropZone.addEventListener('dragleave', (e) => {
-        e.preventDefault();
-        dropZone.classList.remove('border-accent');
-    });
-    dropZone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        dropZone.classList.remove('border-accent/20');
+    // 3. Initialize drops AFTER width is set
+    const fontSize = 16;
+    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    const columns = Math.floor(canvas.width / fontSize);
+    const drops = Array(columns).fill(0);
 
-        const file = e.dataTransfer.files[0];
-        if (!file || !file.type.startsWith("image/")) return;
+    // 4. Draw loop
+    function draw() {
+    ctx.fillStyle = 'rgba(0,0,0,0.05)'; // fade
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            switchBG("Custom");
-            currentBG = initImageBackground(event.target.result);
-            saveAppearance();
-        };
-        reader.readAsDataURL(file);
-    });
-          
-function reindexWorkflow(){
-
-    const steps = document.querySelectorAll(".workflow-step");
-
-    steps.forEach((step,i)=>{
-        step.querySelector(".workflow-index").textContent = i+1;
-    });
-
-    workflowStepCounter = steps.length;
+    ctx.fillStyle = 'lime';
+    for (let i = 0; i < drops.length; i++) {
+        const text = letters[Math.floor(Math.random() * letters.length)];
+        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+        drops[i] = (drops[i] * fontSize > canvas.height && Math.random() > 0.975) ? 0 : drops[i] + 1;
+    }
 }
 
+    function reindexWorkflow(){
+        const steps = document.querySelectorAll(".workflow-step");
+        steps.forEach((step,i)=>{
+            step.querySelector(".workflow-index").textContent = i+1;
+        });
+        workflowStepCounter = steps.length;
+    }
+
+    async function downloadHF(modelName){
+        await AutoTokenizer.from_pretrained(modelName);
+        await AutoModelForCausalLM.from_pretrained(modelName);
+    }
+
+    function downloadModelScope(modelName){
+        return new Promise((resolve,reject)=>{
+
+            const proc = spawn("modelscope", [
+                "download",
+                modelName
+            ]);
+
+            proc.on("close", code=>{
+                if(code === 0) resolve();
+                else reject("ModelScope download failed");
+            });
+
+        });
+    }
+
+    function downloadOllama(modelName) {
+        return new Promise((resolve, reject) => {
+            const proc = spawn("ollama", ["pull", modelName]);
+            proc.stdout.on("data", d => {
+                console.log(d.toString());
+            });
+
+            proc.stderr.on("data", d => {
+                console.error(d.toString());
+            });
+
+            proc.on("close", code => {
+                if (code === 0) resolve();
+                else reject("Ollama pull failed");
+            });
+
+        });
+    }
+ 
+    async function downloadModel(modelName, sources){
+        for(const source of sources){
+            try{
+                if(source === "huggingface"){
+                    await downloadHF(modelName);
+                    await onModelDownloaded(modelName);
+                    return;
+                }
+
+                if(source === "modelscope"){
+                    await downloadModelScope(modelName);
+                    await onModelDownloaded(modelName);
+                    return;
+                }
+
+                if(source === "verso"){
+                    await downloadOllama(modelName);
+                    await onModelDownloaded(modelName);
+                    return;
+                }
+            }catch(err){
+                console.warn(`Download failed from ${source}`, err);
+            }
+        }
+        throw new Error("Model not found in selected sources");
+    }
+
 async function executeWorkflow() {
-
     console.log("⚙️ Starting workflow...");
-
     const steps = document.querySelectorAll(".workflow-step");
 
     if (steps.length === 0) {
@@ -1728,14 +1775,59 @@ async function executeWorkflow() {
         return;
     }
 
-    let previousOutput = "";
+    const context = {
+        previousOutput: "",
+        results: [],
+        memory: {}
+    };
+
+    // -------- PRE-FLIGHT --------
+
+    const requiredModels = new Set();
+
+    steps.forEach(step => {
+
+        const agentName = step.querySelector(".workflow-agent")?.value;
+
+        if (!agentName) return;
+
+        const agent = getAgentByName(agentName);
+
+        if (agent?.model) {
+            requiredModels.add(agent.model);
+        }
+
+    });
+
+    console.log("Checking models:", [...requiredModels]);
+
+    for (const model of requiredModels) {
+
+        const exists = await checkModelExists(model);
+
+        if (!exists) {
+
+            console.log("Downloading model:", model);
+
+            try {
+                await downloadModel(model);
+            } catch (err) {
+                console.error("Failed downloading model:", model, err);
+                return;
+            }
+        }
+    }
+
+    console.log("All models ready.");
+
+    // -------- EXECUTION --------
 
     for (let i = 0; i < steps.length; i++) {
 
         const step = steps[i];
 
-        const agentName = step.querySelector(".workflow-agent").value;
-        const action = step.querySelector(".workflow-action").value;
+        const agentName = step.querySelector(".workflow-agent")?.value;
+        const action = step.querySelector(".workflow-action")?.value;
 
         console.log(`Running Step ${i + 1}:`, agentName, action);
 
@@ -1753,115 +1845,259 @@ async function executeWorkflow() {
 
         let result = "";
 
-        switch (action) {
+        try {
 
-            case "respond":
-                result = await runAgent(agent, previousOutput);
-                break;
+            switch (action) {
 
-            case "research":
-                result = await runResearchTool(previousOutput);
-                break;
+                case "respond":
+                    result = await runAgent(agent, context.previousOutput);
+                    break;
 
-            case "code":
-                result = await runAgent(agent, "Write code for: " + previousOutput);
-                break;
+                case "research":
+                    result = await runResearchTool(context.previousOutput);
+                    break;
 
-            case "tool":
-                result = await runAgentTool(agent, previousOutput);
-                break;
+                case "code":
+                    result = await runAgent(agent, "Write code for: " + context.previousOutput);
+                    break;
+
+                case "tool":
+                    result = await runAgentTool(agent, context.previousOutput);
+                    break;
+
+                default:
+                    console.warn("Unknown action:", action);
+            }
+
+        } catch (err) {
+
+            console.error(`Step ${i + 1} failed:`, err);
+            continue;
         }
 
-        previousOutput = result;
+        context.previousOutput = result;
+        context.results.push(result);
 
         console.log(`Step ${i + 1} output:`, result);
     }
-
     console.log("✅ Workflow finished.");
+    return context.results;
 }
 
-// Attach to button
-document.getElementById('start-pipeline-btn').onclick = executeWorkflow;
-// =====================================================
-// CUSTOM BG FILE INPUT
-// =====================================================
-dropZone.addEventListener('click', () => fileInput.click());
-fileInput.addEventListener('change', (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        //if (animateId) cancelAnimationFrame(animateId);
-        //if (renderer && renderer.domElement.parentNode) { renderer.domElement.parentNode.removeChild(renderer.domElement); renderer.dispose(); renderer = null; }
-        bgChatContainer.style.backgroundImage = `url(${e.target.result})`;
-        bgChatContainer.style.backgroundSize = 'cover';
-        bgChatContainer.style.backgroundPosition = 'center';
-        customBgSelected = true;
-        dropZone.querySelector('p').innerText = `Loaded: ${file.name}`;
-    };
-    reader.readAsDataURL(file);
-});
+setInterval(draw, 50);
+// Init
+document.addEventListener("DOMContentLoaded", initUI);
 
-dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-accent/80'); });
-dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-accent/80'));
-dropZone.addEventListener('drop', (e) => {
-    e.preventDefault();
-    dropZone.classList.remove('border-accent/80');
-    dropZone.querySelector('p').innerText = "Image Loaded: custom_bg.png";
-    dropZone.querySelector('i').classList.add('text-green-400');
-    dropZone.querySelector('i').classList.remove('text-accent');
-});
 
-document.getElementById('remove-bg-btn').addEventListener('click', (() => {bgChatContainer.style.backgroundImage = null; dropZone.querySelector('p').innerText = `Ready for Upload`;}));
-const downloadButton = document.getElementById("model_confirmation")
-const modelInput     = document.getElementById("model-search-input")
-const hfCheckbox = document.getElementById("source-hf")
-const msCheckbox = document.getElementById("source-ms")
-const modelDropdown  = document.getElementById("local-model-selector")
+function initAppearance(){
+    lucide.createIcons();
+    loadSavedAppearance();
+    loadSavedTheme();
+    loadSavedAccent();
+    const themeButtons = document.querySelectorAll("[data-theme]");
+    themeButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+            const theme = btn.dataset.theme;
 
-downloadButton.addEventListener("click", async () => {
-    const dropdownName = modelDropdown?.value
-    const modelName = modelInput.length > 0 ? modelInput : dropdownName
-    if (!modelName) {
-        alert("Enter a model name or choose one from the dropdown")
-        return
+            document.body.dataset.theme = theme;
+
+            updateThemeButtons(theme);
+
+            saveAppearance();
+        });
+    });
+
+    document.querySelectorAll(
+        ".local-model-toggle, .grok-model-toggle, .verso-model-toggle, .groq-model-toggle"
+    ).forEach(el => {
+        el.addEventListener("change", initModelSelects);
+    });
+}
+
+function initBackground(){
+
+    const bgSelect = document.getElementById("bgSelector");
+    const dropZone = document.getElementById("bg-drop-zone");
+
+    if(bgSelect){
+        bgSelect.addEventListener("change", e=>{
+            switchBG(e.target.value);
+        });
     }
 
-    const sources = {
-        huggingface: hfCheckbox.checked,
-        modelscope:  msCheckbox.checked
+    if(dropZone){
+        dropZone.addEventListener("dragover", e=>{
+            e.preventDefault();
+            dropZone.classList.add("border-accent");
+        });
+
+        dropZone.addEventListener("dragleave", ()=>{
+            dropZone.classList.remove("border-accent");
+        });
+
+        dropZone.addEventListener("drop", e=>{
+            e.preventDefault();
+            const file = e.dataTransfer.files[0];
+            handleImageFile(file);
+        });
     }
 
-    try {
-        if (sources.huggingface) {
-            downloadButton.disabled = true
-            downloadButton.innerText = "Downloading..."
-            let useOllama  = document.getElementById("modeSelector") === "Verso"
-            await hub.downloadModel(modelName, {
-                huggingface: hfCheckbox.checked,
-                modelscope:  msCheckbox.checked,
-                ollama:     useOllama
-            })
+}
 
-            downloadButton.disabled = false
-            downloadButton.innerText = "Downloaded Model"
+function initModelControls(){
+
+    const modeSelector = document.getElementById("modeSelector");
+
+    if(modeSelector){
+        modeSelector.addEventListener("change", e=>{
+            window.api.setMode(e.target.value);
+        });
+    }
+
+    const tempRange = document.getElementById("tempRange");
+    const tempValue = document.getElementById("tempValue");
+
+    if(tempRange && tempValue){
+        tempRange.addEventListener("input",()=>{
+            tempValue.textContent = tempRange.value;
+        });
+    }
+
+}
+
+function initWorkflow(){
+
+    const startBtn = document.getElementById("start-pipeline-btn");
+
+    if(startBtn){
+        startBtn.addEventListener("click", executeWorkflow);
+    }
+
+}
+
+
+async function initDownloads(){
+
+    const conf = await window.api.getConfig();
+
+    const button   = document.getElementById("model_confirmation");
+    const input    = document.getElementById("model-search-input");
+    const dropdown = document.getElementById("local-model-selector");
+
+    if(!button) return;
+
+    function getSelectedSources(){
+
+        const sources = [];
+
+        if(document.getElementById("hfBox")?.checked) sources.push("huggingface");
+        if(document.getElementById("msBox")?.checked) sources.push("modelscope");
+
+        return sources;
+    }
+
+   button.addEventListener("click", async ()=>{
+
+        if (button.dataset.busy) return;
+        button.dataset.busy = "1";
+
+        try{
+
+            const conf = await window.api.getConfig();
+
+            if(!conf.tokenKey){
+                alert("Please input your API Key/Token");
+                return;
+            }
+
+            const modelName =
+                input?.value?.length > 0
+                ? input.value
+                : dropdown?.value;
+
+            if(!modelName){
+                alert("Enter a model name");
+                return;
+            }
+
+            const sources = getSelectedSources();
+
+            if(sources.length === 0){
+                alert("Select at least one model source");
+                return;
+            }
+
+            button.disabled = true;
+            button.innerText = "Downloading...";
+
+            await downloadModel(modelName, sources);
+
+            button.innerText = "Downloaded";
+
+        } catch(err){
+
+            console.error("Download failed", err);
+            button.innerText = "Failed";
+
+        } finally {
+
+            button.disabled = false;
+            button.dataset.busy = "";
+
         }
+    });
+}
 
-        if (sources.modelscope) {
-            downloadButton.disabled = true
-            downloadButton.innerText = "Downloading..."
-            await hub.downloadFromModelScope(modelName)
-            downloadButton.disabled = false
-            downloadButton.innerText = "Downloaded Model"
+function updateThemeButtons(activeTheme) {
+    const buttons = document.querySelectorAll(".theme-btn");
+
+    buttons.forEach(btn => {
+        btn.classList.remove("bg-accent", "text-white");
+
+        if (btn.dataset.theme === activeTheme) {
+            btn.classList.add("bg-accent", "text-white");
         }
-    } catch (err) {
-        console.error("Model download failed:", err)
-    }
-})
+    });
+}
 
-window.createAgent      = createAgent;
-window.addWorkflowStep  = addWorkflowStep;
-window.executeWorkflow  = executeWorkflow;
-window.closeModal       = closeModal;
-window.switchTab        = switchTab;
-window.handleChatSubmit = handleChatSubmit;
+function updateWorkflowControls() {
+    const addStepBtn = document.getElementById("add-step-btn");
+    const agentsExist = document.querySelectorAll(".agent-instance").length > 0;
+ 
+    addStepBtn.disabled = !agentsExist;
+}
+
+function initUI() {
+    initModelSelects();
+    initDownloads();
+    loadAppearance();
+    const agentsExist = document.querySelectorAll(".agent-instance").length > 0;
+    
+    // Enable '+ Add Step' button only if agents exist
+    updateWorkflowControls();
+
+    console.log(agentsExist);
+    const btn   = document.getElementById("grok-key-input");
+    btn.value   = localStorage.getItem("token_key");
+    try { initAppearance(); } catch(e){ console.error("Appearance failed", e); }
+    try { initBackground(); } catch(e){ console.error("Background failed", e); }
+    try { initModelControls(); } catch(e){ console.error("Model controls failed", e); }
+    try { initWorkflow(); } catch(e){ console.error("Workflow failed", e); }
+    try { initDownloads(); } catch(e){ console.error("Downloads failed", e); }
+}
+
+window.openCreateBotModal = openCreateBotModal
+window.selectBotType      = selectBotType
+window.confirmCreateBot   = confirmCreateBot
+window.addAgent           = addAgent;
+window.setSelectedSlot    = setSelectedSlot;
+window.deleteAgent        = deleteAgent;
+window.createAgent        = createAgent;
+window.addWorkflowStep    = addWorkflowStep;
+window.executeWorkflow    = executeWorkflow;
+window.closeModal         = closeModal;
+window.switchTab          = switchTab;
+window.updateQRCode       = updateQRCode;
+window.deleteBot          = deleteBot;
+window.handleChatSubmit   = handleChatSubmit;
+window.updateWorkflowDropdowns = updateWorkflowDropdowns;

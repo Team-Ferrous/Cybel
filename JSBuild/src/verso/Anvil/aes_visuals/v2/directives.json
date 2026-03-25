@@ -1,0 +1,232 @@
+{
+  "schema_version": "1.0",
+  "artifact": "anvil_aes_visual_directives",
+  "profile": "v2",
+  "generated_on": "2026-03-03",
+  "owner": "Anvil",
+  "upstream_context": {
+    "aes_baseline_file": "standards/AES_SOURCE_BASELINES.md",
+    "intent": "Expand baseline controls with safety-lifecycle, secure coding, and evidence-strength directives"
+  },
+  "directives": [
+    {
+      "directive_id": "AV2-001",
+      "title": "Fail-Closed Normative Interpretation",
+      "rationale": "High-assurance prompt pipelines must preserve strict normative semantics across rewriting and summarization.",
+      "enforcement_targets": [
+        "prompt_router",
+        "policy_parser",
+        "review_gate"
+      ],
+      "implementation_patterns": [
+        "Normalize and preserve RFC 2119/8174 keyword meaning before rule execution.",
+        "Convert ambiguous wording into explicit MUST/SHOULD form only with traceable justification.",
+        "Reject outputs that remove prohibitions or weaken hard requirements."
+      ],
+      "verification_checks": [
+        "Normative token audit shows no MUST->SHOULD downgrade.",
+        "Requirement-level metadata survives each transformation stage.",
+        "Ambiguous clauses are flagged for explicit owner decision."
+      ],
+      "source_refs": [
+        "S01",
+        "S02"
+      ]
+    },
+    {
+      "directive_id": "AV2-002",
+      "title": "Assurance Crosswalk Enforcement",
+      "rationale": "AES maps risk to assurance rigor; crosswalk to aerospace/automotive/functional-safety standards prevents under-classification.",
+      "enforcement_targets": [
+        "risk_classification",
+        "change_planning",
+        "safety_review"
+      ],
+      "implementation_patterns": [
+        "Classify each change by impact severity before implementation.",
+        "For high-impact changes, require lifecycle artifacts comparable to DO-178C/ISO 26262/IEC 61508 expectations.",
+        "Attach traceability from requirement -> implementation -> test evidence."
+      ],
+      "verification_checks": [
+        "Assurance class exists for every executable change.",
+        "High-assurance changes include bidirectional traceability evidence.",
+        "Missing classification blocks merge."
+      ],
+      "source_refs": [
+        "S03",
+        "S04",
+        "S05",
+        "S06"
+      ]
+    },
+    {
+      "directive_id": "AV2-003",
+      "title": "Security and Weakness Baseline with Drift Watch",
+      "rationale": "Security checks must remain aligned to ASVS and CWE while handling annual taxonomy changes without silent policy drift.",
+      "enforcement_targets": [
+        "security_review",
+        "sast_pipeline",
+        "governance"
+      ],
+      "implementation_patterns": [
+        "Enforce ASVS-level security checklists by component exposure.",
+        "Treat relevant CWE Top 25 classes as blocking for high-assurance surfaces.",
+        "On new CWE/ASVS releases, open policy-delta review tickets before changing enforcement."
+      ],
+      "verification_checks": [
+        "Checklist evidence links to ASVS sections or mapped internal controls.",
+        "Blocking CWE findings require mitigation or approved exception.",
+        "Upstream release delta exists when baseline versions change."
+      ],
+      "source_refs": [
+        "S07",
+        "S08",
+        "S09"
+      ]
+    },
+    {
+      "directive_id": "AV2-004",
+      "title": "NIST-Aligned Control Family Coverage",
+      "rationale": "Control-family mapping makes security intent auditable and comparable across services.",
+      "enforcement_targets": [
+        "threat_model",
+        "architecture_review",
+        "audit_export"
+      ],
+      "implementation_patterns": [
+        "Map high-risk requirements to SP 800-53 families (minimum AC/AU/CM/SC).",
+        "Store mappings as machine-readable evidence artifacts.",
+        "Require control rationale for omitted families in scoped exceptions."
+      ],
+      "verification_checks": [
+        "Every high-risk requirement has at least one control-family tag.",
+        "Audit export includes control coverage table.",
+        "Unjustified missing control family is a hard failure."
+      ],
+      "source_refs": [
+        "S10"
+      ]
+    },
+    {
+      "directive_id": "AV2-005",
+      "title": "Safe-Subset Coding for Native Components",
+      "rationale": "High-assurance native code benefits from constrained language subsets and explicit undefined-behavior avoidance.",
+      "enforcement_targets": [
+        "cpp_codegen",
+        "native_review",
+        "static_analysis"
+      ],
+      "implementation_patterns": [
+        "Apply CERT C/C++ secure coding constraints for integer, memory, and API safety.",
+        "Apply MISRA-aligned restrictions for dangerous casts and undefined behavior patterns.",
+        "Require explicit concurrency and resource-ownership strategy in design notes."
+      ],
+      "verification_checks": [
+        "Static analysis profile includes CERT/MISRA-aligned rule packs.",
+        "Undefined-behavior risk items are enumerated and resolved.",
+        "Unsafe cast or unchecked arithmetic in critical paths is blocking."
+      ],
+      "source_refs": [
+        "S11",
+        "S12"
+      ]
+    },
+    {
+      "directive_id": "AV2-006",
+      "title": "Supply-Chain Provenance and Attestation",
+      "rationale": "High-assurance releases require provenance that is attributable, tamper-evident, and reviewable.",
+      "enforcement_targets": [
+        "ci_cd",
+        "artifact_signing",
+        "release_gate"
+      ],
+      "implementation_patterns": [
+        "Target SLSA Level 3 provenance characteristics for critical artifact pipelines.",
+        "Record immutable source, build parameters, and builder identity in attestations.",
+        "Require signing/verification step before high-assurance release publication."
+      ],
+      "verification_checks": [
+        "Attestation attached to each release artifact.",
+        "Provenance links reconstruct complete build lineage.",
+        "Unsigned or unverifiable critical artifact is blocked."
+      ],
+      "source_refs": [
+        "S13",
+        "S14"
+      ]
+    },
+    {
+      "directive_id": "AV2-007",
+      "title": "Telemetry Semantics and Correlation Rigor",
+      "rationale": "Consistent semantic conventions and correlation IDs are required for actionable reliability gates.",
+      "enforcement_targets": [
+        "observability",
+        "runtime_instrumentation",
+        "release_readiness"
+      ],
+      "implementation_patterns": [
+        "Emit logs/metrics/traces with a pinned semantic-convention version.",
+        "Carry trace/span identifiers across process and service boundaries.",
+        "Use histogram-style latency metrics for p95/p99 regressions."
+      ],
+      "verification_checks": [
+        "Telemetry schema validation passes against selected semantic conventions.",
+        "Cross-signal correlation works for a representative transaction.",
+        "Latency gate can compute percentile regressions from emitted metrics."
+      ],
+      "source_refs": [
+        "S15",
+        "S16"
+      ]
+    },
+    {
+      "directive_id": "AV2-008",
+      "title": "Evidence-Backed Quantum/Physics Claims",
+      "rationale": "When standards are incomplete, high-risk numerical or quantum claims require reproducible evidence tied to peer-reviewed literature.",
+      "enforcement_targets": [
+        "experiment_design",
+        "model_eval",
+        "scientific_review"
+      ],
+      "implementation_patterns": [
+        "Require explicit noise-model quality measurement before claiming robustness gains.",
+        "Require A/B evidence for noise-adaptive transpilation impact claims.",
+        "For conservation-law-sensitive numerics, require entropy/stability rationale and tests."
+      ],
+      "verification_checks": [
+        "Claimed quantum robustness includes baseline-vs-treatment metrics.",
+        "Noise model assumptions are documented and empirically validated.",
+        "Numerical stability claims include reproducible test artifacts."
+      ],
+      "source_refs": [
+        "S17",
+        "S18",
+        "S19"
+      ]
+    },
+    {
+      "directive_id": "AV2-009",
+      "title": "Governed Baseline Evolution",
+      "rationale": "External standards evolve; controlled baseline updates prevent accidental weakening or incompatible policy jumps.",
+      "enforcement_targets": [
+        "standards_governance",
+        "policy_repo",
+        "compliance_reporting"
+      ],
+      "implementation_patterns": [
+        "Run periodic upstream change scans for ASVS/CWE/NIST/SLSA/OpenTelemetry.",
+        "Create migration tickets before any baseline version change.",
+        "Require multi-owner signoff and impact report before activation."
+      ],
+      "verification_checks": [
+        "Each baseline bump includes signed impact analysis.",
+        "Rule delta table exists and is linked to migration tasks.",
+        "No active policy references unresolved baseline transition."
+      ],
+      "source_refs": [
+        "S20",
+        "S21"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,90 @@
+schema_version: native_qsg_suite.v1
+profile_name: platinum
+models:
+  - granite4:tiny-h
+  - qwen3.5:4b
+  - qwen3.5:9b
+max_parallel_models: 1
+strict_host: true
+require_saguaro: true
+require_perf: true
+host_contract_id: auto
+affinity_policy: certified_exact
+tuning_contract_policy: required
+preflight_strictness: certify
+assurance_level: AAL-3
+evidence_class: publication
+force_parallel_decode: true
+forbid_autoregressive_fallback: true
+enabled_lanes:
+  - canonical_all_on
+  - continuous_scheduler
+  - kernel_microbench
+  - quality_eval
+  - memory_replay
+canonical_decode_threads:
+  - null
+canonical_batch_threads:
+  - null
+scenario_pack:
+  canonical_prompt: "In 4-5 sentences, explain how AVX2, locality-aware scheduling, KV reuse, and deterministic runtime telemetry together make CPU QSG inference certifiable."
+  canonical_max_new_tokens: 48
+  canonical_context_length: 3072
+  warmup_runs: 2
+  measured_runs: 5
+  thread_matrix_ubatch: [32]
+  continuous_concurrency: [1, 2, 4, 8, 12]
+  continuous_prompt_classes: [short, medium, long]
+  continuous_scheduler_policies: [fcfs, priority]
+kernel_microbench:
+  warmups: 12
+  iterations: 256
+  synthetic_lengths: [32, 64, 128, 256, 512]
+  target_kernels:
+    - embedding_lookup
+    - attention_proj
+    - attention_rope_kv
+    - attention_decode
+    - attention_out_proj
+    - ffn_gate_up
+    - ffn_down
+    - ssm_projection
+    - ssm_conv
+    - ssm_recurrent
+    - ssm_output
+    - lm_head
+    - sanitize
+quality_eval:
+  perplexity_corpus: benchmarks/corpora/perplexity_corpus.jsonl
+  confidence_corpus: benchmarks/corpora/confidence_corpus.jsonl
+  rubric_corpus: benchmarks/corpora/coherence_rubric.jsonl
+  accuracy_corpus: benchmarks/corpora/accuracy_corpus.jsonl
+  max_samples_per_family: 0
+calibration_search:
+  bootstrap_profile: probe
+  search_profile: search
+  deep_search_profile: deep_search
+  stage1_top_k: 4
+  stage2_top_k: 3
+  scheduler_top_k: 3
+  max_scheduler_candidates: 24
+  fairness_floor: 0.92
+  queue_wait_p95_ceiling_ms: 250.0
+  decode_tps_regression_floor_pct: 0.94
+  continuous_batch_wait_timeout_ms: [1, 2, 4]
+  continuous_state_page_rows: [64, 128, 256]
+  continuous_max_prefill_rows_per_iteration: [512, 1024, 1536]
+  continuous_interleaved_streams: [false, true]
+  deep_search_kernel_iterations: 64
+memory_replay:
+  db_path: ""
+  campaign_id: ""
+  storage_root: ""
+  cases_path: ""
+  case_limit: 0
+  gate_thresholds: {}
+host_requirements:
+  cpu_governor: performance
+  thp_modes: [never, madvise]
+  min_visible_threads: 1
+  enforce_min_visible_threads: true

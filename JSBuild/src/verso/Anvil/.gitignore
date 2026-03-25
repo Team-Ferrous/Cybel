@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+downloads/
+lib/
+lib64/
+parts/
+sdist/
+repo_analysis/
+
+# Virtual Env
+venv/
+env/
+ENV/
+
+# Sheriff
+.saguaro/
+.sheriff/
+.sheriff_test_parallel/
+.sheriff.rules
+.sheriff.rules.draft
+
+# Anvil local state and managed toolchains
+.anvil/
+
+# IDE
+.idea/
+.vscode/
+
+# Exception: Keep the binary we want to distribute
+!saguaro/ops/_saguaro_core.so
+
+# Native Build Artifacts
+saguaro/native/build/
+*.so
+*.o
+.hypothesis/

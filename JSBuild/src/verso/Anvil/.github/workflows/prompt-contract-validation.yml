@@ -1,0 +1,40 @@
+name: Prompt Contract Validation
+
+on:
+  pull_request:
+    paths:
+      - "prompts/**"
+      - "core/prompts/**"
+      - "core/thinking.py"
+      - "core/agent.py"
+      - "core/token_budget.py"
+      - "scripts/validate_prompt_contracts.py"
+      - "standards/**"
+      - ".pre-commit-config.yaml"
+      - ".github/workflows/prompt-contract-validation.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "prompts/**"
+      - "core/prompts/**"
+      - "core/thinking.py"
+      - "core/agent.py"
+      - "core/token_budget.py"
+      - "scripts/validate_prompt_contracts.py"
+      - "standards/**"
+
+jobs:
+  validate-prompts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Validate Prompt Contracts
+        run: python scripts/validate_prompt_contracts.py --repo . --json

@@ -9,10 +9,19 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
     <link   href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link   rel="stylesheet" href="./main.css">
     <script src="./renderer.js"                type="module"></script>
-
+    <!--<meta http-equiv="Content-Security-Policy"
+        content="
+        default-src 'self';
+        script-src 'self' https://cdn.jsdelivr.net https://unpkg.com;
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+        font-src 'self' https://fonts.gstatic.com;
+        connect-src 'self' https://cdn.jsdelivr.net https://unpkg.com;
+        img-src 'self' data:;
+        "> --> <!-- This is straightup overkill -->
 </head>
 <body style="background-color: var(--bg-primary); color: var(--text-primary);" class="h-screen w-screen flex flex-col md:flex-row relative">
     <!-- Global Scanline Overlay -->
@@ -63,7 +72,7 @@
                             <h4 class="text-lg font-bold text-amber-400 mb-1">Character</h4>
                             <p class="text-xs text-gray-400">Roleplay enabled. The AI adopts a specific persona, backstory, and will.</p>
                         </div>
-                        <div onclick="selectBotType('agent')" id="type-agent" class="type-card p-4 rounded-lg cursor-pointer hover:bg-accent40">
+                        <div onclick="selectBotType('utility')" id="type-utility" class="type-card p-4 rounded-lg cursor-pointer hover:bg-accent/40">
                             <h4 class="text-lg font-bold text-accent mb-1">Utility</h4>
                             <p class="text-xs text-gray-400">Utility mode. Direct, factual responses without simulated personality.</p>
                         </div>
@@ -94,22 +103,6 @@
                 <i data-lucide="message-square" class="w-5 h-5"></i>
                 <span class="font-semibold">Neural Chat</span>
             </button>
-            <button onclick="switchTab('options')" id="nav-options" class="w-full text-left px-6 py-3 flex items-center gap-3 transition-all inactive-nav">
-                <i data-lucide="wrench" class="w-5 h-5"></i>
-                <span class="font-semibold">System Options</span>
-            </button>
-        <!--<button onclick="switchTab('creative')" id="nav-creative" class="w-full text-left px-6 py-3 flex items-center gap-3 transition-all inactive-nav">
-                <i data-lucide="sparkles" class="w-5 h-5"></i>
-                <span class="font-semibold">Creative Mode</span>
-            </button>-->
-            <button onclick="switchTab('engine')" id="nav-engine" class="w-full text-left px-6 py-3 flex items-center gap-3 transition-all inactive-nav">
-                <i data-lucide="cpu" class="w-5 h-5"></i>
-                <span class="font-semibold">Engine Config</span>
-            </button>
-            <button onclick="switchTab('appearance')" id="nav-appearance" class="w-full text-left px-6 py-3 flex items-center gap-3 transition-all inactive-nav">
-                <i data-lucide="palette" class="w-5 h-5"></i>
-                <span class="font-semibold">Appearance</span>
-            </button>
             <button onclick="switchTab('management')" id="nav-management" class="w-full text-left px-6 py-3 flex items-center gap-3 transition-all inactive-nav">
                 <i data-lucide="layers" class="w-5 h-5"></i>
                 <span class="font-semibold">Bot Management</span>
@@ -118,6 +111,28 @@
                 <i data-lucide="hat-glasses" class="w-5 h-5"></i>
                 <span class="font-semibold">Agent Management</span>
             </button>
+            <button onclick="switchTab('creative')" id="nav-creative" class="w-full text-left px-6 py-3 flex items-center gap-3 transition-all inactive-nav">
+                <i data-lucide="sparkles" class="w-5 h-5"></i>
+                <span class="font-semibold">Creative Mode</span>
+            </button>
+            <button onclick="switchTab('appearance')" id="nav-appearance" class="w-full text-left px-6 py-3 flex items-center gap-3 transition-all inactive-nav">
+                <i data-lucide="palette" class="w-5 h-5"></i>
+                <span class="font-semibold">Appearance</span>
+            </button>
+            <button onclick="switchTab('options')" id="nav-options" class="w-full text-left px-6 py-3 flex items-center gap-3 transition-all inactive-nav">
+                <i data-lucide="wrench" class="w-5 h-5"></i>
+                <span class="font-semibold">System Options</span>
+            </button>
+            <button onclick="switchTab('engine')" id="nav-engine" class="w-full text-left px-6 py-3 flex items-center gap-3 transition-all inactive-nav">
+                <i data-lucide="cpu" class="w-5 h-5"></i>
+                <span class="font-semibold">Engine Config</span>
+            </button>
+            <button onclick="switchTab('qr')" id="nav-qr" class="w-full text-left px-6 py-3 flex items-center gap-3 transition-all inactive-nav">
+                <i data-lucide="qr-code" class="w-5 h-5"></i>
+                <span class="font-semibold">Link Mobile Device</span>
+            </button>
+            <hr class="border-accent/50">
+            <!--TBA, Chat History-->
         </div>
 
         <div class="p-4 border-t border-accent/50 text-xs text-accent font-mono text-center">
@@ -127,7 +142,6 @@
 
     <!-- Main Content Area -->
     <main class="flex-1 relative z-10 overflow-hidden flex flex-col bg-accent/50">
-        
         <!-- MODULE 1: CHAT INTERFACE (Shortened, with Globe) -->
         <section id="module-chat" class="module-section active flex-col h-full w-full relative overflow-hidden">
             <!-- 3D Globe Background -->
@@ -233,12 +247,12 @@
                             </div>
                             <div class="flex items-center gap-4 mt-2 text-xs text-amber-400">
                                 <label class="flex items-center gap-1">
-                                    <input type="checkbox" id="source-hf" checked>
+                                    <input id="hfBox" type="checkbox" id="source-hf" checked>
                                     HuggingFace
                                 </label>
 
                                 <label class="flex items-center gap-1">
-                                    <input type="checkbox" id="source-ms">
+                                    <input id="msBox" type="checkbox" id="source-ms">
                                     ModelScope
                                 </label>
                             </div>
@@ -253,7 +267,13 @@
                         <div id="verso-option-panel">
                             <div>
                                 <p class="text-xs text-amber-400 mt-2">API Token (High Noon)</p>
-                                <input id="api-token-input" placeholder="Enter your token" class="w-full text-xs">
+                                <input id="api-token-inputV" placeholder="Enter your token" class="w-full text-xs">
+                            </div>
+                            <div class="flex items-center gap-4 mt-2 text-xs text-amber-400">
+                                <label class="flex items-center gap-1">
+                                    <input type="checkbox" id="source-hf" checked>
+                                    Use Saguaro API
+                                </label>
                             </div>
                             <div>
                                 <button id="login-token" class="w-full mt-2 py-2 bg-amber-600/20 hover:bg-blue-600/40 text-amber-500 border border-amber-600/50 rounded text-xs font-bold transition-colors">
@@ -286,7 +306,17 @@
                             </div>
                         <!-- other Groq-specific panels -->
                     </div>
+                    <script>
+                        const ipt = document.getElementById("groq-key-input");
 
+                        // load saved key
+                        ipt.value = localStorage.getItem("token-key") || "";
+
+                        // save when user edits
+                        ipt.addEventListener("change", () => {
+                            localStorage.setItem("token-key", ipt.value);
+                        });
+                    </script>
                 <!-- Local mode panels -->
                 <div id="local-panels" style="display:none">
                     <div class="glass-panel p-6 rounded-xl" id="local-model-panel">
@@ -701,36 +731,45 @@
 
                 <div class="glass-panel p-6 rounded-xl border-green-900/30 bg-accent/80">
                     <div class="section-title text-accent">Active Bots</div>
+                    <p>Selected: <span id="selected-bot">None</span></p>
                     <div class="grid grid-cols-3 gap-4">
-                        <button id="saveBtn" class="SaveLoadOption py-3 px-4 border border-green-800/50 hover:bg-green-900/40 text-green-300 font-mono text-xs font-bold transition-all rounded backdrop-blur-sm"  onclick="window.api.saveDocument()">SAVE</button>
-                        <button id="loadBtn" class="SaveLoadOption py-3 px-4 border border-green-800/50 hover:bg-green-900/40 text-green-300 font-mono text-xs font-bold transition-all rounded backdrop-blur-sm"  onclick="window.api.loadDocument()">LOAD</button>
-                        <button id="mergeBtn" class="SaveLoadOption py-3 px-4 border border-green-800/50 hover:bg-green-900/40 text-green-300 font-mono text-xs font-bold transition-all rounded backdrop-blur-sm" onclick="window.api.mergeDocument()">MERGE</button>
+                        <button id="saveBtn"  class="SaveLoadOption py-3 px-4 border border-green-800/50 hover:bg-green-900/40 text-green-300 font-mono text-xs font-bold transition-all rounded backdrop-blur-sm">SAVE</button>
+                        <button id="loadBtn"  class="SaveLoadOption py-3 px-4 border border-green-800/50 hover:bg-green-900/40 text-green-300 font-mono text-xs font-bold transition-all rounded backdrop-blur-sm">LOAD</button>
+                        <button id="mergeBtn" class="SaveLoadOption py-3 px-4 border border-green-800/50 hover:bg-green-900/40 text-green-300 font-mono text-xs font-bold transition-all rounded backdrop-blur-sm">MERGE</button>
+                        <!-- Ingest row -->
+                        <!--<button disabled id="ingestBtn"
+                            class="col-span-3 py-3 px-4 border border-green-800/50 hover:bg-green-900/40 text-green-300 font-mono text-xs font-bold transition-all rounded backdrop-blur-sm">
+                            INGEST (Google Drive / Sheets)
+                        </button>-->
                     </div>
                 </div>
                 <br>
                 <div class="bot-grid">
-                    <div onclick="openCreateBotModal()" class="py-3 px-4 border border-accent/50 card glass-panel p-4">
+                    <div onclick="setSelectedSlot('bot1')" id="bot1" class="py-3 px-4 border border-accent/50 card glass-panel p-4">
                         <div class="card-header">
                             <div class="bot-icon">🤖</div>
                             <div class="status-dot"></div>
                         </div>
-                        <div class="agent-tag">CHATBOT</div>
+                        <div class="agent-tag">CHARACTER</div>
                         <div class="bot-name">CYBEL</div>
-                        <div class="bot-desc">An archaic intelligence woven from silicon and shadow; a statesman of the void who speaks with the weight of a dying sun and the measured pause of a veteran orator.</div>
-                        <div class="card-footer">
-                            <button class="icon-btn">></button>
-                            <button class="icon-btn">📋</button>
-                            <button class="icon-btn">🗑️</button>
-                            <button class="launch-btn">LAUNCH</button>
+                        <div class="bot-desc">A statesman of the void who speaks with the weight of a dying sun.</div>
+                        <div onclick="openCreateBotModal('bot1')">
+                                <div class="card-footer">
+                                    <button onclick="switchTab('chat')" class="icon-btn">></button>
+                                    <!--<button class="icon-btn">📋</button>-->
+                                    <button onclick="deleteBot('bot1', this.parentElement.parentElement)" class="icon-btn">🗑️</button>
+                                    <button onclick="openCreateBotModal('bot1')" class="launch-btn">CONFIG</button>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <div onclick="openCreateBotModal()" class="p-4 border-b border-accent/50 empty-slot glass-panel">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M12 5v14M5 12h14"/>
-                        </svg>
-                        <span>Empty Slot</span>
-                    </div>
+                        <div onclick="openCreateBotModal('bot2')">
+                            <div id="bot2" onclick="setSelectedSlot('bot2')" class="p-4 border-b border-accent/50 empty-slot glass-panel">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 5v14M5 12h14"/>
+                                </svg>
+                                <span>Empty Slot</span>
+                            </div>
+                        </div>
                     <!--<div class=" p-4 border-b border-accent/50 card glass-panel">
                         <div class="card-header">
                             <div class="bot-icon">🤖</div>
@@ -746,19 +785,22 @@
                             <button class="launch-btn">LAUNCH</button>
                         </div>
                     </div>-->
-
-                    <div onclick="openCreateBotModal()" class="p-4 border-b border-accent/50 empty-slot glass-panel">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M12 5v14M5 12h14"/>
-                        </svg>
-                        <span>Empty Slot</span>
+                    <div onclick="openCreateBotModal('bot3')">
+                        <div id="bot3" onclick="setSelectedSlot('bot3')" class="p-4 border-b border-accent/50 empty-slot glass-panel">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 5v14M5 12h14"/>
+                            </svg>
+                            <span onclick="">Empty Slot</span>
+                        </div>
                     </div>
 
-                    <div onclick="openCreateBotModal()" class="p-4 border-b border-accent/50 empty-slot glass-panel">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M12 5v14M5 12h14"/>
-                        </svg>
-                        <span>Empty Slot</span>
+                    <div onclick="openCreateBotModal('bot4')">
+                        <div id="bot4" onclick="setSelectedSlot('bot4')"  class="p-4 border-b border-accent/50 empty-slot glass-panel">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 5v14M5 12h14"/>
+                            </svg>
+                            <span onclick="openCreateBotModal('bot4')">Empty Slot</span>
+                        </div>
                     </div>
                 </div>
 
@@ -770,7 +812,7 @@
             </div>
         </section>
         <!-- MODULE 7: AGENT MANAGEMENT (Matrix + Create) -->
-    <section id="module-agents" class="module-section flex-col h-full w-full p-4 md:p-8 overflow-hidden relative">
+    <section id="module-agents" class="agent-ui module-section flex-col h-full w-full p-4 md:p-8 overflow-hidden relative">
             <div class="agent-ui glass-panel">
                 <!-- Agent List -->
                 <div class="agent-sidebar">
@@ -782,7 +824,7 @@
                 </div>
                 <!-- Agent Config -->
             <template id="agent-template">
-                <div class="agent-config glass-panel agent-instance">
+                <div class="agent-config glass-panel agent-instance" data-agent-id="0">
                     <h2 class="agent-title text-accent font-mono">Agent Configuration</h2>
                     <hr>
                     <div class="agent-form ">
@@ -791,6 +833,7 @@
                         <label class="agent-label text-accent font-mono">Model</label>
                         <div class="model-row">
                             <select id="groq-select" class="agent-select agent-model">
+                                <option class="text-accent font-mono">None</option>
                                 <option class="text-accent font-mono">openai/gpt-oss-20b</option>
                                 <option class="text-accent font-mono">openai/gpt-oss-120b</option>
                                 <option class="text-accent font-mono">llama-3.1-8b-instant</option>
@@ -820,16 +863,38 @@
                                 <option class="text-accent font-mono">Noro-Hermes-3x7B-GGUF</option> 
                                 <option class="text-accent font-mono">HeroBophades-3x7B</option>
                             </select>
-                            <label class="local-toggle text-accent font-mono">
-                                <input type="checkbox" class="local-model-toggle">
-                                Use Local Model
+                            <select id="verso-select" class="agent-select agent-model">
+                                    <option>PolyoxyDev/granite4-obsidian-tiny-h</option>
+                                    <option>jbaptistedaniel/search-ai-qwen3.5-4B-V2-q4</option>
+                                    <option>kwangsuklee/Qwen3.5-9B-Claude-4.6-Opus-Reasoning-Distilled-GGUF</option>
+                                    <option>Anvil</option>
+                            </select>
+                            <select id="grok-select" class="agent-select agent-model">
+                                <option>grok-4-1-fast-reasoning
+                                <option>grok-4-1-fast-non-reasoning</option>
+                                <option>grok-4-fast-reasoning</option>
+                                <option>grok-4-fast-non-reasoning</option>
+                                <option>grok-4-0709</option>
+                                <option>grok-3-mini</option>
+                                <option>grok-3</option>
+                                <option>grok-code-fast-1</option>
+                            </select>
+                            <label class="text-accent font-mono">
+                                <input type="checkbox" class="local-model-toggle"> Use Local Model
+                            </label>
+                            <label class="text-accent font-mono">
+                                <input type="checkbox" class="verso-model-toggle"> Use Saguaro Toolbox
+                            </label>
+                            <label class="text-accent font-mono">
+                                <input type="checkbox" class="grok-model-toggle"> Use Grok
                             </label>
                         </div>
                         <label class="agent-label text-accent font-mono">System Prompt</label>
                         <textarea class="agent-textarea agent-prompt" placeholder="System Prompt"></textarea>
                         <div class="config-buttons">
-                            <button class="border-accent text-accent font-mono">Import config</button>
-                            <button class="border-accent text-accent font-mono">Export config</button>
+                            <button  class="border-accent text-accent font-mono">Import config</button>
+                            <button  class="border-accent text-accent font-mono">Export config</button>
+                            <button  id="delete-agent-btn" class="border-accent text-accent font-mono">Delete Agent</button>
                         </div>
                 </div>
                 </template>
@@ -854,7 +919,7 @@
 
             <template id="workflow-step-template">
 
-<div class="workflow-step">
+<div class="workflow-step agent-ui">
 
     <span class="workflow-index"></span>
 
@@ -878,7 +943,7 @@
     <div class="workflow-builder glass-panel">
         <h2 class="agent-title text-accent font-mono">Workflow</h2>
         <div id="workflow-steps" class="workflow-steps"></div>
-        <button id="add-step-btn" class="workflow-add text-accent font-mono" onclick="addWorkflowStep()" disabled>
+        <button id="add-step-btn" class="workflow-add text-accent font-mono" onclick="addWorkflowStep()">
             + Add Step
         </button>
     </div>
@@ -887,6 +952,17 @@
             Execute Worflow
         </button>
     </div>
+    </section>
+    <section id="module-qr" class="module-section glass-panel rounded-xl p-8 max-w-md w-full text-center border-amber-500/50 shadow-[0_0_50px_rgba(245,158,11,0.2)]">
+        <span id="qrClose">&times;</span>
+        <h2 class="text-xl font-bold mb-4">Link Mobile Device</h2>
+        <img id="qrImage" width="256" height="256" class="mx-auto mb-4"/>
+        <p class="mb-4">
+            Scan this code with your mobile device to connect it to the engine.
+        </p>
+        <button onclick="updateQRCode()" class="mt-4 px-4 py-2 bg-blue-600 rounded">
+            Generate QR
+        </button>
     </section>
     </main>
     </body>

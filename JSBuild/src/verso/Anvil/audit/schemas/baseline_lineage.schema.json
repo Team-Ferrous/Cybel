@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "native_qsg_audit.baseline_lineage.v1",
+  "title": "Native QSG Baseline Lineage",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run_id",
+    "generated_at",
+    "comparator_mode",
+    "cohort_key",
+    "comparator_class_count",
+    "comparator_classes",
+    "comparable",
+    "topology_match",
+    "baseline",
+    "regression_signals"
+  ],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "run_id": {"type": "string"},
+    "generated_at": {"type": "string"},
+    "comparator_mode": {"type": "string"},
+    "cohort_key": {"type": "string"},
+    "comparator_class_count": {"type": "integer", "minimum": 0},
+    "comparator_classes": {"type": "array", "items": {"type": "object"}},
+    "comparable": {"type": "boolean"},
+    "topology_match": {"type": "boolean"},
+    "baseline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["present", "run_id", "topology_hash"],
+      "properties": {
+        "present": {"type": "boolean"},
+        "run_id": {"type": "string"},
+        "topology_hash": {"type": "string"},
+        "summary": {"type": "object"}
+      }
+    },
+    "regression_signals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["model", "decode_tps_delta_pct", "ttft_ms_delta_pct"],
+        "properties": {
+          "model": {"type": "string"},
+          "decode_tps_delta_pct": {"type": "number"},
+          "ttft_ms_delta_pct": {"type": "number"}
+        }
+      }
+    }
+  }
+}

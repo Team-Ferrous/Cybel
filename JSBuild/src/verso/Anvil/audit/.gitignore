@@ -1,0 +1,14 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# Benchmark run artifacts
+audit/smoke-audit/
+smoke-audit/
+baselines/
+*/manifest.json
+*/attempts.ndjson
+*/phases.ndjson
+*/summary.json
+*/failures.ndjson
+*/checkpoint.json

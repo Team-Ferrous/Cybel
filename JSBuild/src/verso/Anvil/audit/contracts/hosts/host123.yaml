@@ -1,0 +1,14 @@
+schema_version: native_qsg_suite.host_contract.v1
+contract_id: host123
+contract_origin: auto_generated
+generated_at: ''
+host_fingerprint: host123
+logical_cpus: 8
+required_visible_threads: 16
+cpu_governor: performance
+thp_modes: []
+host:
+  hostname: mike-verso-industries
+  machine: x86_64
+  platform: Linux-6.17.0-14-generic-x86_64-with-glibc2.39
+  cpu_model: ''

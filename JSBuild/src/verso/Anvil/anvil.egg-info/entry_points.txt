@@ -1,0 +1,4 @@
+[console_scripts]
+anvil = cli.repl:main
+anvil-aes-lint = core.aes.lint:main
+saguaro = saguaro.bootstrap:main

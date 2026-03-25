@@ -1,0 +1,5 @@
+numpy
+pyyaml
+ruff
+mypy
+vulture

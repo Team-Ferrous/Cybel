@@ -1,0 +1,18 @@
+# stack.yaml
+resolver: lts-23.31  # modern LTS with good GHC 9.6 support
+
+packages:
+  - .
+
+extra-deps: []
+
+# GHC options (optional, for stricter warnings)
+ghc-options:
+  "$locals": -Wall -Werror
+
+# Paths to Futhark compiled library
+extra-include-dirs:
+  - ./futhark/include   # place diff.h, blur.h etc. here
+extra-lib-dirs:
+  - ./futhark/lib       # compiled libdiff.a etc.
+

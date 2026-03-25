@@ -1,0 +1,5 @@
+[LATENT_SPACE_MEMORY_ROADMAP.md](LATENT_SPACE_MEMORY_ROADMAP.md) [Latent_Space_QSG_Roadmap.md](Latent_Space_QSG_Roadmap.md) 
+
+We implemented both of these in, I want you to validate they pass the smoke screen benchmarks now and work end to end before I attempt to run silver to profile it all down. Anything not fully implemented from either roadmap needs to be implemented end to end and passing the smoke benchmark so I can run the silver and audit this properly. 
+
+

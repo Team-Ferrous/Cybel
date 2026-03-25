@@ -1,0 +1,23 @@
+thresholds:
+  complexity:
+    max_cyclomatic: 10
+    max_statements: 60
+  hot_path_perf:
+    regression_warn_percent: 2.0
+    regression_block_percent: 5.0
+  dependency:
+    require_hashes: true
+  runtime_gates:
+    require_reports_for_hot_paths: true
+    chronicle_required_aal: [AAL-0, AAL-1]
+  telemetry:
+    required_fields: [run_id, trace_id, aal]
+  domain_reports:
+    ml:
+      required: [run_manifest, deterministic_eval, non_finite_check, drift_report]
+    hpc:
+      required: [scalar_oracle, perf_baseline]
+    quantum:
+      required: [backend, transpilation, noise_model, simulator_parity]
+    physics:
+      required: [invariant_ledger, drift_report]

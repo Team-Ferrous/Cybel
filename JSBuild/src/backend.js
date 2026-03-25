@@ -1,89 +1,126 @@
 // backend.js
-import fs         from "fs";
-import path       from "path";
-import crypto     from "crypto";
-import electron   from "electron";
-import Store from 'electron-store';
+import fs     from "fs";
+import crypto from "crypto";
+import Store  from 'electron-store';
+import path   from 'path';
+import { dialog, ipcMain, shell, BrowserWindow }   from "electron";
 
-import { google } from "googleapis";
-import open       from "open";
-import readline   from 'readline';
-const { dialog, ipcMain } = electron;
+import OpenAI             from "openai";
+import { google       }   from "googleapis";
+import { createXai    }   from '@ai-sdk/xai';
+import { generateText }   from 'ai';
+import { error        }   from "node:console";
+import { pipeline, env     }   from "@huggingface/transformers";
+import { spawn        }   from "child_process";
 
-import OpenAI            from "openai";
-import { createXai    }  from '@ai-sdk/xai';
-import { generateText }  from 'ai';
-import { error        }  from "node:console";
-
-import { pipeline      } from "@xenova/transformers";
-import { findGenerator } from './model_switcher.js'
-import { embeddingDim, embeddingIndex, embedText } from "./embeddings.js";
+import { InstanceEngine } from "./instance_engine.js";
+import { embeddingDim,  embeddingIndex, embedText   } from "./embeddings.js";
+import { findGenerator, modelRegistry,  activeStack } from './model_switcher.js'
 
 import { dirname       } from 'node:path';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { reflect, RecallMemory, RetainMemory } from "./hindsight.js";
+import { Decoder }        from './decoder.js';
 import dotenv from "dotenv";
 
-const TOKEN_PATH = path.join(__dirname, 'token.json');
-const CREDENTIALS_PATH = path.join(__dirname, 'credentials.json');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname  = dirname(__filename);
+const require    = createRequire(import.meta.url);
+const { IndexFlatL2 }  = require(path.resolve(__dirname, './node_modules/faiss-node/build/Release/faiss-node'));
+dotenv.config({ path: path.join(__dirname, ".env") });
 
-export async function authorizeSheets() {
-    // Load client secrets from a local file.
-    const credentials = JSON.parse(fs.readFileSync(CREDENTIALS_PATH, 'utf-8'));
-    const { client_secret, client_id, redirect_uris } = credentials.installed;
-
-    const oAuth2Client = new google.auth.OAuth2(
-        client_id,
-        client_secret,
-        redirect_uris[0] // usually "urn:ietf:wg:oauth:2.0:oob" or http://localhost
-    );
-
-    // Check if we have previously stored a token.
-    if (fs.existsSync(TOKEN_PATH)) {
-        const token = JSON.parse(fs.readFileSync(TOKEN_PATH, 'utf-8'));
-        oAuth2Client.setCredentials(token);
-        return oAuth2Client;
-    }
-
-    // Generate a new token
-    const authUrl = oAuth2Client.generateAuthUrl({
-        access_type: 'offline',
-        scope: [
-            'https://www.googleapis.com/auth/spreadsheets.readonly',
-            'https://www.googleapis.com/auth/drive.readonly'
-        ],
-    });
-
-    // Open browser for user to authorize
-    await open(authUrl);
-
-    // Ask user to paste the code
-    const rl = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout,
-    });
-
-    const code = await new Promise(resolve => {
-        rl.question('Enter the code from Google here: ', answer => {
-            rl.close();
-            resolve(answer);
-        });
-    });
-
-    const tokenResponse = await oAuth2Client.getToken(code);
-    oAuth2Client.setCredentials(tokenResponse.tokens);
-
-    // Save token for future use
-    fs.writeFileSync(TOKEN_PATH, JSON.stringify(tokenResponse.tokens, null, 2));
-    console.log('✅ Token stored to', TOKEN_PATH);
-
-    return oAuth2Client;
-}
-
+const engine            = new InstanceEngine();
 const SHEETS_TOKEN_PATH = path.join(__dirname, "sheets_token.json");
 const SHEETS_CREDENTIALS_PATH = path.join(__dirname, "sheets_credentials.json"); // from GCP
 let sheetsAuth;
+// main.js
+const store = new Store();
+
+let CONFIG = {
+    temperature:      0.75,
+    contextWindow:    4096,
+    generationMode:   "groq", //  "groq" | "local" | "grok" | "verso"
+    model:            "openai/gpt-oss-20b",
+    citation_options: 'enabled',
+    tokenKey:          store.get("tokenKey") || null, //localStorage.getItem("groqKey") //process.env.GROQ_API_KEY,
+    agent_instances:   engine.instances,
+};
+
+async function makeQRCode(){
+    // Generate QR code as a Base64 data URL
+    const require = createRequire(import.meta.url);
+    const QRCode = require("qrcode");
+    const url = "https://google.com"; // or userId
+    return await QRCode.toDataURL(url); // returns "data:image/png;base64,..."
+}
+
+async function requestOAuthCode() {
+    return new Promise(resolve => {
+        const authWin = new BrowserWindow({
+            width: 400,
+            height: 220,
+            modal: true,
+            title: "Google Authorization",
+            webPreferences: {
+                nodeIntegration: true,
+                contextIsolation: false
+            }
+        });
+
+        authWin.loadFile("./oauth_code.html");
+        ipcMain.once("google-sheets-code", (_, code) => {
+            authWin.close();
+            resolve(code);
+        });
+    });
+}
+async function authorizeSheets() {
+    if (sheetsAuth) return sheetsAuth;
+    const credentialsRaw = await fs.promises.readFile(SHEETS_CREDENTIALS_PATH, "utf-8");
+    const credentials = JSON.parse(credentialsRaw);
+    const { client_secret, client_id, redirect_uris } = credentials.installed;
+    const oAuth2Client = new google.auth.OAuth2(
+        client_id,
+        client_secret,
+        redirect_uris[0]
+    );
+
+    console.log("Authorizing Google Sheets access...");
+
+    try {
+        const tokenRaw = await fs.promises.readFile(SHEETS_TOKEN_PATH, "utf-8");
+        const token = JSON.parse(tokenRaw);
+
+        oAuth2Client.setCredentials(token);
+
+        console.log("Using existing Google Sheets token");
+
+    } catch (err) {
+
+        console.log("No token found, starting OAuth flow");
+
+        const authUrl = oAuth2Client.generateAuthUrl({
+            access_type: "offline",
+            scope: ["https://www.googleapis.com/auth/spreadsheets.readonly"]
+        });
+
+        await shell.openExternal(authUrl);
+        const code = await requestOAuthCode();
+        const { tokens } = await oAuth2Client.getToken(code);
+        oAuth2Client.setCredentials(tokens);
+        await fs.promises.writeFile(
+            SHEETS_TOKEN_PATH,
+            JSON.stringify(tokens),
+            "utf-8"
+        );
+    }
+
+    console.log("Google Sheets authorization successful");
+
+    sheetsAuth = oAuth2Client;
+    return oAuth2Client;
+}
 
 async function fetchSpreadsheet(spreadsheetId, range = "Sheet1!A:F") {
     const auth = await authorizeSheets();
@@ -111,24 +148,6 @@ async function ingestSpreadsheetToFAISS(spreadsheetId, range = "Sheet1!A:F") {
     return { success: true, rowsIngested: rows.length };
 }
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname  = dirname(__filename);
-const require    = createRequire(import.meta.url);
-const { IndexFlatL2 }  = require(path.resolve(__dirname, './node_modules/faiss-node/build/Release/faiss-node'));
-dotenv.config({ path: path.join(__dirname, ".env") });
-
-// main.js
-const store = new Store();
-
-let CONFIG = {
-    temperature:      0.75,
-    contextWindow:    4096,
-    generationMode:   "groq", //  "groq" | "local" | "grok" | "verso"
-    model:            "openai/gpt-oss-20b",
-    citation_options: 'enabled',
-    groqKey:          store.get("groqKey") || null //localStorage.getItem("groqKey") //process.env.GROQ_API_KEY,
-};
-
 function createGroqClient() {
     return new Groq({ apiKey: CONFIG.groqKey });
 }
@@ -141,8 +160,49 @@ let generator;
 let docs       = []
 let embeddings = [];
 
+// Usage:
+//const vector = await getOAIEmbedding("Hello world");
+//console.log(vector.length); // 1536 for text-embedding-3-small
+//Example using HuggingFace transformers.js:
+async function getOAIEmbedding(text) {
+    const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+    async function embedder(text, options = {}) {
+        const response = await client.embeddings.create({
+            model: "text-embedding-3-small",
+            input: text
+        });
+        return response.data[0].embedding;
+    }
+    
+    const vector = await embedder(text);
+
+    return vector;
+}
+
+async function getHFEmbedding(text) {
+    const embedPipeline = await pipeline("feature-extraction", "sentence-transformers/all-MiniLM-L6-v2");
+
+    async function embedder(txt) {
+        const result = await embedPipeline(txt);
+        // result is a nested array, flatten if needed
+        return result[0].flat();
+    }
+
+    const vector = await embedder(text);
+    return vector;
+}
+
 // Active conversation stack
 let activeConversationStack = []; // each entry: { user: string, bot: string }
+
+function pushToConversationStack(userInput, botResponse) {
+    activeConversationStack.push({ user: userInput, bot: botResponse });
+}
+
+function getConversationHistory() {
+    return activeConversationStack.map(entry => `User: ${entry.user}\nBot: ${entry.bot}`).join("\n\n");
+}
 
 // ---------------------------
 // Paths
@@ -153,13 +213,15 @@ const indexPath  = path.join(__dirname, "vector.index");
 const metaPath   = path.join(__dirname, "vector_docs.json");
 const hashPath   = path.join(__dirname, "doc_hash.txt");
 
-
 if (!fs.existsSync(inputDir)) fs.mkdirSync(inputDir, { recursive: true });
 if (!fs.existsSync(logsDir)) fs.mkdirSync(logsDir, { recursive: true });
 
 //----------------------------
 // Utility & Engine Functions
 //----------------------------
+function setGenerationMode(gen){
+    CONFIG.generationMode = gen;
+}
 
 function setTemperature(gen){
     CONFIG.temperature = gen;
@@ -169,17 +231,17 @@ function setContextWindowKey(key){
     CONFIG.contextWindow = key;
 }
 
-function setGenerationMode(gen){
-    CONFIG.generationMode = gen;
-}
-
 function updateEngine(engine){
     CONFIG.model = engine;
 }
 
-function setGroqKey(key){
-    CONFIG.groqKey = key;
-    store.set("groqKey", key);
+function setTokenKey(key){
+    CONFIG.tokenKey = key;
+    store.set("tokenKey", key);
+}
+
+function setEngineInstance(eng){
+    engine = eng;
 }
 
 function setEngine(conf){
@@ -187,47 +249,80 @@ function setEngine(conf){
     store.set("current-engine", CONFIG.engine)
 }
 
+function getEngine(){
+    return store.get("current-engine");
+}
+
+function getEngineInstance(){
+    return engine;
+}
+
 async function ingestSheets(id, rows) {
     if (!embeddingIndex) embeddingIndex = new IndexFlatL2({ dims: embeddingDim });
-
     for (const row of rows) {
         const text = Object.entries(row)
                            .map(([k,v]) => `${k}: ${v}`)
                            .join(", ");
+        embedder  = await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2", { token: config.hfToken });
         const emb = await embedder(text, { pooling: "mean", normalize: true });
         embeddings.push(Array.from(emb.data));
         docs.push({ content: text, metadata: row });
     }
 
     await embeddingIndex.add(embeddings);
-
     // Optional: persist for cache
-    fs.writeFileSync(metaPath, JSON.stringify(docs), "utf-8");
+    fs.writeFileSync(metaPath,  JSON.stringify(docs), "utf-8");
     fs.writeFileSync(indexPath, JSON.stringify(embeddings), "utf-8");
 }
 
-async function ensureDocumentDir() {
-  await fs.mkdir(DOCUMENT_DIR, { recursive: true });
+function chunkText(text, chunkSize = 500, overlap = 50) {
+    const words = text.split(/\s+/); // split by whitespace
+    const chunks = [];
+
+    for (let i = 0; i < words.length; i += chunkSize - overlap) {
+        const chunk = words.slice(i, i + chunkSize).join(" ");
+        chunks.push(chunk);
+    }
+
+    return chunks;
 }
 
 async function saveDocument(doc) {
   try {
-    await ensureDocumentDir();
-    const filePath = path.join(DOCUMENT_DIR, doc.title + ".json");
-    await fs.promises.writeFile(filePath, JSON.stringify(doc, null, 2), "utf-8");
+    const result = await dialog.showSaveDialog({
+      title: "Save Document",
+      defaultPath: doc.title + ".json",
+      filters: [
+        { name: "JSON Files", extensions: ["json"] }
+      ]
+    });
+
+    if (result.canceled) {
+      return { success: false, canceled: true };
+    }
+
+    const filePath = result.filePath;
+    await fs.promises.writeFile(
+      filePath,
+      JSON.stringify(doc, null, 2),
+      "utf-8"
+    );
+
     return { success: true, path: filePath };
   } catch (err) {
+    console.error("Save error:", err);
     return { success: false, error: err.message };
   }
 }
-
-async function loadDocument(doc) {
+async function loadDocument() {
   try {
         const result = await dialog.showOpenDialog({
             title: "Import Document",
-            defaultPath: doc.title + ".txt",
+            defaultPath: "default.txt",
             filters: [
-            { name: "Text Files", extensions: ["txt"] }
+              {name: "Text or JSON", extensions: ["txt", "json" ]},
+              {name: "Spreadsheet Files", extensions: [ "xlsx", "xls", "csv", "tsv"]},  
+              {name: "PDF Files extensions:", extensions: [ "pdf"]}
             ]
         });
 
@@ -237,7 +332,49 @@ async function loadDocument(doc) {
 
         const importPath = result.filePaths[0];
         const data       = await fs.readFile(importPath , "utf-8");
-        return { success: true, path: importPath, document: JSON.parse(data) };
+        if (importPath.endsWith(".pdf")) {
+            // embed in faiss
+            embeddingIndex = new IndexFlatL2({ dims: embeddingDim });
+            //await Promise.all(docs.map(embedDoc))
+            const chunks = chunkText(data);
+            for (const doc of chunks) {
+                // Skip anything that isn’t an object or missing content
+                if (doc && typeof doc.content === "string" && doc.content.trim() !== "") {
+                    const emb = await embedder(doc.content, { pooling: "mean", normalize: true });
+                    embeddings.push(Array.from(emb.data));
+                } else {
+                    console.warn("⚠️ Skipping doc with invalid content:", doc);
+                }
+            }
+            await embeddingIndex.add(embeddings);
+            console.log(`⚡ Built new FAISS index, ntotal: ${embeddingIndex.ntotal()}`);
+            // return text content for now, but ideally we’d want to keep the PDF structure and metadata
+            return { success: true, path: importPath, document: data };
+        }
+        else if (importPath.endsWith(".xlsx") || importPath.endsWith(".xls") || importPath.endsWith(".csv") || importPath.endsWith(".tsv")) {
+            // embed in faiss
+            embeddingIndex = new IndexFlatL2({ dims: embeddingDim });
+            //await Promise.all(docs.map(embedDoc))
+            const chunks = chunkText(data);
+            for (const doc of chunks) {
+                // Skip anything that isn’t an object or missing content
+                if (doc && typeof doc.content === "string" && doc.content.trim() !== "") {
+                    ingestSheets(null, [doc]); // also add to sheets for agent use
+                } else {
+                    console.warn("⚠️ Skipping doc with invalid content:", doc);
+                }
+            }
+            await embeddingIndex.add(embeddings);
+            console.log(`⚡ Built new FAISS index, ntotal: ${embeddingIndex.ntotal()}`);
+            // return text content for now, but ideally we’d want to keep the PDF structure and metadata
+            return { success: true, path: importPath, document: data };
+        }
+        else if (importPath.endsWith(".txt")) {
+            return { success: true, path: importPath, document: data };
+        }
+        else if (importPath.endsWith(".json")) {
+            return { success: true, path: importPath, document: JSON.parse(data) };
+        }
     } catch (err) {
         return { success: false, error: err.message };
     }
@@ -247,9 +384,9 @@ async function deleteDocument(doc) {
   try {
     const result = await dialog.showMessageBox({
             title: "Select Document to Delete",
-            defaultPath: doc.title + ".txt",
+            defaultPath: doc.title + ".json",
             filters: [
-            { name: "Text Files", extensions: ["txt"] }
+            { name: "JSON Files", extensions: ["json"] }
             ]
         });
 
@@ -272,9 +409,9 @@ async function replicateDocument(doc) {
 
     const result = await dialog.showOpenDialog({
             title: "Import Document",
-            defaultPath: doc.title + ".txt",
+            defaultPath: doc.title + ".json",
             filters: [
-            { name: "Text Files", extensions: ["txt"] }
+            { name: "JSON Files", extensions: ["json"] }
             ]
         });
 
@@ -361,6 +498,10 @@ function computeDocumentsHash() {
 async function loadModels() {
     try {
         let hfToken = localStorage.getItem("hfToken");
+        let msToken = localStorage.getItem("msToken");
+        let groqToken = localStorage.getItem("groqToken");
+        let grokToken = localStorage.getItem("grokToken");
+        let HNToken   = localStorage.getItem("HNToken");
 
         console.log("Loading embedding model...");
         embedder = await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2", { token: hfToken });
@@ -368,22 +509,33 @@ async function loadModels() {
 
         if (CONFIG.generationMode === "groq") {
             console.log("Loading Groq (requested) model...");
-            generator = await pipeline("text-generation", "Xenova/phi-2", { token: hfToken });
+            generator = await pipeline("text-generation", "Xenova/phi-2", { token: groqToken });
             console.log("Generator model loaded!");
         }
         if (CONFIG.generationMode === "grok") {
             console.log("Loading Grok model...");
-            generator = await pipeline("text-generation", "Xenova/phi-2", { token: hfToken });
+            generator = await pipeline("text-generation", "Xenova/phi-2", { token: grokToken });
             console.log("Generator model loaded!");
         }
         if (CONFIG.generationMode === "local") {
-            console.log("Loading local text-generation model...");
-            generator = await pipeline("text-generation", "Xenova/phi-2", { token: hfToken });
-            console.log("Generator model loaded!");
+            let hfToggle = document.getElementById("hfBox");
+            let msToggle = document.getElementById("msBox");
+
+            if(hfToggle && hfToggle.checked && !msToggle.checked ){
+                console.log("Loading local text-generation model...");
+                generator = await pipeline("text-generation", "Xenova/phi-2", { token: hfToken });
+                console.log("Generator model loaded!");
+            }else if ( msToggle && msToggle.checked && !hfToggle.checked){
+                console.log("Loading local text-generation model...");
+                generator = await pipeline("text-generation", "Xenova/phi-2", { token: msToken });
+                console.log("Generator model loaded!");        
+            } else {
+                return { success: false, error: "Please select exactly one model source (HuggingFace or ModelScope) in the settings." };
+            }
         }
         if (CONFIG.generationMode === "verso") {
             console.log("Loading Verso model...");
-            generator = await pipeline("text-generation", "Xenova/phi-2", { token: hfToken });
+            generator = await pipeline("text-generation", "Xenova/phi-2", { token: HNToken });
             console.log("Generator model loaded!");
         }
     } catch (err) {
@@ -394,7 +546,6 @@ async function loadModels() {
 function getAllDocsFromInputJSON(inputFolder) {
     const files = fs.readdirSync(inputFolder).filter(f => f.endsWith(".json"));
     const docs = [];
-
     for (const file of files) {
         const filePath = path.join(inputFolder, file);
         const data = JSON.parse(fs.readFileSync(filePath, "utf-8"));
@@ -480,13 +631,20 @@ async function initialize() {
         throw new error("INITIALIZATION FAILED!!")
     }
 }
+
 // ---------------------------
 // Retrieval
 // ---------------------------
 function retrieveTopK(queryVector, k = 5) {
-    if (!embeddingIndex || embeddingIndex.ntotal() === 0) return [];
+    if (!embeddingIndex) return [];
+    if (!queryVector || queryVector.length === 0) {
+        console.warn("Empty query vector");
+        return [];
+    }
+
+    if (embeddingIndex.ntotal() === 0) return [];
     try {
-        const results = embeddingIndex.search([queryVector], k);
+        const results = embeddingIndex.search(queryVector, k);
         if (!results?.labels) return [];
         return results.labels.map(i => docs[i]).filter(Boolean);
     } catch (err) {
@@ -498,10 +656,11 @@ function retrieveTopK(queryVector, k = 5) {
 // ---------------------------
 // Generation
 // ---------------------------
-async function generateLocal(prompt) {
+/*async function generateLocal(prompt) {
     if(generator == null){
         await loadModels();
     }
+    //CONFIG.tokenKey
     const result = await generator(prompt, { max_new_tokens: 200, temperature: 0.7 });
 
     if (!Array.isArray(result) || !result[0]?.generated_text) {
@@ -509,16 +668,128 @@ async function generateLocal(prompt) {
         return "Error: LLM did not return text";
     }
     return result[0].generated_text;
+}*/
+
+const GRANITE_FALLBACK = "onnx-community/granite-4.0-350m-ONNX-web"; //"ibm-granite/granite-4.0-h-tiny" //path.resolve("granite-4.0-h-tiny-Q5_K_M.gguf");
+//./resources/models/
+
+async function generateLocal(prompt, modelPath = null) {
+    const modelToUse = modelPath || CONFIG.model;
+
+    let pipe = await pipeline("text-generation", GRANITE_FALLBACK, {
+        //local_files_only: true,
+        trust_remote_code: true,
+        allowRemoteModels: true
+    });
+    try {
+        pipe = await pipeline("text-generation", GRANITE_FALLBACK, {//path.join(LOCAL_MODEL_DIR, modelToUse), {
+            //local_files_only: true,    // <- force offline
+            trust_remote_code: true,
+            allowRemoteModels: true
+        });
+    } catch (err) {
+        console.warn(`Local model load failed for "${modelToUse}": ${err}. Using Granite fallback.`);
+        pipe = await pipeline("text-generation", GRANITE_FALLBACK, {
+            local_files_only: true,
+            trust_remote_code: false,
+            allowRemoteModels: true
+        });
+    }
+
+    try {
+        const result = await pipe(prompt, { max_new_tokens: 200, temperature: 0.7 });
+        if (!Array.isArray(result) || !result[0]?.generated_text) {
+            throw new Error("Pipeline returned invalid output");
+        }
+        return result[0].generated_text;
+    } catch (err) {
+        console.error(`Generation failed on "${modelToUse}": ${err}. Using Granite fallback.`);
+        if (modelToUse !== GRANITE_FALLBACK) {
+            const fallbackPipe = await pipeline("text-generation", GRANITE_FALLBACK, {
+                local_files_only: true,
+                trust_remote_code: false,
+            });
+            const fallbackResult = await fallbackPipe(prompt, { max_new_tokens: 200, temperature: 0.7 });
+            return fallbackResult[0]?.generated_text || "Error: Granite fallback failed";
+        }
+        return "Error: Generation failed with Granite fallback";
+    }
 }
 
 async function generateVerso(prompt) {
+    generator = async function(prompt, options = {}) {
+        return new Promise((resolve, reject) => {
+
+            const proc = spawn("python", [
+                "saguaro.py",
+                "--prompt",
+                prompt
+            ], {
+                env: {
+                    ...process.env,
+                    HIGHNOON_API_KEY: CONFIG.tokenKey
+                }
+            });
+
+            let output = "";
+
+            proc.stdout.on("data", d => output += d.toString());
+
+            proc.on("close", code => {
+                if (code !== 0) reject("Saguaro failed");
+                else resolve([{ generated_text: output.trim() }]);
+            });
+        });
+    };
+
+    const result = await generator(prompt, { max_new_tokens: 200, temperature: 0.7 });
+    if (!Array.isArray(result) || !result[0]?.generated_text) {
+        console.error(`Grok generation failed: ${err}, falling back to Granite`);
+        let resp = await generateGranite(prompt);
+        return resp.output_text;
+        
+         // "Error: could not generate response";
+        //console.warn("generateLocal returned invalid output", result);
+        //return "Error: LLM did not return text";
+    }
+    return result[0].generated_text;
+}
+
+/*async function generateVerso(prompt) {
     if(generator == null){
         await loadModels();
     }
+    //CONFIG.tokenKey
     const result = await generator(prompt, { max_new_tokens: 200, temperature: 0.7 });
 
     if (!Array.isArray(result) || !result[0]?.generated_text) {
         console.warn("generateLocal returned invalid output", result);
+        return "Error: LLM did not return text";
+    }
+    return result[0].generated_text;
+}*/
+
+
+// Hardcoded path to the bundled model
+const GRANITE_MODEL_PATH = "granite-4.0-h-tiny-Q5_K_M.gguf" //path.join(
+    //process.resourcesPath,
+    //"models",
+    //"granite-4.0-h-tiny-Q5_K_M.gguf"
+//);
+
+async function generateGranite(prompt) {
+    if (!fs.existsSync(GRANITE_MODEL_PATH)) {
+        throw new Error("Granite model not found at " + GRANITE_MODEL_PATH);
+    }
+
+    // Initialize the pipeline with the hardcoded model
+    const pipe = await pipeline("text-generation", GRANITE_MODEL_PATH);
+
+    // Generate text
+    const result = await pipe(prompt, { max_new_tokens: 200, temperature: 0.7 });
+
+    if (!Array.isArray(result) || !result[0]?.generated_text) {
+        console.warn("generateGranite returned invalid output", result);
         return "Error: LLM did not return text";
     }
     return result[0].generated_text;
@@ -526,15 +797,16 @@ async function generateVerso(prompt) {
 
 async function generateGroq(prompt) {
     try {
-        let client = new OpenAI({
-            apiKey: CONFIG.groqKey,
+        generator = new OpenAI({
+            apiKey: CONFIG.tokenKey,
             baseURL:"https://api.groq.com/openai/v1",
         })
 
-        let response = await client.responses.create({
+        let response = await generator.responses.create({
             input:prompt,
             model:CONFIG.model,
             temperature:CONFIG.temperature//,
+            //tools:[],
             //citation_options: CONFIG.citation_options
         })
 
@@ -542,16 +814,17 @@ async function generateGroq(prompt) {
         console.log("Groq raw response:", response.output_text);
         return response.output_text;
     } catch (err) {
-        console.error("Groq generation failed:", err);
-        return null;// "Error: could not generate response";
+        console.error(`Groq generation failed: ${err}, falling back to Granite`);
+        let resp = await generateGranite(prompt);
+        return resp.output_text; // "Error: could not generate response";
     }
 }
 
 async function generateGrok(model, query) {
     try {
-        let client = createXai({ apiKey: process.env.XAI_API_KEY });
+        generator = createXai({ apiKey: CONFIG.tokenKey });
         const { text } = await generateText({
-            model:  client.responses(model),
+            model:  generator.responses(model),
             system: 'You are Grok, a highly intelligent, helpful AI assistant.',
             prompt: query,
         });
@@ -559,8 +832,9 @@ async function generateGrok(model, query) {
         console.log(text)
         return text;
     } catch (err) {
-        console.error("Groq generation failed:", err);
-        return null;// "Error: could not generate response";
+        console.error(`Grok generation failed: ${err}, falling back to Granite`);
+        let resp = await generateGranite(prompt);
+        return resp.output_text; // "Error: could not generate response";
     }
 }
 
@@ -603,6 +877,18 @@ function diversify(results, key = "Genre") {
     return output;
 }
 
+function getModelsBySource(source) {
+    return Object.fromEntries(
+        Object.entries(modelRegistry.llm)
+            .filter(([name, model]) => model.source === source)
+    );
+}
+
+
+function setActiveStackLLM(llm) {
+    activeStack.llm = llm;
+}
+
 async function sendMessage(userInput) {
     if (!embeddingIndex) {
         console.log("Initializing vector index...");
@@ -640,15 +926,30 @@ async function sendMessage(userInput) {
         // STEP 2: enrich input with context variables
         const contextVars = {
             time: new Date().toLocaleTimeString(),
-            day: new Date().toLocaleDateString()
+            day:  new Date().toLocaleDateString()
         };
 
-        const fullUserInput = `Time: ${contextVars.time}\nDay: ${contextVars.day}\nUser: ${userInput}`;
+        const fullUserInput   = `Time: ${contextVars.time}\nDay: ${contextVars.day}\nUser: ${userInput}`;
+        let dc = new Decoder();
+     
+        // sanitize chat/day/year into a single string
+        const filename = `chat_${contextVars.day}_${contextVars.time}.json`.replace(/[\\/:"*?<>|]/g, "_"); //_${contextVars.year}
+
+        // write directly to Logs folder
+        const filePath = path.join(__dirname, "Logs", filename);
+
+        // make sure Logs exists (just the top folder)
+        //await fs.mkdir(path.join(__dirname, "Logs"), { recursive: true });
+
+        // write the log
+        await fs.promises.writeFile(filePath, userInput, { encoding: 'utf-8' })
         const embeddingVector = await embedText(fullUserInput);
 
+        console.log("STEP 3: retrieveTopK from FAISS");
         // STEP 3: retrieve docs from FAISS
         let retrievedDocs = retrieveTopK(embeddingVector, 10);
 
+        console.log("STEP 4: applying diversity filter");
         // STEP 4: apply diversity filter
         retrievedDocs = diversify(retrievedDocs, "Genre"); // or another metadata key
 
@@ -748,11 +1049,10 @@ async function generateAgentResponse(agent, input, k = 5) {
 // ---------------------------
 
 export  {
-    setGroqKey,
+    setTokenKey,
     setTemperature,
     setContextWindowKey,
     setGenerationMode,
-    updateEngine,
     saveDocument,
     loadDocument,
     deleteDocument,
@@ -765,6 +1065,19 @@ export  {
     updateCharacter,
     createGroqClient,
     setEngine, 
+    getEngine,
+    updateEngine,
+    getEngineInstance,
+    authorizeSheets,
+    ingestSpreadsheetToFAISS,
+    fetchSpreadsheet,
+    ingestSheets,
     resetActiveStack,
-    generateAgentResponse
+    generateAgentResponse,
+    getHFEmbedding,
+    getOAIEmbedding,
+    embeddings,
+    pushToConversationStack,
+    getConversationHistory,
+    makeQRCode
 };

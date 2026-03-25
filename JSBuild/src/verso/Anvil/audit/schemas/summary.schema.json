@@ -1,0 +1,215 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "native_qsg_audit.summary.v3",
+  "title": "Native QSG Audit Summary",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run_id",
+    "generated_at",
+    "models",
+    "top_stage_hotspots",
+    "stage_origin_map",
+    "baseline_floors",
+    "overall_pass",
+    "failure_count",
+    "failure_counts",
+    "failed_attempt_ids",
+    "completed_attempts",
+    "planned_attempts",
+    "pass"
+  ],
+  "$defs": {
+    "stage_hotspot": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "stage": {"type": "string"},
+        "total_ms_mean": {"type": "number"},
+        "total_ms_stddev": {"type": "number"},
+        "total_ms_cv_pct": {"type": "number"},
+        "pct_of_decode": {"type": "number"},
+        "calls_mean": {"type": "number"},
+        "calls_stddev": {"type": "number"},
+        "avg_ms_per_call": {"type": "number"},
+        "cpp_file": {"type": "string"},
+        "cpp_function": {"type": "string"},
+        "kernel_class": {"type": "string"},
+        "weight_format": {"type": "string"},
+        "complexity": {"type": "string"}
+      }
+    },
+    "root_stage_hotspot": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "model": {"type": "string"},
+        "stage": {"type": "string"},
+        "total_ms_mean": {"type": "number"},
+        "total_ms_stddev": {"type": "number"},
+        "total_ms_cv_pct": {"type": "number"},
+        "pct_of_decode": {"type": "number"},
+        "calls_mean": {"type": "number"},
+        "calls_stddev": {"type": "number"},
+        "avg_ms_per_call": {"type": "number"},
+        "cpp_file": {"type": "string"},
+        "cpp_function": {"type": "string"},
+        "kernel_class": {"type": "string"},
+        "weight_format": {"type": "string"},
+        "complexity": {"type": "string"}
+      }
+    },
+    "stage_origin": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "cpp_file",
+        "cpp_function",
+        "kernel_class",
+        "weight_format",
+        "complexity",
+        "models"
+      ],
+      "properties": {
+        "cpp_file": {"type": "string"},
+        "cpp_function": {"type": "string"},
+        "kernel_class": {"type": "string"},
+        "weight_format": {"type": "string"},
+        "complexity": {"type": "string"},
+        "models": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "model_summary": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "model": {"type": "string"},
+        "runs": {"type": "integer", "minimum": 0},
+        "decode_tps_p50": {"type": "number"},
+        "e2e_tps_p50": {"type": "number"},
+        "ttft_ms_p95": {"type": "number"},
+        "baseline": {"type": "object"},
+        "floors": {"type": "object"},
+        "gates": {
+          "type": "object",
+          "properties": {
+            "run_stability": {"type": "boolean"}
+          }
+        },
+        "pass": {"type": "boolean"},
+        "gate_issues": {"type": "array", "items": {"type": "string"}},
+        "run_stability": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "decode_tps_cv_pct": {"type": "number"},
+            "e2e_tps_cv_pct": {"type": "number"},
+            "ttft_ms_cv_pct": {"type": "number"},
+            "decode_time_accounted_cv_pct": {"type": "number"}
+          }
+        },
+        "runtime_drift": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "drift_mean_mean": {"type": ["number", "null"]},
+            "drift_mean_max": {"type": ["number", "null"]},
+            "drift_max_mean": {"type": ["number", "null"]},
+            "drift_max_max": {"type": ["number", "null"]},
+            "drift_pruned_blocks_mean": {"type": ["number", "null"]},
+            "drift_pruned_blocks_max": {"type": ["number", "null"]},
+            "stabilizer_seconds_mean": {"type": ["number", "null"]},
+            "stabilizer_seconds_max": {"type": ["number", "null"]},
+            "drift_overhead_percent_mean": {"type": ["number", "null"]},
+            "drift_overhead_percent_max": {"type": ["number", "null"]}
+          }
+        },
+        "stage_hotspots": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/stage_hotspot"}
+        },
+        "stage_deltas": {"type": "object"},
+        "kernel_map_version": {"type": "string"},
+        "decode_time_accounted_pct": {"type": "number"}
+      }
+    }
+  },
+  "properties": {
+    "schema_version": {"type": "string"},
+    "run_id": {"type": "string"},
+    "generated_at": {"type": "string"},
+    "models": {"type": "array", "items": {"$ref": "#/$defs/model_summary"}},
+    "top_stage_hotspots": {"type": "array", "items": {"$ref": "#/$defs/root_stage_hotspot"}},
+    "stage_origin_map": {
+      "type": "object",
+      "additionalProperties": {"$ref": "#/$defs/stage_origin"}
+    },
+    "baseline_floors": {"type": "object"},
+    "overall_pass": {"type": "boolean"},
+    "failure_count": {"type": "integer", "minimum": 0},
+    "failure_counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["total", "gate_failure", "execution_failure"],
+      "properties": {
+        "total": {"type": "integer", "minimum": 0},
+        "gate_failure": {"type": "integer", "minimum": 0},
+        "execution_failure": {"type": "integer", "minimum": 0}
+      }
+    },
+    "failed_attempt_ids": {"type": "array", "items": {"type": "string"}},
+    "completed_attempts": {"type": "integer", "minimum": 0},
+    "planned_attempts": {"type": "integer", "minimum": 0},
+    "pass": {"type": "boolean"},
+    "baseline_path": {"type": "string"},
+    "quality": {"type": "object"},
+    "ablation_deltas": {"type": "array", "items": {"type": "object"}},
+    "kernel_hotspots": {"type": "array", "items": {"type": "object"}},
+    "host_compliance": {"type": "object"},
+    "agent_triage": {"type": "object"},
+    "continuous": {"type": "object"},
+    "quality_governance": {"type": "object"},
+    "memory_replay": {"type": "object"},
+    "assurance": {"type": "object"},
+    "calibration": {"type": "object"},
+    "comparisons": {"type": "object"},
+    "baseline_run_id": {"type": "string"},
+    "prompt_hash": {"type": "string"},
+    "prompt_contract_hash": {"type": "string"},
+    "memory_snapshot_hash": {"type": "string"},
+    "feature_toggle_hash": {"type": "string"},
+    "control_plane": {"type": "object"},
+    "topology_passport": {"type": "object"},
+    "variance_budget": {"type": "object"},
+    "baseline_lineage": {"type": "object"},
+    "closure_result": {"type": "object"},
+    "spc_report": {"type": "object"},
+    "traceability_graph": {"type": "object"},
+    "saguaro_verify": {"type": "object"},
+    "advisory_bundle": {"type": "object"},
+    "black_box": {"type": "object"},
+    "capsule_archive": {"type": "object"},
+    "certification_state": {
+      "type": "string",
+      "enum": [
+        "certified_pass",
+        "certified_fail",
+        "non_certified_pass",
+        "non_certified_fail"
+      ]
+    },
+    "run_exit_reason": {"type": "string"},
+    "terminal_state": {
+      "type": "string",
+      "enum": [
+        "completed_pass",
+        "completed_fail",
+        "failed_preflight",
+        "interrupted_incomplete",
+        "internal_error"
+      ]
+    },
+    "last_successful_lane": {"type": ["string", "null"]}
+  }
+}

@@ -8,12 +8,18 @@
 };*/
 
 const activeStack = {
-    llm: "mistral-7b",
+    llm: "mistral7b",
     generators: [
         { type: "image", model: "newbie"  },
         { type: "3d",    model: "sparc3d" }
-    ] //capped at 2 at a time in addition to the LLM, more models can be orchestrated)
-      // Replacing the initial two
+    ],
+    perception: [
+        { type: "ocr",    model: "paddleocr" },
+        { type: "vision", model: "llava" },
+        { type: "embed",  model: "clip" }
+    ]
+    // capped at 2 extensions per a model space at a time in addition to the LLM
+    // more models can be orchestrated, replacing the initial two.
 };
 
 let modelRegistry = {
@@ -21,6 +27,146 @@ let modelRegistry = {
         mistral7b: {
             source: "huggingface",
             repo: "mistralai/Mistral-7B-Instruct"
+        },
+        "openai/gpt-oss-20b": {
+            source: "groq",
+            repo: "openai/gpt-oss-20b"
+        },
+        "openai/gpt-oss-120b": {
+            source: "groq",
+            repo: "openai/gpt-oss-120b"
+        },
+        "llama-3.1-8b-instant": {
+            source: "groq",
+            repo: "Llama-3.1-8b-instant"   
+        },
+        "llama-3.3-70b-versatile": {
+            source: "groq",
+            repo: "Llama-3.3-70b-versatile"   
+        },
+        "whisper-large-v3": {
+            source: "groq",
+            repo: "openai/whisper-large-v3"
+        },
+        "whisper-large-v3-turbo": {
+            source: "groq",
+            repo: "openai/whisper-large-v3-turbo"
+        },
+        "groq/compound": {
+            source: "groq",
+            repo: "groq/compound"
+        },
+        "groq/compound-mini": {
+            source: "groq",
+            repo: "groq/compound-mini"
+         },
+         "meta-llama/Llama-2-7b-chat-hf": {
+            source: "huggingface",
+            repo: "meta-llama/Llama-2-7b-chat-hf"
+         },
+         "meta-llama/Llama-3.2-1B": {
+            source: "huggingface",
+            repo: "meta-llama/Llama-3.2-1B"
+         },
+         "unsloth/grok-2-GGUF": {
+            source: "huggingface",
+            repo: "unsloth/grok-2-GGUF"
+         },
+         "mistralai/Mistral-7B-v0.3": {
+            source: "huggingface",
+            repo: "mistralai/Mistral-7B-v0.3"
+         },
+         "mistralai/Mixtral-8x7B-v0.1": {
+            source: "huggingface",
+            repo: "mistralai/Mixtral-8x7B-v0.1"
+         },
+         "dolphin-2.5-mixtral-8x7b": {
+            source: "huggingface",
+            repo: "dphn/dolphin-2.5-mixtral-8x7b"
+         },
+         "TheBloke/MLewd-v2.4-13B-GGUF": {
+            source: "huggingface",
+            repo: "TheBloke/MLewd-v2.4-13B-GGUF"
+         },
+         "TheBloke/goliath-120b-GGUF": {
+            source: "huggingface",
+            repo: "TheBloke/goliath-120b-GGUF"
+         },
+         "TheBloke/goliath-120b-GGUF": {
+            source: "huggingface",
+            repo: "TheBloke/goliath-120b-GGUF"
+         },
+         "TheBloke/dolphin-2.5-mixtral-8x7b-GGUF": {
+            source: "huggingface",
+            repo: "TheBloke/dolphin-2.5-mixtral-8x7b-GGUF"
+         },
+         "lewdiculous/L3-8B-Stheno-v3.2-GGUF-IQ-Imatrix": {
+            source: "huggingface",
+            repo: "lewdiculous/L3-8B-Stheno-v3.2-GGUF-IQ-Imatrix"
+         },
+         "lewdiculous/L3.1-8B-Niitama-v1.1-GGUF-IQ-Imatrix": {
+            source: "huggingface",
+            repo: "lewdiculous/L3.1-8B-Niitama-v1.1-GGUF-IQ-Imatrix"
+         },
+         "mradermacher/NeuralStar_FusionWriter_4x7b-i1-GGUF": {
+            source: "huggingface",
+            repo: "mradermacher/NeuralStar_FusionWriter_4x7b-i1-GGUF"
+         },
+         "mradermacher/Noro-Hermes-3x7B-GGUF": {
+            source: "huggingface",
+            repo: "mradermacher/Noro-Hermes-3x7B-GGUF"
+         },
+         "mradermacher/HeroBophades-3x7B-GGUF": {
+            source: "huggingface",
+            repo: "mradermacher/HeroBophades-3x7B-GGUF"
+         },
+         "grok-4-1-fast-reasoning": {
+            source: "grok",
+            repo: "grok-4-1-fast-reasoning"
+         },
+         "grok-4-1-fast-non-reasoning": {
+            source: "grok",
+            repo: "grok-4-1-fast-non-reasoning"
+         },
+         "grok-4-fast-reasoning": {
+            source: "grok",
+            repo: "grok-4-fast-reasoning"
+         },
+         "grok-4-fast-non-reasoning": {
+            source: "grok",
+            repo: "grok-4-fast-non-reasoning"
+         },
+         "grok-4-0709": {
+            source: "grok",
+            repo: "grok-4-0709"
+         },
+         "grok-3-mini": {
+            source: "grok",
+            repo: "grok-3-mini"
+         },
+        "grok-3": {
+            source: "grok",
+            repo: "grok-3"
+         },
+        "grok-code-fast-1": {
+            source: "grok",
+            repo: "grok-code-fast-1"
+        },
+        "PolyoxyDev/granite4-obsidian-tiny-h": {
+            source: "ollama",
+            repo: "PolyoxyDev/granite4-obsidian-tiny-h"
+        },
+        "jbaptistedaniel/search-ai-qwen3.5-4B-V2-q4": {
+            source: "ollama",
+            repo: "jbaptistedaniel/search-ai-qwen3.5-4B-V2-q4"
+        },
+        "kwangsuklee/Qwen3.5-9B-Claude-4.6-Opus-Reasoning-Distilled-GGUF": {
+            source: "ollama",
+            repo: "kwangsuklee/Qwen3.5-9B-Claude-4.6-Opus-Reasoning-Distilled-GGUF"
+        },
+        "High Noon": {
+            source: "ollama",
+            repo: "High Noon"
         }
     },
 
@@ -28,6 +174,10 @@ let modelRegistry = {
         newbie: {
             source: "modelscope",
             repo: "AI-ModelScope/NewBie"
+        },
+        grok: {
+            source: "grok",
+            repo: "grok-4-0709"
         }
     },
 
@@ -205,7 +355,7 @@ export class ModelHub {
         return res.json()
     }
 
-    async downloadModel(modelId, sources) {
+    async downloadModelSrc(modelId, sources) {
         if (sources.huggingface) {
             console.log("Downloading Model via HuggingFace")
             return this.downloadHuggingFaceModel(modelId)

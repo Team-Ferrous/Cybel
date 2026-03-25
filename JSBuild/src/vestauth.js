@@ -41,11 +41,7 @@ export class VestAuthClient {
   }
 
   async set(key, value) {
-    const res = await fetch(`${this.endpoint}/set`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ [key]: value })
-    });
+    const res = await fetch(`${this.endpoint}/set -d ${ JSON.stringify({ [key]: value }) }`);
 
     if (!res.ok) throw new Error("VestAuth set failed");
     return res.json();

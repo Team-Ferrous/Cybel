@@ -1,0 +1,344 @@
+﻿The Anvil Engineering Standard (AES)
+1. PREAMBLE
+1.1 Purpose and Operating Domains
+The Anvil Engineering Standard (AES) constitutes the supreme, unified governing rulebook for all code generation, architectural design, auditing, and maintenance operations performed by the Anvil multi-agent system and its semantic intelligence layer, Saguaro. The AES synthesizes the most rigorous aerospace, automotive, functional safety, and software reliability standards into a cohesive framework adapted for autonomous artificial intelligence execution.1 This standard is engineered to yield software artifacts rivaling the reliability of flight-critical avionics while simultaneously accommodating the rapid iteration cycles demanded by modern computational research.4
+This document mandates proof-oriented correctness, structural integrity, and architectural determinism across the following multidimensional domains:
+* General Software Engineering: Systems programming, API development, backend optimization, and distributed component architectures utilizing C++17/C++23 and Python 3.12+.6
+* Deep Learning / Machine Learning: Training loop integrity, gradient stability, mixed-precision numerical controls, and tensor transformations.
+* Quantum Computing: Quantum circuit construction, variational quantum algorithms, noise-aware transpilation, classical-quantum boundaries, and quantum error correction.6
+* Physics Simulation: Numerical methods, enforcement of continuous conservation laws, Lie symmetries, and Hamiltonian modeling.7
+* High-Performance Computing (HPC): SIMD/AVX2/AVX-512 intrinsic utilization, CPU-first compute fallbacks, strict memory alignment, and cache-line discipline.9
+1.2 Interpretation of Mandates
+The keywords "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted strictly as absolute engineering directives.
+* MANDATORY (SHALL/MUST/MUST NOT): Absolute requirements. The Saguaro intelligence layer MUST block any code commit, architectural proposal, or pull request violating these rules unless accompanied by a cryptographic waiver signed by a human lead architecture team.
+* ADVISORY (SHOULD/SHOULD NOT): Highly recommended practices. Anvil agents MUST provide comprehensive, mathematically backed written justification in the commit logs if deviating from an advisory rule.
+* ASPIRATIONAL (MAY/OPTIONAL): Optional guidance optimized for exploratory edge cases.
+2. SEVERITY & ASSURANCE FRAMEWORK
+To systematize risk management, the AES synthesizes DO-178C Development Assurance Levels (DAL) 2, ISO 26262 Automotive Safety Integrity Levels (ASIL) 3, and NASA-STD-8739.8B software safety classifications.1 The resulting unified metric is the Anvil Assurance Level (AAL).
+2.1 Unified Severity Levels
+
+
+AAL Level
+	Equivalent Standards
+	Description
+	Failure Consequence
+	AAL-0
+	DAL-A, ASIL-D, NASA Safety-Critical
+	Mission-Critical / Catastrophic
+	Loss of life, catastrophic hardware destruction, unrecoverable data loss, or total mission failure.2
+	AAL-1
+	DAL-B, ASIL-C, NASA Major
+	Severe / Major
+	Major degradation of core capabilities, severely compromised DL models, or massive financial loss.2
+	AAL-2
+	DAL-C, ASIL-B, NASA Moderate
+	Moderate / Tooling
+	Disruption of internal pipelines, recoverable state errors, or temporary telemetry data loss.2
+	AAL-3
+	DAL-D/E, ASIL-A/QM, NASA Minor
+	Informational / Docs
+	Style violations, documentation drift, or minor UI/UX anomalies.2
+	2.2 Verification Requirements per AAL
+The Anvil agent MUST apply the following verification constraints dynamically based on the tagged AAL of the repository or software component:
+* AAL-0 Verification:
+   * 100% Modified Condition/Decision Coverage (MC/DC) SHALL be achieved prior to deployment.4
+   * Zero dead code or unreachable code SHALL exist in the final artifact.4
+   * Formal mathematical proofs of correctness, adhering to IBM Cleanroom software engineering principles, MUST be generated.14
+   * Independent Verification and Validation (IV&V) by a fully isolated Saguaro sub-agent is REQUIRED.1
+* AAL-1 Verification:
+   * 100% Branch and Statement Coverage is REQUIRED.16
+   * Automated Fault Tree Analysis (FTA) and Failure Mode and Effects Analysis (FMEA) MUST accompany the pull request.6
+* AAL-2 Verification:
+   * Property-based testing and unit testing with a minimum of 90% statement coverage is REQUIRED.
+* AAL-3 Verification:
+   * Standard automated linting, static analysis, and strict type-checking are REQUIRED.
+2.3 Assurance Classification Rules
+Saguaro MUST tag every source file, microservice, or configuration artifact with an explicit AAL metadata label. If an AAL-1 component relies on an AAL-2 component, the AAL-2 component MUST be systematically elevated to AAL-1 standards or architecturally isolated via secure, deterministic service interfaces, adhering to AUTOSAR Adaptive Platform principles.18
+3. UNIVERSAL CODING MANDATES
+These mandates govern the foundational logic of the Anvil agent, applying across all languages, libraries, and frameworks.
+3.1 Traceability and Architecture
+* Rule (AES-TRC-1): Every code artifact MUST trace back to at least one explicitly declared requirement, architectural decision, or mathematical specification. Orphan code MUST NOT exist in AAL-0 or AAL-1 environments.4
+* Rule (AES-TRC-2): Architectural changes MUST be documented using Architectural Decision Records (ADRs). ADRs MUST contain Context, Decision, Consequences, and Compliance sections.6
+* Rationale: Full traceability (requirement → design → code → test → verification result) prevents feature creep and ensures systematic coverage validation, synthesizing NASA NPR 7150.2D and DO-178C avionics certification standards.2 ADRs prevent the "Groundhog Day" anti-pattern where teams endlessly debate resolved architectural choices.6
+3.2 Complexity Bounds and Graph Theory
+* Rule (AES-CMP-1): The Cyclomatic Complexity (CC) of any single function or method SHALL NOT exceed 10 to limit control flow divergence.6
+* Rule (AES-CMP-2): Time complexity in computational hot paths MUST be strictly bounded. Algorithms exhibiting    or worse asymptotic complexity are PROHIBITED in real-time execution loops unless mathematically proven to operate on strictly bounded datasets   .6
+* Rule (AES-CMP-3): Graph structures MUST use adjacency lists for sparse graphs to minimize memory utilization, reserving adjacency matrices strictly for dense graphs where edge lookups require    access times.6
+* Rationale: High cyclomatic complexity masks defect vectors and increases the difficulty of achieving MC/DC coverage. Bounded time complexity prevents saturation-induced outages during execution. Understanding asymptotic upper bounds guarantees predictable scaling.6
+3.3 Error Handling Philosophy
+   * Rule (AES-ERR-1): Cleanroom Philosophy: Root causes MUST be fixed mathematically; symptoms SHALL NEVER be masked by ad-hoc clamping or silent exception swallowing.14
+   * Rule (AES-ERR-2): Code MUST NOT use catch(...) or equivalent bare except: blocks unless at absolute process boundaries acting as crash supervisors.
+   * Rule (AES-ERR-3): All public APIs MUST return errors explicitly. Control flow MUST NOT rely on exception handling for standard operational logic.6
+   * Rationale: Explicit error states force the autonomous agent to handle boundary conditions systematically, averting undefined behavior. The Cleanroom methodology relies on defect prevention rather than debugging.15
+3.4 Security Baseline
+   * Rule (AES-SEC-1): AAL-0 and AAL-1 systems MUST comply with OWASP ASVS (Application Security Verification Standard) Level 3 requirements, which mandate deep architectural analysis, modularization, and defense-in-depth against advanced vulnerabilities.21
+   * Rule (AES-SEC-2): Code generation MUST adhere to NIST SP 800-53 Revision 5 control families, specifically SA-15 for secure software development processes and CM-8 for system component inventory generation.23
+   * Rationale: A secure application must be modularized and verified against strict cryptographic and data-flow constraints to survive persistent threats.21
+4. LANGUAGE-SPECIFIC STANDARDS
+4a. Python Standards (Python 3.12+)
+Python is restricted primarily to orchestration, high-level machine learning wrappers, and configuration generation.
+   * Rule (AES-PY-1): All functions, variables, and class definitions MUST contain exhaustive PEP 484 and PEP 526 type hints. Saguaro MUST configure static analyzers (mypy) to strict mode.
+   * Rule (AES-PY-2): Dynamic execution (eval(), exec()) is STRICTLY PROHIBITED in AAL-0/1 code.
+   * Rule (AES-PY-3): Concurrency SHALL utilize explicit asyncio patterns. Threading is discouraged due to the Global Interpreter Lock (GIL); multiprocessing MUST be used for CPU-bound tasks.
+   * Rationale: Type-hinting provides pseudo-compile-time verification in an interpreted language, eliminating a major vector of runtime type errors.
+4b. C/C++ Standards (C++17 / C++23)
+C++ constitutes the core of Anvil's high-performance computing, Linux system programming, and low-latency execution capability.
+   * Rule (AES-CPP-1): All C++ code SHALL comply with the MISRA C++:2023 guidelines to prevent undefined, unspecified, and implementation-defined behaviors.26 Language extensions and obsolescent features SHALL NOT be used.28
+   * Rule (AES-CPP-2): Resource Acquisition Is Initialization (RAII) MUST be used for all resource management. Raw pointers (new/delete, malloc/free) are PROHIBITED unless encapsulated within a low-level custom memory allocator class.6
+   * Rule (AES-CPP-3): Move semantics MUST be explicitly defined for custom types to prevent expensive deep copies of large data buffers or network sockets in high-performance backend systems.6
+   * Rule (AES-CPP-4): Error handling SHALL utilize std::expected (C++23) to return values or clear error states without unwinding the stack.6
+   * Rule (AES-CPP-5): Compliance with SEI CERT C++ coding standards is REQUIRED (e.g., preventing integer wrapping, dereferencing null pointers, and uninitialized memory reads).29
+   * Rule (AES-CPP-6): For Linux systems programming, signal handlers MUST be restricted to async-signal-safe functions. Shared data within signal handlers MUST be declared as volatile sig_atomic_t to ensure uninterruptible single-instruction reads/writes.6
+
+
+C++
+
+
+
+
+// AES-Compliant C++23 Error Handling, Move Semantics, and RAII
+#include <expected>
+#include <memory>
+#include <string>
+#include <cstdint>
+
+enum class SimError { OutOfBounds, MemoryAlignmentFault, Timeout };
+
+class PhysicsBuffer {
+   std::unique_ptr<double> data;
+   size_t size;
+public:
+   PhysicsBuffer(size_t s) : data(std::make_unique<double>(s)), size(s) {}
+   
+   // Enforce Move Semantics (AES-CPP-3)
+   PhysicsBuffer(PhysicsBuffer&& other) noexcept = default;
+   PhysicsBuffer& operator=(PhysicsBuffer&& other) noexcept = default;
+   
+   // Delete copy constructors to prevent deep copies
+   PhysicsBuffer(const PhysicsBuffer&) = delete;
+   PhysicsBuffer& operator=(const PhysicsBuffer&) = delete;
+
+   [[nodiscard]] auto get_ptr() const noexcept -> double* { return data.get(); }
+};
+
+// Utilize std::expected for zero-overhead error handling (AES-CPP-4)
+auto compute_physics_step(const PhysicsBuffer& buffer) -> std::expected<double, SimError> {
+   if (!buffer.get_ptr()) {
+       return std::unexpected(SimError::OutOfBounds);
+   }
+   // Verify 64-byte memory alignment for SIMD operations
+   if (reinterpret_cast<std::uintptr_t>(buffer.get_ptr()) % 64!= 0) {
+       return std::unexpected(SimError::MemoryAlignmentFault);
+   }
+   return 1.0; // Return valid output scalar
+}
+
+   * Rationale: Dynamic memory mismanagement and unhandled exceptions account for the majority of severe system vulnerabilities. Enforcing RAII, std::expected, and strict signal handler guidelines guarantees deterministic resource lifecycles and thread safety.6
+4c. Quantum Circuit Standards
+   * Rule (AES-QC-1): Quantum programs MUST be treated as hardware-attached systems. Circuit construction MUST NOT rely on abstract logical assumptions without explicitly defining the transpilation strategy to physical topologies.6
+   * Rationale: Abstraction leakage in Noisy Intermediate-Scale Quantum (NISQ) devices degrades algorithmic fidelity. Explicit transpilation mapping ensures deterministic execution.6
+5. DOMAIN-SPECIFIC STANDARDS
+5a. Deep Learning / ML Standards
+Deep learning systems are highly susceptible to silent failures. Anvil MUST enforce rigorous numerical and state checks to prevent the model from learning corrupted distributions.
+   * Training Loop Integrity (AES-ML-1): All training loops MUST include non-finite gradient checks (NaN/Inf). If non-finite values are detected, the loop MUST rollback to the previous checkpoint, adjust learning rates dynamically, and log the precise layer of failure.
+   * Mixed Precision Stability (AES-ML-2): If FP16/BF16 is utilized, dynamic loss scaling MUST be applied, and FP32 master weights MUST be maintained to prevent catastrophic numerical accumulation errors.
+   * Data Pipeline Validation (AES-ML-3): Input tensors MUST be validated for shape, dtype, and distribution bounds prior to entering the forward pass.
+   * Model Reproducibility (AES-ML-4): Pseudo-random number generators (PRNGs) MUST be seeded deterministically. Non-deterministic GPU algorithms SHALL BE disabled during AAL-1 evaluation runs.
+   * Rationale: Neural networks will silently learn garbage data if NaNs or structural misalignments propagate. Hard assertions on tensors halt cascading failures before compute cycles are wasted.
+5b. Quantum Computing Standards
+   * Circuit Design Discipline (AES-Q-1): All parameterized circuits (e.g., Variational Quantum Eigensolvers) MUST define parameter bounds. Over-rotation outside of    MUST be normalized at compile time.6
+   * Noise-Aware Programming (AES-Q-2): Any algorithm targeting physical hardware MUST include an explicit noise model simulation step (e.g., depolarizing channels, amplitude damping) in the CI/CD pipeline prior to execution on a Quantum Processing Unit (QPU).6
+   * Quantum Error Correction (AES-Q-3): Quantum Error Correction (QEC) protocols MUST explicitly distinguish between error mitigation and logical error correction (e.g., Shor code, stabilizers). When implementing the 9-qubit Shor code, the software MUST mathematically verify that the error probability    is suppressed to   .6 Syndrome extraction logic MUST be tested classically prior to deployment.6
+   * Rationale: Quantum algorithms fail silently under environmental decoherence. Simulating noise and testing syndrome extraction ensures classical control software operates correctly against quantum entropy.6
+5c. Physics Simulation Standards
+      * Conservation Law Verification (AES-PHYS-1): Simulations MUST compute global conserved quantities (energy, linear momentum, angular momentum, mass) at specified temporal intervals. Drift beyond a defined floating-point threshold    MUST trigger a solver rollback or system halt.7
+      * Symmetry Enforcement (AES-PHYS-2): Lie symmetries and continuous group transformations MUST be structurally preserved in the numerical design. Neural network surrogates MUST enforce these symmetries algebraically (e.g., using Lie Symmetry Nets) rather than relying purely on soft penalty losses in the objective function, which are mathematically insufficient for long-term integration.8
+      * Numerical Method Selection (AES-PHYS-3): For Hamiltonian systems, symplectic integrators MUST be used to strictly bound long-term energy drift. Standard forward Euler integration is STRICTLY PROHIBITED for AAL-0/1 orbital or molecular dynamics.6
+      * Rationale: Numerical dissipation of conserved quantities renders long-running physics simulations physically invalid. Symplectic and symmetry-aware algorithms ensure bounded global errors and preserve the fundamental geometry of the modeled system.8
+5d. High-Performance Computing Standards
+         * CPU-First Rule (AES-HPC-1): All highly optimized SIMD or GPU kernels MUST maintain a strictly equivalent, unoptimized scalar CPU fallback. The CPU implementation acts as the absolute correctness oracle during unit testing.
+         * Memory Alignment (AES-HPC-2): Data structures subjected to AVX2 or AVX-512 SIMD operations MUST be explicitly aligned to 32-byte or 64-byte boundaries, respectively, using the alignas() specifier.10 Unaligned loads (e.g., _mm256_loadu_ps) are PROHIBITED in performance-critical hot paths due to cache-line boundary crossing penalties.10
+         * Cache Discipline (AES-HPC-3): Data access patterns MUST favor Structure-of-Arrays (SoA) over Array-of-Structures (AoS) to maximize cache line utilization, minimize memory traffic, and prevent false sharing across threads.34
+         * Rationale: Misaligned memory access crossing cache-line boundaries severely degrades SIMD performance, bottlenecking OLAP and physics workloads.10 A CPU-first baseline prevents hardware vendor-lock and ensures testing viability.
+
+
+C++
+
+
+
+
+// AES-Compliant HPC Memory Alignment and SIMD (AVX2) Implementation
+#include <immintrin.h>
+#include <cstddef>
+#include <cassert>
+
+constexpr size_t ALIGNMENT = 32;
+constexpr size_t VECTOR_SIZE = 8;
+
+// alignas(32) ensures the base pointer does not cross cache-line boundaries
+struct alignas(ALIGNMENT) VectorBlock {
+   float data;
+};
+
+void compute_vector_add(const float* a, const float* b, float* c, size_t n) {
+   // Assert alignment boundaries to prevent hardware penalties (AES-HPC-2)
+   assert(reinterpret_cast<std::uintptr_t>(a) % ALIGNMENT == 0);
+   assert(reinterpret_cast<std::uintptr_t>(b) % ALIGNMENT == 0);
+   assert(reinterpret_cast<std::uintptr_t>(c) % ALIGNMENT == 0);
+
+   for (size_t i = 0; i < n; i += VECTOR_SIZE) {
+       // Aligned loads replace unaligned _mm256_loadu_ps
+       __m256 va = _mm256_load_ps(&a[i]); 
+       __m256 vb = _mm256_load_ps(&b[i]);
+       __m256 vc = _mm256_add_ps(va, vb);
+       _mm256_store_ps(&c[i], vc);        // Aligned store
+   }
+}
+
+6. VERIFICATION & TESTING FRAMEWORK
+Anvil transitions software engineering from a paradigm of heuristic debugging to statistical correctness validation, adopting IBM Cleanroom methodologies 14 and deep software metrics.6
+6.1 Test Taxonomy
+         * Unit & Integration Tests: Required for all code. Must execute in deterministic, containerized environments.
+         * Property-Based Testing: REQUIRED for all mathematical algorithms, parsers, and physics simulations to prove invariants hold over randomized distributions.
+         * Fuzz Testing: Network and API boundaries MUST be fuzzed continuously.
+         * Benchmark Testing: Hot paths MUST have historical performance baselines to detect degradation.
+6.2 Verification per IBM Cleanroom
+         * Rule (AES-VER-1): Software MUST be developed incrementally. Each increment is mathematically verified for correctness against its specification (Clear Box testing) prior to execution. Debugging into correctness is PROHIBITED.15
+         * Rule (AES-VER-2): Statistical usage testing SHALL be applied to determine Mean Time to Failure (MTTF). Defect masking is PROHIBITED; failures must trace to logical flaws.35
+         * Rationale: Eliminating structural bugs at the mathematical level prior to execution vastly reduces the cost of debugging and ensures high reliability for critical systems, as demonstrated by the zero-defect operations of early Cleanroom implementations.15
+6.3 Quantitative Software Metrics
+Saguaro MUST automatically calculate and append the following software metrics to the validation report of every AAL-0 and AAL-1 commit:
+         * Halstead Metrics: The agent MUST extract the number of distinct operators (  ) and operands (  ) to compute Program Volume, Difficulty, and Development Effort, acting as an empirical check against bloat.6
+         * Design Structure Quality Index (DSQI): The agent MUST measure architectural coupling and cohesion by evaluating data complexity and structural complexity to derive the DSQI, ensuring the structural stability of the codebase.6
+Metric Type
+	Calculation Basis
+	Target Action
+	Halstead Volume
+	  
+
+	High volume triggers mandatory refactoring.
+	DSQI
+	System Complexity = Structural + Data Complexity
+	Values approaching 0 indicate severe architectural decay.
+	6.4 JEDEC Software Reliability Stress Testing
+            * Rule (AES-VER-3): Adopting JEDEC JESD47/JESD22 hardware reliability principles for software, embedded systems MUST undergo highly accelerated stress testing (HAST) under peak saturation loads, manipulating inputs (e.g., simulated memory constraints, high-throughput network drops) to determine software failure points before production.36
+7. OBSERVABILITY & TELEMETRY
+System observability provides the foundation for the Agentic Chronicle protocol. Monitoring is modeled upon Google SRE Golden Signals 38 and Formula 1 (FIA) Telemetry practices.39
+7.1 Golden Signals (Adapted)
+Saguaro MUST instrument the following four metrics for all distributed and ML/HPC workloads:
+            1. Latency: Step time in ML training; Time to First Token (TTFT); P50, P95, and P99 percentiles for API responses.38
+            2. Throughput/Traffic: Tokens/second; GFLOPS; network requests per second.38
+            3. Errors: Rate of non-finite gradients, non-200 HTTP responses, quantum gate fidelity drops.38
+            4. Saturation: GPU memory utilization, SIMD lane utilization, thread pool exhaustion, queue depth.38
+7.2 High-Fidelity F1 Telemetry Practices
+            * Real-time Compounding Metrics (AES-OBS-1): Borrowing from F1 Telemetry's highly granular GPS and micro-sector tracking, software systems MUST expose compounding metrics. Sub-function latency MUST be tracked at the microsecond level to detect granular performance degradation in real-time execution paths.39
+            * Baseline Alerting (AES-OBS-2): Any signal deviating by    (three standard deviations) from the moving historical baseline MUST trigger an automated Saguaro red-team diagnostic audit.
+            * Rationale: High-granularity telemetry allows autonomous agents to dynamically adjust workloads (e.g., scaling microservices, throttling training batch sizes) before cascading saturation failures occur, exactly as race engineers utilize instantaneous tire pressure and temperature data.40
+8. AGENT WORKFLOW GOVERNANCE
+Because Anvil operates autonomously, standard human-centric governance must be translated into explicit algorithmic guardrails.
+8.1 Code Generation Guardrails
+               * Rule (AES-AGT-1): Agents MUST execute an AST (Abstract Syntax Tree) complexity check prior to generating a commit. If polynomial time or high cyclomatic complexity is detected, the agent MUST self-correct and refactor prior to submission.
+               * Rule (AES-AGT-2): The agent MUST invoke the Chronicle Protocol for every code transformation:
+               1. Log baseline operational metrics.
+               2. Apply code transformation.
+               3. Execute test suite.
+               4. Log result metrics.
+               5. Revert autonomously if result metrics degrade beyond   .
+8.2 Red-Team & Self-Correction Protocols
+                  * Rule (AES-AGT-3): A designated Saguaro Red-Team sub-agent MUST evaluate AAL-0/1 code for OWASP ASVS vulnerabilities and memory leaks (using tools like Valgrind/AddressSanitizer) prior to PR creation.6
+                  * Rule (AES-AGT-4): The Red-Team agent MUST automatically generate Fault Tree Analyses (FTA) mapping potential paths to catastrophic states (e.g., memory corruption, DL mode collapse).
+                  * Rationale: Segregating generative agents from adversarial verification agents prevents systemic confirmation bias and hallucination drift.
+9. CODE REVIEW & CHANGE MANAGEMENT
+AES aligns its process management with CMMI Level 5 methodologies to ensure quantitative, data-driven continuous improvement.44
+9.1 Review Requirements per Severity
+                  * AAL-0/1: Requires two independent agentic reviews PLUS one human cryptographic sign-off.
+                  * AAL-2: Requires one independent agentic review focusing on performance and test coverage.
+                  * AAL-3: May be merged autonomously following successful CI pipeline execution.
+9.2 Change Risk Assessment & Regression Gates
+                  * Rule (AES-REV-1): Dependency upgrades (e.g., PyPI, Conan) MUST rely on lock files containing cryptographic hashes. Upgrades MUST pass a strict regression gate evaluating performance against the previous commit.
+                  * Rule (AES-REV-2) Quantitative Process Management: The system MUST statistically track defect injection rates, defect density, and mean time to recovery (MTTR). Root cause analysis MUST systematically shift the process mean to reduce variation, adhering to the continuous representation of CMMI Level 5.44
+                  * Rationale: CMMI Level 5 mandates that organizational stability is achieved through mathematical measurement of the development process.45 Agents must quantify their own defect rates to iteratively optimize their generative prompt parameters.
+10. ANTI-PATTERNS REGISTRY
+Anvil MUST detect and autonomously reject the following anti-patterns across all domains:
+10.1 General Anti-patterns
+                  * Silent Exception Swallowing: try {... } catch (...) {} (C++) or except Exception: pass (Python). Rationale: Destroys observability and masks critical state corruption.
+                  * Untraceable Code ("Mystery Features"): Code that implements logic not traced to a requirement definition. Rationale: Violates DO-178C structural constraints.4
+                  * Shotgun Dependency Updates: Updating dependencies without a lockfile or regression bounds. Rationale: Introduces supply-chain attack vectors.
+10.2 Domain-Specific Anti-patterns
+                  * ML - Ad-Hoc Clamping: Using torch.clamp() or tf.clip_by_value() without root-cause analysis to hide exploding gradients. Rationale: Masks fundamentally unstable model architectures.
+                  * HPC - Unaligned SIMD Loads: Using _mm256_loadu_ps on misaligned data inside tight loops. Rationale: Causes severe processor pipeline stalls, effectively negating the benefits of vectorization.10
+                  * Physics - Euler Integration for Orbits: Using 1st-order forward Euler methods for Hamiltonian mechanics. Rationale: Rapidly introduces non-physical energy into the system, violating conservation laws.6
+                  * Quantum - Physical Assumptions in Logical Design: Hardcoding qubit coupling maps directly into algorithmic structure without intermediate transpilation logic. Rationale: Breaks hardware portability.6
+11. APPENDICES
+11.1 Severity Decision Tree
+                  1. Does software failure cause loss of life, vehicle loss, or unrecoverable financial ruin?
+                  * Yes → AAL-0 (Apply DO-178C DAL-A, MC/DC, Formal Proofs).
+                  * No → Proceed to 2.
+                  2. Does failure cause severe degradation of primary models, major data drift, or security compromise?
+                  * Yes → AAL-1 (Apply 100% Branch Coverage, ASVS L3, FMEA).
+                  * No → Proceed to 3.
+                  3. Does failure cause localized developer downtime or internal tool disruption?
+                  * Yes → AAL-2 (Property-based testing, CI/CD gates).
+                  * No → AAL-3 (Documentation, Linting).
+11.2 Quick-Reference Checklists
+                  * C++23 Backend Commit Checklist:
+                  * [ ] No raw new/delete allocations.
+                  * [ ] std::expected utilized for all API returns.
+                  * [ ] MISRA C++:2023 static analysis passing.
+                  * [ ] Cache-aligned structs defined explicitly using alignas().
+                  * Deep Learning Commit Checklist:
+                  * [ ] Loss scaling verified for FP16.
+                  * [ ] Non-finite gradient trap implemented.
+                  * [ ] Deterministic PRNG seeding active.
+                  * Physics Simulation Checklist:
+                  * [ ] Hamiltonian energy drift monitored.
+                  * [ ] Lie symmetries algebraically enforced.
+________________
+The Anvil Engineering Standard establishes the immutable laws for agentic software generation. Through strict adherence to mathematical verification, physical laws, and quantitative refinement, Saguaro and Anvil guarantee software superiority across all multidimensional computing domains.
+Works cited
+                  1. Software Assurance and Software Safety Standard - NASA Standards, accessed March 2, 2026, https://standards.nasa.gov/standard/NASA/NASA-STD-87398
+                  2. What Is DO-178C? - Wind River, accessed March 2, 2026, https://www.windriver.com/solutions/learning/do-178c
+                  3. What Is ISO 26262? ISO 26262 Functional Safety Overview + ASIL | Perforce Software, accessed March 2, 2026, https://www.perforce.com/blog/qac/what-is-iso-26262
+                  4. What Is RTCA DO-178C? Overview & Compliance in Aerospace - Parasoft, accessed March 2, 2026, https://www.parasoft.com/learning-center/do-178c/what-is/
+                  5. Guide to ISO 26262 Software Compliance - Parasoft, accessed March 2, 2026, https://alm.parasoft.com/hubfs/New_Pages/Whitepaper%20ISO%2026262%20Software%20Compliance%20With%20Parasoft.pdf
+                  6. Herbert S. Quantum Computing. Foundations and Practice 2025.pdf
+                  7. 6.11 Global Symmetries and Conservation Laws - The Wolfram Physics Project, accessed March 2, 2026, https://www.wolframphysics.org/technical-introduction/the-updating-process-in-our-models/global-symmetries-and-conservation-laws/
+                  8. Lie Symmetry Net: Preserving Conservation Laws in Modelling Financial Market Dynamics via Differential Equations | OpenReview, accessed March 2, 2026, https://openreview.net/forum?id=rkfop9GyxB
+                  9. NVIDIA HPC Compilers Reference Guide 26.1 documentation, accessed March 2, 2026, https://docs.nvidia.com/hpc-sdk/compilers/hpc-compilers-ref-guide/index.html
+                  10. Moving Data - Algorithmica, accessed March 2, 2026, https://en.algorithmica.org/hpc/simd/moving/
+                  11. What Is ISO 26262? - Ansys, accessed March 2, 2026, https://www.ansys.com/simulation-topics/what-is-iso-26262
+                  12. NASA-STD-8739.8 B, accessed March 2, 2026, https://standards.nasa.gov/system/files/tmp/NASA-STD-8739.8B.pdf
+                  13. MISRA C Coding Standards & Guidelines | Black Duck - Application Security, accessed March 2, 2026, https://www.blackduck.com/static-analysis-tools-sast/misra.html
+                  14. Cleanroom Software Engineering, accessed March 2, 2026, https://www.engr.mun.ca/~dpeters/7893/Notes/presentations/CleanroomSoftwareEngineering.pptx
+                  15. Cleanroom Software Engineering - Auburn University, accessed March 2, 2026, https://www.eng.auburn.edu/~kchang/comp6710/aa/04_Cleanroom.ppt
+                  16. What Are DO-178C and ED-12C? - Jama Software, accessed March 2, 2026, https://www.jamasoftware.com/blog/what-are-do-178c-and-ed-12c/
+                  17. ISO 26262 Functional Safety in Automotive Software - eInfochips, accessed March 2, 2026, https://www.einfochips.com/blog/road-vehicles-functional-safety-a-software-developers-perspective/
+                  18. Explanation of Adaptive Platform Software Architecture - Autosar, accessed March 2, 2026, https://www.autosar.org/fileadmin/standards/R21-11/AP/AUTOSAR_EXP_SWArchitecture.pdf
+                  19. Explanation of Adaptive Platform Design - Autosar, accessed March 2, 2026, https://www.autosar.org/fileadmin/standards/R22-11/AP/AUTOSAR_EXP_PlatformDesign.pdf
+                  20. Clean Room Software Engineering For Zero-Defect Software: IBM MD | PDF - Scribd, accessed March 2, 2026, https://www.scribd.com/doc/240751357/Cleanroom-Linger
+                  21. ASVS/4.0/en/0x03-Using-ASVS.md at master · OWASP/ASVS · GitHub, accessed March 2, 2026, https://github.com/OWASP/ASVS/blob/master/4.0/en/0x03-Using-ASVS.md
+                  22. Implementing OWASP ASVS - SoftwareMill, accessed March 2, 2026, https://softwaremill.com/implementing-owasp-asvs/
+                  23. NIST 800-53 Compliance Checklist and Security Controls Guide - UpGuard, accessed March 2, 2026, https://www.upguard.com/blog/nist-800-53-compliance-checklist
+                  24. SP 800-53 Rev. 5, Security and Privacy Controls for Information Systems and Organizations | CSRC - NIST, accessed March 2, 2026, https://csrc.nist.gov/pubs/sp/800/53/r5/upd1/final
+                  25. Security and Privacy Controls for Information Systems and Organizations - NIST Technical Series Publications, accessed March 2, 2026, https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-53r5.pdf
+                  26. MISRA C++:2023 Rule 4.1.3 - There shall be no occurrence of undefined or critical unspecified behaviour - MathWorks, accessed March 2, 2026, https://www.mathworks.com/help/bugfinder/ref/misrac2023rule4.1.3.html
+                  27. MISRA C++ 2023 Guide: Everything You Need to Know - Parasoft, accessed March 2, 2026, https://www.parasoft.com/blog/misra-cpp-2023-guide/
+                  28. MISRA C:2023 Directives and Rules - MATLAB & Simulink - MathWorks, accessed March 2, 2026, https://www.mathworks.com/help/bugfinder/misra-c-2023-reference.html
+                  29. SEI CERT C Coding Standards: C, C++ & Java - SAST | Black Duck - Application Security, accessed March 2, 2026, https://www.blackduck.com/static-analysis-tools-sast/sei-cert.html
+                  30. SEI CERT C Coding Standard: Rules for Developing Safe, Reliable, and Secure Systems (2016 Edition), accessed March 2, 2026, http://chenweixiang.github.io/docs/SEI_CERT_C_Coding_Standard_2016_Edition.pdf
+                  31. Discovery of hidden symmetries and conservation laws - Archive Project Details | Google Summer of Code, accessed March 2, 2026, https://summerofcode.withgoogle.com/archive/2025/projects/7sbHDzye
+                  32. Data Alignment to Assist Vectorization - Intel, accessed March 2, 2026, https://www.intel.com/content/www/us/en/develop/articles/data-alignment-to-assist-vectorization.html
+                  33. Understanding SIMD Performance: A Developer's Introduction with Real Benchmarks | Necati Demir, accessed March 2, 2026, https://n.demir.io/articles/understanding-simd-performance-developers-introduction/
+                  34. From Theory to Best Practices: Single Instruction, Multiple Data (SIMD) - CelerData, accessed March 2, 2026, https://celerdata.com/glossary/single-instruction-multiple-data-simd
+                  35. Cleanroom Software - Department of Computer Science, accessed March 2, 2026, http://www.cs.toronto.edu/~chechik/courses07/csc410/mills.pdf
+                  36. JEDEC STANDARD - Renesas, accessed March 2, 2026, https://www.renesas.com/document/gde/jedec-definition
+                  37. Reliability testing, accessed March 2, 2026, https://www.ti.com/support-quality/reliability/reliability-testing.html
+                  38. SRE Golden Signals: Performance Metrics That Matter - Odown Blog, accessed March 2, 2026, https://odown.com/blog/sre-golden-signals/
+                  39. Decoding F1 Telemetry: What Race Engineers Monitor From the Pit Wall | by Eric Kariuki, accessed March 2, 2026, https://medium.com/@eric.njuguna.mail/decoding-f1-telemetry-what-race-engineers-monitor-from-the-pit-wall-cebb16f77d49
+                  40. How Data Analysis Transforms F1 Race Performance - Catapult Sports, accessed March 2, 2026, https://www.catapult.com/blog/f1-data-analysis-transforming-performance
+                  41. Google SRE monitoring ditributed system - sre golden signals, accessed March 2, 2026, https://sre.google/sre-book/monitoring-distributed-systems/
+                  42. How Data Works in Formula 1 - Racecar Engineering, accessed March 2, 2026, https://www.racecar-engineering.com/articles/how-data-works-in-formula-1/
+                  43. What are the 'Golden Signals' that SRE teams use to detect issues? - Cisco DevNet, accessed March 2, 2026, https://developer.cisco.com/articles/what-are-the-golden-signals/what-are-the-golden-signals-that-sre-teams-use-to-detect-issues/
+                  44. Capability Maturity Model - Wikipedia, accessed March 2, 2026, https://en.wikipedia.org/wiki/Capability_Maturity_Model
+                  45. Capability Maturity Model Integration (CMMI), background notes - Azure Boards - Microsoft, accessed March 2, 2026, https://learn.microsoft.com/en-us/azure/devops/boards/work-items/guidance/cmmi/guidance-background-to-cmmi?view=azure-devops
+                  46. Demonstrating the Impact and Benefits of CMMI®: An Update and Preliminary Results - SEI, accessed March 2, 2026, https://www.sei.cmu.edu/documents/1832/2003_003_001_14117.pdf

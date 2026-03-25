@@ -1,0 +1,6 @@
+supabase       
+pygad
+merkly
+pyyaml
+python-dotenv
+typing

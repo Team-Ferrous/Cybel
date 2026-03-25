@@ -1,17 +1,16 @@
 import math
 from pathlib import Path
 from typing import Literal
-
-
+import torch
 from sparc3d_sdf.src.sparc3d_sdf import (
     compute_sdf_on_grid,
     load_obj,
     save_obj,
 )
+
 from sparc3d_sdf.src.sparc3d_sdf.convert import sdf_to_mesh_dense, sdf_to_mesh_sparse, sdf_to_mesh_voxel
 from sparc3d_sdf.src.sparc3d_sdf.sparc3d import calculate_displacements
 from sparc3d_sdf.src.sparc3d_sdf.utils   import Timer
-
 
 def run(
     object_path: str,
@@ -51,6 +50,16 @@ def run(
 
     save_obj(output_path, vertices.cpu(), faces.cpu())
 
+def detect_cuda():
+    if torch.cuda.is_available():
+        print(f"✅ CUDA available. Device count: {torch.cuda.device_count()}")
+        for i in range(torch.cuda.device_count()):
+            print(f"Device {i}: {torch.cuda.get_device_name(i)}")
+        return True
+    else:
+        print("⚠️ CUDA not available. Falling back to CPU")
+        return False
+
 
 if __name__ == "__main__":
     import argparse
@@ -83,4 +92,9 @@ if __name__ == "__main__":
 
     output_path = Path(args.output_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    run(object_path, args.N, output_path, args.eta, args.times, args.mode)
+    if(detect_cuda()):
+        torch.cuda.empty_cache()
+        run(object_path, args.N, output_path, args.eta, args.times, args.mode)
+    else:
+        print("⚠️ Running on CPU may be very slow for high resolutions. Consider using a GPU if possible.") 
+        run(object_path, args.N, output_path, args.eta, args.times, args.mode)

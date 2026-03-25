@@ -1,0 +1,123 @@
+{
+  "records": [
+    {
+      "task_hash": "-8612120606840119137",
+      "task_snippet": "explain how the coconut native bridge works",
+      "loop_type": "simple",
+      "duration_sec": 289.9399673938751,
+      "success": true,
+      "timestamp": "2026-01-25T14:07:07.698461",
+      "complexity": "simple",
+      "num_steps": 0,
+      "error_message": null
+    },
+    {
+      "task_hash": "5554748142508743309",
+      "task_snippet": "explain how the coconut native bridge works",
+      "loop_type": "simple",
+      "duration_sec": 173.49296283721924,
+      "success": true,
+      "timestamp": "2026-01-25T14:14:00.065144",
+      "complexity": "simple",
+      "num_steps": 0,
+      "error_message": null
+    },
+    {
+      "task_hash": "5574343047827222392",
+      "task_snippet": "explain how the coconut native bridge works",
+      "loop_type": "simple",
+      "duration_sec": 953.5883181095123,
+      "success": true,
+      "timestamp": "2026-01-25T14:44:59.842970",
+      "complexity": "simple",
+      "num_steps": 0,
+      "error_message": null
+    },
+    {
+      "task_hash": "171279716010024595",
+      "task_snippet": "explain how the coconut native bridge works",
+      "loop_type": "simple",
+      "duration_sec": 360.8988928794861,
+      "success": true,
+      "timestamp": "2026-01-25T15:02:37.393732",
+      "complexity": "simple",
+      "num_steps": 0,
+      "error_message": null
+    },
+    {
+      "task_hash": "975142008002834122",
+      "task_snippet": "explain how the coconut native bridge works",
+      "loop_type": "simple",
+      "duration_sec": 230.88398218154907,
+      "success": true,
+      "timestamp": "2026-01-25T15:08:24.646631",
+      "complexity": "simple",
+      "num_steps": 0,
+      "error_message": null
+    },
+    {
+      "task_hash": "-1689139905738944794",
+      "task_snippet": "explain how the coconut native bridge works",
+      "loop_type": "simple",
+      "duration_sec": 271.77472138404846,
+      "success": true,
+      "timestamp": "2026-01-25T15:21:20.942700",
+      "complexity": "simple",
+      "num_steps": 0,
+      "error_message": null
+    },
+    {
+      "task_hash": "2610038459494800114",
+      "task_snippet": "explain how the coconut native bridge works",
+      "loop_type": "simple",
+      "duration_sec": 521.741532087326,
+      "success": true,
+      "timestamp": "2026-01-25T17:58:53.551741",
+      "complexity": "simple",
+      "num_steps": 0,
+      "error_message": null
+    },
+    {
+      "task_hash": "-2097454902484722155",
+      "task_snippet": "explain how the coconut native bridge works",
+      "loop_type": "simple",
+      "duration_sec": 449.1863934993744,
+      "success": true,
+      "timestamp": "2026-01-25T20:46:21.290643",
+      "complexity": "simple",
+      "num_steps": 0,
+      "error_message": null
+    },
+    {
+      "task_hash": "-7236133433501526044",
+      "task_snippet": "explain how the coconut native bridge works",
+      "loop_type": "simple",
+      "duration_sec": 252.68598866462708,
+      "success": true,
+      "timestamp": "2026-01-25T22:31:22.194110",
+      "complexity": "simple",
+      "num_steps": 0,
+      "error_message": null
+    },
+    {
+      "task_hash": "523896899467509064",
+      "task_snippet": "explain how the coconut native bridge works",
+      "loop_type": "simple",
+      "duration_sec": 535.1879949569702,
+      "success": true,
+      "timestamp": "2026-01-25T22:46:40.128955",
+      "complexity": "simple",
+      "num_steps": 0,
+      "error_message": null
+    }
+  ],
+  "loop_stats": {
+    "simple": {
+      "total": 10,
+      "success": 10,
+      "total_duration": 4039.380753993988,
+      "success_rate": 1.0,
+      "avg_duration": 403.9380753993988
+    }
+  }
+}

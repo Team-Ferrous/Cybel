@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "native_qsg_audit.topology_passport.v1",
+  "title": "Native QSG Topology Passport",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run_id",
+    "generated_at",
+    "profile_name",
+    "models",
+    "host_fingerprint",
+    "topology_hash",
+    "cohort_key",
+    "host",
+    "isolation",
+    "memory",
+    "saguaro",
+    "comparator_hints"
+  ],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "run_id": {"type": "string"},
+    "generated_at": {"type": "string"},
+    "profile_name": {"type": "string"},
+    "models": {"type": "array", "items": {"type": "string"}},
+    "host_fingerprint": {"type": "string"},
+    "topology_hash": {"type": "string"},
+    "cohort_key": {"type": "string"},
+    "host": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hostname",
+        "machine",
+        "platform",
+        "cpu_model",
+        "logical_cpus",
+        "visible_threads"
+      ],
+      "properties": {
+        "hostname": {"type": "string"},
+        "machine": {"type": "string"},
+        "platform": {"type": "string"},
+        "cpu_model": {"type": "string"},
+        "logical_cpus": {"type": "integer"},
+        "visible_threads": {"type": "integer"}
+      }
+    },
+    "isolation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "launch_affinity",
+        "runtime_affinity",
+        "repair_allowed",
+        "repair_attempted",
+        "repair_required",
+        "cpu_governor",
+        "thp_mode",
+        "perf_event_paranoid"
+      ],
+      "properties": {
+        "launch_affinity": {"type": "array", "items": {"type": "integer"}},
+        "runtime_affinity": {"type": "array", "items": {"type": "integer"}},
+        "repair_allowed": {"type": "boolean"},
+        "repair_attempted": {"type": "boolean"},
+        "repair_required": {"type": "boolean"},
+        "cpu_governor": {"type": "string"},
+        "thp_mode": {"type": "string"},
+        "perf_event_paranoid": {"type": "string"}
+      }
+    },
+    "memory": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["meminfo_artifact", "mem_available_kb"],
+      "properties": {
+        "meminfo_artifact": {"type": "string"},
+        "mem_available_kb": {"type": "integer"}
+      }
+    },
+    "saguaro": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "health_ok",
+        "health_artifact",
+        "verify_status",
+        "verify_available"
+      ],
+      "properties": {
+        "health_ok": {"type": "boolean"},
+        "health_artifact": {"type": "string"},
+        "verify_status": {"type": "string"},
+        "verify_available": {"type": "boolean"}
+      }
+    },
+    "comparator_hints": {"type": "object"}
+  }
+}

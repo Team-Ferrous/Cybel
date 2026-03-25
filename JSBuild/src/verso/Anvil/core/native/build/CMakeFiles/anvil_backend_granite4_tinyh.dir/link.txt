@@ -1,0 +1,1 @@
+/usr/bin/c++ -fPIC -O3 -DNDEBUG -flto=auto -fno-fat-lto-objects -shared  -o libanvil_backend_granite4_tinyh.so CMakeFiles/anvil_backend_granite4_tinyh.dir/split/backends/granite4_tinyh/backend_module.cpp.o  -Wl,-rpath,"\$ORIGIN:\$ORIGIN/build:/home/mike/Documents/Github/Anvil/core/native/build" libanvil_runtime_core.so 

@@ -1,0 +1,30 @@
+{
+  "project": "saguaro_core",
+  "version": "@PROJECT_VERSION@",
+  "build_type": "@CMAKE_BUILD_TYPE@",
+  "target_arch": "@TARGET_ARCH@",
+  "compiler_id": "@CMAKE_CXX_COMPILER_ID@",
+  "compiler_version": "@CMAKE_CXX_COMPILER_VERSION@",
+  "cxx_standard": "@CMAKE_CXX_STANDARD@",
+  "edition": "@SAGUARO_EDITION_NAME@",
+  "abi_hash": "@SAGUARO_ABI_HASH@",
+  "base_cxx_flags": "@SAGUARO_BASE_CXX_FLAGS_STR@",
+  "hardening_flags": "@SAGUARO_HARDENING_FLAGS_STR@",
+  "tf_cflags": "@TF_CFLAGS@",
+  "tf_lflags": "@TF_LFLAGS@",
+  "simd_flags": "@SAGUARO_SIMD_FLAGS_STR@",
+  "required_symbols": [
+    "saguaro_native_version",
+    "saguaro_native_available",
+    "saguaro_native_trie_create",
+    "saguaro_native_trie_destroy",
+    "saguaro_native_trie_insert",
+    "saguaro_native_trie_build_from_table",
+    "saguaro_native_tokenize_batch",
+    "saguaro_native_embed_lookup",
+    "saguaro_native_compute_doc_vectors",
+    "saguaro_native_holographic_bundle",
+    "saguaro_native_crystallize",
+    "saguaro_native_full_pipeline"
+  ]
+}

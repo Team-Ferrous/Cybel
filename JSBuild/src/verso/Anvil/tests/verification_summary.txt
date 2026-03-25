@@ -1,0 +1,7 @@
+Based on the initial survey, I see several key files and directories:
+1. src/ (contains core code)
+2. config/
+3. tests/ (likely for unit tests)
+
+I will start by using skeleton and grep to understand the structure within src/. I expect to see Python modules and possibly a main entry point like main.py or __main__. I will also search for any framework fingerprints like setup.py or requirements.txt to identify the technology stack. If none are present, I will note that as "undetermined" and proceed with educated guesses. I will map the core components and their relationships, focusing on the main application flow. I will use the impact analysis to understand how changes might propagate. Finally, I will compile my findings into a structured analysis, providing specific evidence from the tools.
+```
