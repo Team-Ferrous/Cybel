@@ -9,12 +9,11 @@
     "start": "electron .",
     "pack": "electron-builder --dir",
     "dist": "electron-builder",
-    "test":       "electron-builder --win portable",
-    "test:mac":   "electron-builder --mac portable",
+    "test": "electron-builder --win portable",
+    "test:mac": "electron-builder --mac portable",
     "test:linux": "electron-builder --linux portable",
-
-    "dist:win":   "electron-builder --win",
-    "dist:mac":   "electron-builder --mac",
+    "dist:win": "electron-builder --win",
+    "dist:mac": "electron-builder --mac",
     "dist:linux": "electron-builder --linux"
   },
   "keywords": [],
@@ -32,10 +31,10 @@
     "npmRebuild": false,
     "asar": true,
     "files": [
-        "**/*",
-        "node_modules/faiss-node/**/*",
-        "node_modules/hnswlib-node/**/*",
-        ".env"
+      "**/*",
+      "node_modules/faiss-node/**/*",
+      "node_modules/hnswlib-node/**/*",
+      ".env"
     ],
     "win": {
       "target": "nsis",
@@ -45,7 +44,7 @@
       "oneClick": false,
       "allowElevation": true,
       "allowToChangeInstallationDirectory": true,
-      "useZip": true
+      "useZip": false
     },
     "asarUnpack": [
       "**/*.node",
@@ -55,19 +54,19 @@
   },
   "dependencies": {
     "@ai-sdk/xai": "^3.0.67",
+    "@huggingface/transformers": "^3.8.1",
     "@vectorize-io/hindsight-client": "^0.4.17",
-    "@xenova/transformers": "^2.17.2",
     "ai": "^6.0.116",
     "crypto": "^1.0.1",
     "dialog": "^0.3.1",
     "dotenv": "^17.3.1",
     "electron-store": "^11.0.2",
+    "faiss-node": "^0.5.1",
     "fs-extra": "^11.3.3",
     "googleapis": "171.4.0",
     "hnswlib-node": "^3.0.0",
     "node-fetch": "^3.3.2",
     "open": "^11.0.0",
-    "faiss-node": "^0.5.1",
     "openai": "^6.22.0",
     "python-shell": "^5.0.0",
     "qrcode": "^1.5.4",

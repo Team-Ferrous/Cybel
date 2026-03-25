@@ -1,9 +1,15 @@
+.agent-ui {
+    overflow-y: auto;
+    height: 100%;
+}
+
 /* Add this to your existing <style> section */
 .markdown-content {
     color: #cffafe;
     font-size: 0.875rem;
     line-height: 1.625;
 }
+
 
 .markdown-content p {
     margin-bottom: 0.75rem;

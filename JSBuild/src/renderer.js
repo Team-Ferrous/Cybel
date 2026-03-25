@@ -32,7 +32,6 @@ slider.addEventListener("input", (e) => {
 function switchTab(tabId) {
     document.querySelectorAll('.module-section').forEach(el => el.classList.remove('active'));
     document.getElementById('module-' + tabId).classList.add('active');
-
     document.querySelectorAll('nav button').forEach(btn => {
         btn.classList.remove('active-nav');
         btn.classList.add('inactive-nav');
@@ -52,7 +51,6 @@ const { accent, theme, background } = JSON.parse(stored);
 
     // Apply accent
     if (accent) document.documentElement.style.setProperty('--accent', accent);
-
     // Apply theme
     if (theme) document.body.dataset.theme = theme;
     const avatarImage = document.getElementById("avatarImage");
@@ -79,6 +77,10 @@ const { accent, theme, background } = JSON.parse(stored);
         saveAppearance();
     }
 
+    if (theme) {
+        document.body.dataset.theme = theme;
+        updateThemeButtons(theme);
+    }
     // Make inline body styles match
     document.body.style.backgroundColor = getComputedStyle(document.body)
                                             .getPropertyValue('--bg-primary');
@@ -511,11 +513,6 @@ function addWorkflowStep() {
 
     // Only show remove button if there's more than 1 step
     removeBtn.style.display = workflowStepCounter > 1 ? "inline-block" : "none";
-
-    // Enable '+ Add Step' button only if agents exist
-    const addStepBtn = document.getElementById("add-step-btn");
-    const agentsExist = document.querySelectorAll(".agent").length > 0; // replace with your agent tracker
-    addStepBtn.disabled = !agentsExist;
 }
 
 function populateAgentDropdown(stepClone){
@@ -556,6 +553,8 @@ async function runAgent(agent, input) {
 }
 
 let agentCounter = 0;
+let currentBG    = null; 
+
 function switchBG(type) {
     // Clean previous
     var bg = undefined
@@ -629,6 +628,11 @@ function loadSavedAppearance() {
         setTheme(savedTheme);
         saveAppearance();
     }
+    
+    if (savedTheme) {
+        document.body.dataset.theme = savedTheme;
+        updateThemeButtons(savedTheme);
+    }
 }
 function updateWorkflowDropdowns() {
 const selects = document.querySelectorAll(".workflow-agent");
@@ -688,6 +692,8 @@ async function createAgent(config = {}) {
             }
         });
     });
+    updateWorkflowControls();
+    window.api.spawn(config);
 
     // Spawn agent in engine
     /*if(engine == null){
@@ -703,8 +709,6 @@ async function createAgent(config = {}) {
         if (!result.success) alert("Agent creation failed: " + result.error);
         else console.log("Agent created:", agentId);
     });*/
-
-    window.api.spawn(config);
 }
 
 /*function showQRCode(data) {
@@ -740,6 +744,29 @@ function deleteAgent(agentId) {
   engine.destroy(agentId); // also tell backend
 }
 
+/*function resetAgentSlot(slot) {
+    slot.dataset.agentId = "";
+    slot.querySelector(".agent-name").value = "";
+    slot.querySelector(".agent-prompt").value = "";
+
+    const selects = slot.querySelectorAll(".agent-model");
+    selects.forEach(s => s.selectedIndex = 0);
+    const toggles = slot.querySelectorAll("input[type='checkbox']");
+    toggles.forEach(t => t.checked = false);
+}*/
+
+function resetAgentSlot(slot) {
+    const slotId = slot.id;
+
+    slot.className = "p-4 border-b border-accent/50 empty-slot glass-panel";
+    slot.innerHTML = `
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 5v14M5 12h14"/>
+        </svg>
+        <span onclick="openCreateBotModal('${slotId}')">Empty Slot</span>
+    `;
+}
+
 async function deleteBot(agentId, agentRoot) {
     let engine = window.api.getEngineInstance();
     const confirmed = confirm("Terminate this bot instance?");
@@ -750,7 +777,8 @@ async function deleteBot(agentId, agentRoot) {
             await engine.destroy(agentId);
         }
 
-        agentRoot.remove();
+        resetAgentSlot(agentRoot);
+        //agentRoot.remove();
         console.log("Bot removed:", agentId);
 
         if (document.querySelectorAll(".agent-instance").length === 0) {
@@ -770,8 +798,8 @@ const addStepBtn = document.querySelector('.workflow-add');
 let agentExists = false;
 
 function setAgentExists(exists) {
-agentExists = exists;
-addStepBtn.disabled = !agentExists; // disable if no agent
+    agentExists = exists;
+    addStepBtn.disabled = !agentExists; // disable if no agent
 }
 
 // Optional: initialize button state on load
@@ -1859,29 +1887,23 @@ async function executeWorkflow() {
 setInterval(draw, 50);
 // Init
 document.addEventListener("DOMContentLoaded", initUI);
-    initDownloads();
+
 
 function initAppearance(){
-
     lucide.createIcons();
-
     loadSavedAppearance();
     loadSavedTheme();
     loadSavedAccent();
-
     const themeButtons = document.querySelectorAll("[data-theme]");
-    themeButtons.forEach(btn=>{
-        btn.addEventListener("click",()=>{
-            themeButtons.forEach(b=>b.classList.remove("selected"));
-            btn.classList.add("selected");
+    themeButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+            const theme = btn.dataset.theme;
 
-            if(btn.dataset.theme === "dark"){
-                document.documentElement.classList.add("dark");
-                document.documentElement.classList.remove("light");
-            } else {
-                document.documentElement.classList.add("light");
-                document.documentElement.classList.remove("dark");
-            }
+            document.body.dataset.theme = theme;
+
+            updateThemeButtons(theme);
+
+            saveAppearance();
         });
     });
 
@@ -2026,8 +2048,35 @@ async function initDownloads(){
     });
 }
 
+function updateThemeButtons(activeTheme) {
+    const buttons = document.querySelectorAll(".theme-btn");
+
+    buttons.forEach(btn => {
+        btn.classList.remove("bg-accent", "text-white");
+
+        if (btn.dataset.theme === activeTheme) {
+            btn.classList.add("bg-accent", "text-white");
+        }
+    });
+}
+
+function updateWorkflowControls() {
+    const addStepBtn = document.getElementById("add-step-btn");
+    const agentsExist = document.querySelectorAll(".agent-instance").length > 0;
+ 
+    addStepBtn.disabled = !agentsExist;
+}
+
 function initUI() {
     initModelSelects();
+    initDownloads();
+    loadAppearance();
+    const agentsExist = document.querySelectorAll(".agent-instance").length > 0;
+    
+    // Enable '+ Add Step' button only if agents exist
+    updateWorkflowControls();
+
+    console.log(agentsExist);
     const btn   = document.getElementById("grok-key-input");
     btn.value   = localStorage.getItem("token_key");
     try { initAppearance(); } catch(e){ console.error("Appearance failed", e); }

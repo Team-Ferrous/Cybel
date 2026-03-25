@@ -10,7 +10,7 @@ import { google       }   from "googleapis";
 import { createXai    }   from '@ai-sdk/xai';
 import { generateText }   from 'ai';
 import { error        }   from "node:console";
-import { pipeline     }   from "@xenova/transformers";
+import { pipeline, env     }   from "@huggingface/transformers";
 import { spawn        }   from "child_process";
 
 import { InstanceEngine } from "./instance_engine.js";
@@ -670,23 +670,50 @@ function retrieveTopK(queryVector, k = 5) {
     return result[0].generated_text;
 }*/
 
-async function generateLocal(prompt) {
-    const pipe = await pipeline(
-        "text-generation",
-        CONFIG.model
-    );
+const GRANITE_FALLBACK = "onnx-community/granite-4.0-350m-ONNX-web"; //"ibm-granite/granite-4.0-h-tiny" //path.resolve("granite-4.0-h-tiny-Q5_K_M.gguf");
+//./resources/models/
 
-    generator = async function(prompt, options = {}) {
-        return await pipe(prompt, options);
-    };
+async function generateLocal(prompt, modelPath = null) {
+    const modelToUse = modelPath || CONFIG.model;
 
-    const result = await generator(prompt, { max_new_tokens: 200, temperature: 0.7 });
-
-    if (!Array.isArray(result) || !result[0]?.generated_text) {
-        console.warn("generateLocal returned invalid output", result);
-        return "Error: LLM did not return text";
+    let pipe = await pipeline("text-generation", GRANITE_FALLBACK, {
+        //local_files_only: true,
+        trust_remote_code: true,
+        allowRemoteModels: true
+    });
+    try {
+        pipe = await pipeline("text-generation", GRANITE_FALLBACK, {//path.join(LOCAL_MODEL_DIR, modelToUse), {
+            //local_files_only: true,    // <- force offline
+            trust_remote_code: true,
+            allowRemoteModels: true
+        });
+    } catch (err) {
+        console.warn(`Local model load failed for "${modelToUse}": ${err}. Using Granite fallback.`);
+        pipe = await pipeline("text-generation", GRANITE_FALLBACK, {
+            local_files_only: true,
+            trust_remote_code: false,
+            allowRemoteModels: true
+        });
     }
-    return result[0].generated_text;
+
+    try {
+        const result = await pipe(prompt, { max_new_tokens: 200, temperature: 0.7 });
+        if (!Array.isArray(result) || !result[0]?.generated_text) {
+            throw new Error("Pipeline returned invalid output");
+        }
+        return result[0].generated_text;
+    } catch (err) {
+        console.error(`Generation failed on "${modelToUse}": ${err}. Using Granite fallback.`);
+        if (modelToUse !== GRANITE_FALLBACK) {
+            const fallbackPipe = await pipeline("text-generation", GRANITE_FALLBACK, {
+                local_files_only: true,
+                trust_remote_code: false,
+            });
+            const fallbackResult = await fallbackPipe(prompt, { max_new_tokens: 200, temperature: 0.7 });
+            return fallbackResult[0]?.generated_text || "Error: Granite fallback failed";
+        }
+        return "Error: Generation failed with Granite fallback";
+    }
 }
 
 async function generateVerso(prompt) {
@@ -717,8 +744,13 @@ async function generateVerso(prompt) {
 
     const result = await generator(prompt, { max_new_tokens: 200, temperature: 0.7 });
     if (!Array.isArray(result) || !result[0]?.generated_text) {
-        console.warn("generateLocal returned invalid output", result);
-        return "Error: LLM did not return text";
+        console.error(`Grok generation failed: ${err}, falling back to Granite`);
+        let resp = await generateGranite(prompt);
+        return resp.output_text;
+        
+         // "Error: could not generate response";
+        //console.warn("generateLocal returned invalid output", result);
+        //return "Error: LLM did not return text";
     }
     return result[0].generated_text;
 }
@@ -736,6 +768,32 @@ async function generateVerso(prompt) {
     }
     return result[0].generated_text;
 }*/
+
+
+// Hardcoded path to the bundled model
+const GRANITE_MODEL_PATH = "granite-4.0-h-tiny-Q5_K_M.gguf" //path.join(
+    //process.resourcesPath,
+    //"models",
+    //"granite-4.0-h-tiny-Q5_K_M.gguf"
+//);
+
+async function generateGranite(prompt) {
+    if (!fs.existsSync(GRANITE_MODEL_PATH)) {
+        throw new Error("Granite model not found at " + GRANITE_MODEL_PATH);
+    }
+
+    // Initialize the pipeline with the hardcoded model
+    const pipe = await pipeline("text-generation", GRANITE_MODEL_PATH);
+
+    // Generate text
+    const result = await pipe(prompt, { max_new_tokens: 200, temperature: 0.7 });
+
+    if (!Array.isArray(result) || !result[0]?.generated_text) {
+        console.warn("generateGranite returned invalid output", result);
+        return "Error: LLM did not return text";
+    }
+    return result[0].generated_text;
+}
 
 async function generateGroq(prompt) {
     try {
@@ -756,8 +814,9 @@ async function generateGroq(prompt) {
         console.log("Groq raw response:", response.output_text);
         return response.output_text;
     } catch (err) {
-        console.error("Groq generation failed:", err);
-        return null;// "Error: could not generate response";
+        console.error(`Groq generation failed: ${err}, falling back to Granite`);
+        let resp = await generateGranite(prompt);
+        return resp.output_text; // "Error: could not generate response";
     }
 }
 
@@ -773,8 +832,9 @@ async function generateGrok(model, query) {
         console.log(text)
         return text;
     } catch (err) {
-        console.error("Groq generation failed:", err);
-        return null;// "Error: could not generate response";
+        console.error(`Grok generation failed: ${err}, falling back to Granite`);
+        let resp = await generateGranite(prompt);
+        return resp.output_text; // "Error: could not generate response";
     }
 }
 

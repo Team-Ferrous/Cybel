@@ -29,15 +29,27 @@ import path      from "path";
 import { dirname }       from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { google } from 'googleapis';
+import { createRequire } from 'node:module';
+const require  = createRequire(import.meta.url);
+const os       = require("os");
+const crypto = require("crypto");
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = dirname(__filename);
+
+const base = os.hostname() + os.arch() + crypto.randomUUID();
+const userId = crypto.createHash("sha256").update(base).digest("hex");
+
 let pythonServer;
 //import { InstanceEngine } from './instance_engine'
 
-ipcMain.handle("engine:qrcode", async (event) => {
-        return makeQRCode("https://google.com");
-});
+async function trackEvent(name, payload = {}) {
+    await fetch("https://your-server.com/analytics", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ event: name, ...payload })
+    });
+}
 
 async function openGDDialog() {
     const auth = await authorizeSheets(); // reuse your OAuth helper
@@ -117,9 +129,19 @@ function initializeWorker() {
     });
 }
 
+
+ipcMain.handle("engine:qrcode", async (event) => {
+        return makeQRCode("https://google.com");
+});
+
+
+ipcMain.handle("analytics:track", async (_, name, payload) => {
+    await trackEvent(name, payload);
+}); 
+
 ipcMain.handle("engine:update", async (_, newConfig) => {
     setEngine(newConfig);
-    window.analytics.trackEvent("feature_used", { userId, feature: "engine:update" });
+    trackEvent("feature_used", { userId, feature: "engine:update" });
     console.log("Engine config updated:", newConfig);
 });
 
@@ -129,7 +151,7 @@ ipcMain.handle("chat:setTokenKey", async (_, key) => {
 });
 
 ipcMain.handle("engine:set-generation-mode", async (_, mode) => {
-    window.analytics.trackEvent("feature_used", { userId, feature: "engine:set-generation-mode" });
+    trackEvent("feature_used", { userId, feature: "engine:set-generation-mode" });
     setGenerationMode(mode);
     return true;
 });
@@ -141,42 +163,42 @@ ipcMain.handle("engine:loadModel", async (_, mName) => {
 
 ipcMain.handle("chat:setTemperature", async (_, key) => {
     setTemperature(key);
-    window.analytics.trackEvent("feature_used", { userId, feature: "chat:setTemperature" });
+    trackEvent("feature_used", { userId, feature: "chat:setTemperature" });
     return true;
 });
 
 ipcMain.handle("engine:save_document", async (event, doc) => {
-    window.analytics.trackEvent("feature_used", { userId, feature: "engine:save_document" });
+    trackEvent("feature_used", { userId, feature: "engine:save_document" });
     return await saveDocument(doc);
 });
 
 ipcMain.handle("engine:load_document", async () => {
-    window.analytics.trackEvent("feature_used", { userId, feature: "engine:load_document" });
+    trackEvent("feature_used", { userId, feature: "engine:load_document" });
     return await loadDocument();
 });
 
 ipcMain.handle("engine:delete_document", async (event, doc) => {
-    window.analytics.trackEvent("feature_used", { userId, feature: "engine:delete_document" });
+    trackEvent("feature_used", { userId, feature: "engine:delete_document" });
     return await deleteDocument(doc);
 });
 
 ipcMain.handle("engine:replicate_document", async (event, doc) => {
-    window.analytics.trackEvent("feature_used", { userId, feature: "engine:replicate_document" });
+    trackEvent("feature_used", { userId, feature: "engine:replicate_document" });
     return await replicateDocument(doc);
 });
 
 ipcMain.handle("engine:merge_document", async (event, doc) => {
-    window.analytics.trackEvent("feature_used", { userId, feature: "engine:export_document" });
+    trackEvent("feature_used", { userId, feature: "engine:export_document" });
     return await mergeDocument(doc);
 });
 
 ipcMain.handle("engine:export_document", async (event, doc) => {
-    window.analytics.trackEvent("feature_used", { userId, feature: "engine:export_document" });
+    trackEvent("feature_used", { userId, feature: "engine:export_document" });
     return await exportDocument(doc);
 });
 
 ipcMain.handle("engine:spawn_instance", async (event, config) => {
-    window.analytics.trackEvent("feature_used", { userId, feature: "engine:export_document" });
+    trackEvent("feature_used", { userId, feature: "engine:export_document" });
     return await getEngineInstance().spawn(config);
 });
 
@@ -198,13 +220,13 @@ ipcMain.handle("chat:setContextWindowKey", async (_, mode) => {
 });
 
 ipcMain.handle("engine:updateCharacter", async (_, mode) => {
-    window.analytics.trackEvent("feature_used", { userId, feature: "engine:updateCharacter" });
+    trackEvent("feature_used", { userId, feature: "engine:updateCharacter" });
     updateCharacter(mode);
     return true;
 });
 
 ipcMain.handle('decode-directory', async (event, args) => {
-    window.analytics.trackEvent("feature_used", { userId, feature: "rag:ingest" });
+    trackEvent("feature_used", { userId, feature: "rag:ingest" });
     return await Decoder.decodeDirectory(args.path, args.options);
 });
 
@@ -219,7 +241,7 @@ ipcMain.handle("rag:ingest", async (event, paths) => {
         let eng = getEngineInstance();
         vectorStore = eng("instanceId", myQueryVector, 10); 
         await vectorStore.add(embeddings);
-        window.analytics.trackEvent("feature_used", { userId, feature: "rag:ingest" });
+        trackEvent("feature_used", { userId, feature: "rag:ingest" });
     }
     return { success: true };
 });
@@ -227,7 +249,7 @@ ipcMain.handle("rag:ingest", async (event, paths) => {
 ipcMain.handle("rag:query", async (event, qry) => {
     let eng = getEngineInstance();
     vectorStore = eng("instanceId", myQueryVector, 10); 
-    window.analytics.trackEvent("feature_used", { userId, feature: "rag:query" });
+    trackEvent("feature_used", { userId, feature: "rag:query" });
     await vectorStore.query(qry);
     return { success: true };
 });
@@ -235,7 +257,7 @@ ipcMain.handle("rag:query", async (event, qry) => {
 ipcMain.handle("rag:clear", async (event, idx) => {
     let eng = getEngineInstance();
     vectorStore = eng("instanceId", myQueryVector, 10); 
-    window.analytics.trackEvent("feature_used", { userId, feature: "rag:clear" });
+    trackEvent("feature_used", { userId, feature: "rag:clear" });
 
     await vectorStore[idx].clear();
     return { success: true };
@@ -256,7 +278,7 @@ ipcMain.handle("engine:ingest_documents", async (event, { instanceId, files }) =
     }
     let eng = getEngineInstance();
     const result = await eng.ingestDocuments(instanceId, allChunks);
-    window.analytics.trackEvent("feature_used", { userId, feature: "engine:ingest_documents" });
+    trackEvent("feature_used", { userId, feature: "engine:ingest_documents" });
 
     return { success: true, ingested: result.count };
   } catch (err) {
@@ -267,14 +289,14 @@ ipcMain.handle("engine:ingest_documents", async (event, { instanceId, files }) =
 
 ipcMain.handle("engine:getEngineInstance", () => {
     let eng = getEngineInstance();
-    window.analytics.trackEvent("feature_used", { userId, feature: "engine:getEngineInstance" });
+    trackEvent("feature_used", { userId, feature: "engine:getEngineInstance" });
 
     return eng ? eng : { success: false, message: "No engine instance available" };
 });
 
 ipcMain.handle("engine:spawnAgent", async (event, config) => {
     let eng = getEngineInstance();
-    window.analytics.trackEvent("feature_used", { userId, feature: "engine:spawnAgent" });
+    trackEvent("feature_used", { userId, feature: "engine:spawnAgent" });
     return await eng.spawnAgent(config);
 });
 
@@ -288,7 +310,7 @@ ipcMain.handle("get-local-models", async () => {
     if (!fs.existsSync(modelsDir)) return [];
 
     const files = fs.readdirSync(modelsDir);
-    window.analytics.trackEvent("feature_used", { userId, feature: "engine:get-local-models" });
+    trackEvent("feature_used", { userId, feature: "engine:get-local-models" });
     // assume each model has a folder named after it
     return files.filter(f => fs.statSync(path.join(modelsDir, f)).isDirectory());
 });
@@ -297,19 +319,19 @@ ipcMain.handle("get-local-models", async () => {
 ipcMain.handle("chat:send", async (_, userInput) => {
     //console.log("backend:", require("./backend"));
     const result = await sendMessage(userInput);
-    window.analytics.trackEvent("feature_used", { userId, feature: "chat:send" });
+    trackEvent("feature_used", { userId, feature: "chat:send" });
     return result;
 });
 
 ipcMain.handle("chat:setMode", (event, mode) => {
   console.log("mode set to", mode)
-    window.analytics.trackEvent("feature_used", { userId, feature: "chat:setMode" });
+    trackEvent("feature_used", { userId, feature: "chat:setMode" });
   return `Mode changed to ${mode}`
 })
 
 ipcMain.handle("spawn-agent", async (event, config) => {
     let eng = getEngineInstance();
-    window.analytics.trackEvent("feature_used", { userId, feature: "spawn-agent" });
+    trackEvent("feature_used", { userId, feature: "spawn-agent" });
 
     return await eng.spawn(config);
 });
@@ -317,7 +339,7 @@ ipcMain.handle("spawn-agent", async (event, config) => {
 
 ipcMain.handle("get-agent", (event, id) => {
     let eng = getEngineInstance();
-    window.analytics.trackEvent("feature_used", { userId, feature: "get-agent" });
+    trackEvent("feature_used", { userId, feature: "get-agent" });
 
     return eng.get(id);
 });
@@ -325,7 +347,7 @@ ipcMain.handle("get-agent", (event, id) => {
 // RAG Ingestion and Querying
 ipcMain.handle("ingest-google-sheet", async (_, spreadsheetId) => {
     try {
-        window.analytics.trackEvent("feature_used", { userId, feature: "ingest-google-sheet" });
+        trackEvent("feature_used", { userId, feature: "ingest-google-sheet" });
         return await ingestSpreadsheetToFAISS(spreadsheetId);
     } catch (err) {
         return { success: false, error: err.message };
@@ -334,7 +356,7 @@ ipcMain.handle("ingest-google-sheet", async (_, spreadsheetId) => {
 
 ipcMain.handle("open-gdrive-dialog", async () => {
     try {
-        window.analytics.trackEvent("feature_used", { userId, feature: "ingest-google-sheet" });
+        trackEvent("feature_used", { userId, feature: "ingest-google-sheet" });
         const selectedFiles = await openGDDialog().then(result => {
             if (!result.success) {
                 alert("Failed to open Google Drive dialog: " + result.error);
@@ -365,5 +387,5 @@ app.whenReady().then(async () => {
     initializeWorker().then((embeddingIndex) => {
         console.log("FAISS loaded in worker!");
     });
-    window.analytics.trackEvent("first_action_completed", { userId });
+    trackEvent("first_action_completed", { userId });
 });

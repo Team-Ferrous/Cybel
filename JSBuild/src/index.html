@@ -753,20 +753,23 @@
                         <div class="agent-tag">CHARACTER</div>
                         <div class="bot-name">CYBEL</div>
                         <div class="bot-desc">A statesman of the void who speaks with the weight of a dying sun.</div>
-                        <div class="card-footer">
-                            <button onclick="switchTab('chat')" class="icon-btn">></button>
-                            <!--<button class="icon-btn">📋</button>-->
-                            <button onclick="deleteBot('bot1', this.parentElement.parentElement)" class="icon-btn">🗑️</button>
-                            <button onclick="openCreateBotModal('bot1')" class="launch-btn">CONFIG</button>
+                        <div onclick="openCreateBotModal('bot1')">
+                                <div class="card-footer">
+                                    <button onclick="switchTab('chat')" class="icon-btn">></button>
+                                    <!--<button class="icon-btn">📋</button>-->
+                                    <button onclick="deleteBot('bot1', this.parentElement.parentElement)" class="icon-btn">🗑️</button>
+                                    <button onclick="openCreateBotModal('bot1')" class="launch-btn">CONFIG</button>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <div id="bot2" onclick="setSelectedSlot('bot2')" class="p-4 border-b border-accent/50 empty-slot glass-panel">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M12 5v14M5 12h14"/>
-                        </svg>
-                        <span onclick="openCreateBotModal('bot2')" >Empty Slot</span>
-                    </div>
+                        <div onclick="openCreateBotModal('bot2')">
+                            <div id="bot2" onclick="setSelectedSlot('bot2')" class="p-4 border-b border-accent/50 empty-slot glass-panel">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 5v14M5 12h14"/>
+                                </svg>
+                                <span>Empty Slot</span>
+                            </div>
+                        </div>
                     <!--<div class=" p-4 border-b border-accent/50 card glass-panel">
                         <div class="card-header">
                             <div class="bot-icon">🤖</div>
@@ -782,19 +785,22 @@
                             <button class="launch-btn">LAUNCH</button>
                         </div>
                     </div>-->
-
-                    <div id="bot3" onclick="setSelectedSlot('bot3')" class="p-4 border-b border-accent/50 empty-slot glass-panel">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M12 5v14M5 12h14"/>
-                        </svg>
-                        <span onclick="openCreateBotModal('bot3')">Empty Slot</span>
+                    <div onclick="openCreateBotModal('bot3')">
+                        <div id="bot3" onclick="setSelectedSlot('bot3')" class="p-4 border-b border-accent/50 empty-slot glass-panel">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 5v14M5 12h14"/>
+                            </svg>
+                            <span onclick="">Empty Slot</span>
+                        </div>
                     </div>
 
-                    <div id="bot4" onclick="setSelectedSlot('bot4')"  class="p-4 border-b border-accent/50 empty-slot glass-panel">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M12 5v14M5 12h14"/>
-                        </svg>
-                        <span onclick="openCreateBotModal('bot4')">Empty Slot</span>
+                    <div onclick="openCreateBotModal('bot4')">
+                        <div id="bot4" onclick="setSelectedSlot('bot4')"  class="p-4 border-b border-accent/50 empty-slot glass-panel">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 5v14M5 12h14"/>
+                            </svg>
+                            <span onclick="openCreateBotModal('bot4')">Empty Slot</span>
+                        </div>
                     </div>
                 </div>
 
@@ -806,7 +812,7 @@
             </div>
         </section>
         <!-- MODULE 7: AGENT MANAGEMENT (Matrix + Create) -->
-    <section id="module-agents" class="module-section flex-col h-full w-full p-4 md:p-8 overflow-hidden relative">
+    <section id="module-agents" class="agent-ui module-section flex-col h-full w-full p-4 md:p-8 overflow-hidden relative">
             <div class="agent-ui glass-panel">
                 <!-- Agent List -->
                 <div class="agent-sidebar">
@@ -913,7 +919,7 @@
 
             <template id="workflow-step-template">
 
-<div class="workflow-step">
+<div class="workflow-step agent-ui">
 
     <span class="workflow-index"></span>
 
