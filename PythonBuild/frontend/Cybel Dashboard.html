@@ -50,7 +50,6 @@
             --input-bg: rgba(var(--color-accent-dark) / 0.25);
             --glass-bg: rgba(10, 10, 15, 0.65);
             --glass-border: rgba(var(--color-accent) / 0.3);
-            /* Bot Manager vars (sync with --primary-accent) */
             --bm-cyan: #06b6d4;
             --bm-glow: rgba(6,182,212,0.2);
             --bm-card: rgba(10,15,22,0.82);
@@ -116,83 +115,92 @@
         .nav-collapsed .nav-btn { padding-left: 0; padding-right: 0; justify-content: center; }
         .nav-collapsed .nav-footer-icon { display: block !important; }
 
-        /* ═══════════════════════════════════════
-           BOT MANAGER — frosted glass layer
-           Everything rides on a glass container
-           so the matrix rain behind is dimmed but
-           still visible through the frost.
-        ═══════════════════════════════════════ */
+        /* ══════════════════════════════════════════════
+           BOT MANAGER MODAL (floating overlay from chat corner button)
+        ══════════════════════════════════════════════ */
+        #botMgrModal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 200;
+            background: rgba(2,5,12,0.82);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        #botMgrModal.bm-open {
+            display: flex;
+            animation: bmPop 0.22s ease;
+        }
+        #botMgrModalInner {
+            background: rgba(4,8,18,0.96);
+            border: 1px solid rgba(var(--color-accent)/0.22);
+            border-radius: 18px;
+            width: 100%;
+            max-width: 900px;
+            max-height: 88vh;
+            overflow-y: auto;
+            padding: 32px 36px 40px;
+            box-shadow: 0 0 80px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.04);
+            position: relative;
+        }
+        #botMgrModalInner::-webkit-scrollbar { width: 4px; }
+        #botMgrModalInner::-webkit-scrollbar-thumb { background: rgba(var(--color-accent)/0.3); border-radius: 2px; }
 
-        /* The outer section already has the matrix canvas;
-           we wrap content in a glass frost panel */
+        /* Bot manager corner button in chat header */
+        #botMgrTrigger {
+            width: 32px; height: 32px;
+            background: rgba(var(--color-accent)/0.1);
+            border: 1px solid rgba(var(--color-accent)/0.35);
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            color: var(--primary-accent);
+            transition: all 0.18s;
+            position: relative;
+        }
+        #botMgrTrigger:hover {
+            background: rgba(var(--color-accent)/0.22);
+            border-color: var(--primary-accent);
+            box-shadow: 0 0 12px rgba(var(--color-accent)/0.3);
+        }
+        #botMgrTrigger .bm-trigger-dot {
+            position: absolute;
+            top: -3px; right: -3px;
+            width: 7px; height: 7px;
+            background: #23d160;
+            border-radius: 50%;
+            border: 1px solid #050505;
+            box-shadow: 0 0 5px #23d160;
+        }
+
+        /* ── Bot Manager content styles (same as before) ── */
         #bm-frost-wrap {
             position: relative; z-index: 2;
-            background: rgba(4, 8, 16, 0.72);
-            backdrop-filter: blur(14px) saturate(1.4);
-            -webkit-backdrop-filter: blur(14px) saturate(1.4);
-            border: 1px solid rgba(var(--color-accent) / 0.12);
-            border-radius: 16px;
-            padding: 32px 36px 40px;
-            width: 100%; max-width: 1060px;
-            box-shadow: 0 0 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.04);
+            width: 100%;
         }
-
-        /* ── Security badge & title ── */
-        .bm-security-badge {
-            display: flex; align-items: center; gap: 8px;
-            font-size: 10px; letter-spacing: 2px; color: var(--bm-cyan);
-            margin-bottom: 8px; text-transform: uppercase;
-        }
-        .bm-h1 { font-size: 42px; font-weight: 900; letter-spacing: -1px; text-transform: uppercase; line-height: 1; color: white; }
+        .bm-security-badge { display: flex; align-items: center; gap: 8px; font-size: 10px; letter-spacing: 2px; color: var(--bm-cyan); margin-bottom: 8px; text-transform: uppercase; }
+        .bm-h1 { font-size: 36px; font-weight: 900; letter-spacing: -1px; text-transform: uppercase; line-height: 1; color: white; }
         .bm-h1 span { color: var(--bm-cyan); }
         .bm-subtitle { font-size: 10px; letter-spacing: 4px; color: #8b949e; margin: 6px 0 12px; text-transform: uppercase; }
         .bm-desc { color: #8b949e; font-size: 13px; line-height: 1.6; max-width: 520px; }
         .bm-hr { border: none; border-top: 1px solid rgba(48,54,61,0.7); margin: 22px 0; }
-
-        /* ── Toolbar ── */
-        .bm-toolbar {
-            display: flex; align-items: center; justify-content: space-between;
-            margin-bottom: 24px; gap: 10px; flex-wrap: wrap;
-        }
+        .bm-toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; gap: 10px; flex-wrap: wrap; }
         .bm-section-title { font-size: 10px; letter-spacing: 3px; color: #8b949e; text-transform: uppercase; }
         .bm-toolbar-btns { display: flex; gap: 7px; flex-wrap: wrap; }
-
-        .bm-tool-btn {
-            background: rgba(6, 12, 22, 0.75);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(48,54,61,0.8);
-            color: #8b949e;
-            padding: 7px 13px; border-radius: 6px;
-            font-size: 10px; font-weight: 700; letter-spacing: 1px;
-            font-family: 'Inter', sans-serif; cursor: pointer;
-            transition: color 0.15s, border-color 0.15s, background 0.15s;
-            display: flex; align-items: center; gap: 6px; white-space: nowrap;
-        }
-        .bm-tool-btn:hover { color: var(--bm-cyan); border-color: var(--bm-cyan); background: rgba(var(--color-accent) / 0.08); }
-        .bm-tool-btn.bm-primary {
-            background: rgba(var(--color-accent) / 0.12);
-            border-color: var(--bm-cyan); color: var(--bm-cyan);
-        }
-        .bm-tool-btn.bm-primary:hover { background: rgba(var(--color-accent) / 0.2); }
-
-        /* ── Bot Grid ── */
+        .bm-tool-btn { background: rgba(6,12,22,0.75); backdrop-filter: blur(8px); border: 1px solid rgba(48,54,61,0.8); color: #8b949e; padding: 7px 13px; border-radius: 6px; font-size: 10px; font-weight: 700; letter-spacing: 1px; font-family: 'Inter', sans-serif; cursor: pointer; transition: color 0.15s, border-color 0.15s, background 0.15s; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+        .bm-tool-btn:hover { color: var(--bm-cyan); border-color: var(--bm-cyan); background: rgba(var(--color-accent)/0.08); }
+        .bm-tool-btn.bm-primary { background: rgba(var(--color-accent)/0.12); border-color: var(--bm-cyan); color: var(--bm-cyan); }
+        .bm-tool-btn.bm-primary:hover { background: rgba(var(--color-accent)/0.2); }
         .bm-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
         @media (max-width: 900px) { .bm-grid { grid-template-columns: repeat(2, 1fr); } }
-
-        .bm-card {
-            background: rgba(6, 12, 22, 0.82);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(48,54,61,0.75);
-            border-radius: 12px; padding: 20px; position: relative;
-            transition: border-color 0.2s, box-shadow 0.2s, opacity 0.3s, transform 0.3s;
-            cursor: pointer;
-        }
+        .bm-card { background: rgba(6,12,22,0.82); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(48,54,61,0.75); border-radius: 12px; padding: 20px; position: relative; transition: border-color 0.2s, box-shadow 0.2s, opacity 0.3s, transform 0.3s; cursor: pointer; }
         .bm-card:hover { border-color: var(--bm-cyan); box-shadow: 0 0 16px var(--bm-glow); }
         .bm-card.bm-selected { border-color: var(--bm-cyan); box-shadow: 0 0 16px var(--bm-glow); }
         .bm-card.bm-selected::after { content: ''; position: absolute; top: 9px; left: 9px; width: 7px; height: 7px; border-radius: 50%; background: var(--bm-cyan); box-shadow: 0 0 6px var(--bm-cyan); }
         .bm-card.bm-deleting { opacity: 0; transform: scale(0.92); pointer-events: none; }
-
         .bm-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
         .bm-bot-icon { background: rgba(22,27,34,0.9); padding: 7px; border-radius: 6px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(30,41,59,0.8); color: var(--bm-cyan); }
         .bm-top-right { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
@@ -200,56 +208,28 @@
         .bm-status-dot.offline { background: #444; box-shadow: none; }
         .bm-agent-tag { font-size: 7px; background: rgba(6,182,212,0.1); color: var(--bm-cyan); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(6,182,212,0.3); letter-spacing: 1px; }
         .bm-agent-tag.character { background: rgba(245,158,11,0.1); color: #f59e0b; border-color: rgba(245,158,11,0.3); }
-
         .bm-bot-name { font-size: 16px; font-weight: 700; margin-bottom: 3px; color: white; }
         .bm-bot-load { font-size: 10px; color: var(--bm-muted); font-family: 'JetBrains Mono', monospace; margin-bottom: 7px; }
         .bm-bot-desc { font-size: 11px; color: #8b949e; line-height: 1.4; min-height: 34px; margin-bottom: 16px; }
-
         .bm-card-footer { display: flex; align-items: center; gap: 8px; border-top: 1px solid rgba(48,54,61,0.6); padding-top: 13px; }
-
-        .bm-icon-btn {
-            background: rgba(22,27,34,0.9); border: 1px solid rgba(30,41,59,0.8);
-            color: #8b949e; cursor: pointer; width: 28px; height: 28px; border-radius: 6px;
-            display: flex; align-items: center; justify-content: center;
-            transition: color 0.15s, border-color 0.15s, background 0.15s; padding: 0;
-        }
-        .bm-icon-btn:hover { color: var(--bm-cyan); border-color: var(--bm-cyan); background: rgba(var(--color-accent) / 0.08); }
+        .bm-icon-btn { background: rgba(22,27,34,0.9); border: 1px solid rgba(30,41,59,0.8); color: #8b949e; cursor: pointer; width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; transition: color 0.15s, border-color 0.15s, background 0.15s; padding: 0; }
+        .bm-icon-btn:hover { color: var(--bm-cyan); border-color: var(--bm-cyan); background: rgba(var(--color-accent)/0.08); }
         .bm-icon-btn.bm-del:hover { color: var(--bm-red); border-color: var(--bm-red); background: rgba(255,71,87,0.07); }
-
-        .bm-launch {
-            margin-left: auto; background: rgba(var(--color-accent) / 0.08);
-            border: 1px solid var(--bm-cyan); color: var(--bm-cyan);
-            padding: 5px 13px; border-radius: 4px; font-size: 9px; font-weight: 700;
-            letter-spacing: 1px; cursor: pointer; transition: background 0.15s;
-            font-family: 'Inter', sans-serif;
-        }
-        .bm-launch:hover { background: rgba(var(--color-accent) / 0.16); }
-
-        /* ── Empty slot ── */
-        .bm-empty {
-            border: 2px dashed rgba(48,54,61,0.65); border-radius: 12px;
-            background: rgba(4,8,14,0.55);
-            display: flex; flex-direction: column; align-items: center;
-            justify-content: center; color: #8b949e; font-size: 10px;
-            letter-spacing: 2px; text-transform: uppercase; gap: 10px;
-            min-height: 178px; cursor: pointer;
-            transition: border-color 0.2s, color 0.2s, background 0.2s;
-        }
-        .bm-empty:hover { border-color: rgba(var(--color-accent) / 0.4); color: rgba(var(--color-accent) / 0.6); background: rgba(var(--color-accent) / 0.03); }
+        .bm-launch { margin-left: auto; background: rgba(var(--color-accent)/0.08); border: 1px solid var(--bm-cyan); color: var(--bm-cyan); padding: 5px 13px; border-radius: 4px; font-size: 9px; font-weight: 700; letter-spacing: 1px; cursor: pointer; transition: background 0.15s; font-family: 'Inter', sans-serif; }
+        .bm-launch:hover { background: rgba(var(--color-accent)/0.2); }
+        .bm-launch.bm-active-bot { background: rgba(var(--color-accent)/0.3); box-shadow: 0 0 8px rgba(var(--color-accent)/0.4); }
+        .bm-empty { border: 2px dashed rgba(48,54,61,0.65); border-radius: 12px; background: rgba(4,8,14,0.55); display: flex; flex-direction: column; align-items: center; justify-content: center; color: #8b949e; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; gap: 10px; min-height: 178px; cursor: pointer; transition: border-color 0.2s, color 0.2s, background 0.2s; }
+        .bm-empty:hover { border-color: rgba(var(--color-accent)/0.4); color: rgba(var(--color-accent)/0.6); background: rgba(var(--color-accent)/0.03); }
         .bm-empty svg { opacity: 0.22; transition: opacity 0.2s; }
         .bm-empty:hover svg { opacity: 0.5; }
-
-        /* ── Pagination ── */
         .bm-pagination { display: flex; justify-content: center; align-items: center; gap: 36px; margin-top: 36px; color: #8b949e; font-size: 10px; letter-spacing: 2px; }
         .bm-arrow { background: rgba(22,27,34,0.9); border: 1px solid rgba(48,54,61,0.7); width: 30px; height: 30px; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #8b949e; transition: border-color 0.15s, color 0.15s; }
         .bm-arrow:hover { border-color: var(--bm-cyan); color: var(--bm-cyan); }
 
-        /* ─── BM MODALS shared overlay ─── */
+        /* ── BM sub-modals ── */
         .bm-overlay { display: none; position: fixed; inset: 0; background: rgba(2,5,12,0.88); backdrop-filter: blur(10px); z-index: 1100; align-items: center; justify-content: center; padding: 24px; }
         .bm-overlay.bm-open { display: flex; animation: bmPop 0.2s ease; }
         @keyframes bmPop { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
-
-        /* ── Confirm Delete ── */
         .bm-confirm-box { background: #080f1a; border: 1px solid rgba(30,41,59,0.9); border-radius: 12px; padding: 34px 30px; width: 350px; box-shadow: 0 0 60px rgba(255,71,87,0.1); text-align: center; }
         .bm-confirm-icon { width: 48px; height: 48px; background: rgba(255,71,87,0.1); border: 1px solid rgba(255,71,87,0.25); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 18px; color: var(--bm-red); }
         .bm-confirm-box h3 { font-size: 14px; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 9px; color: white; }
@@ -259,17 +239,15 @@
         .bm-btn-keep:hover { border-color: var(--bm-bright); }
         .bm-btn-destroy { flex: 1; background: var(--bm-red); border: none; color: white; padding: 9px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; transition: opacity 0.15s; }
         .bm-btn-destroy:hover { opacity: 0.85; }
-
-        /* ── Create Bot ── */
-        .bm-create-box { background: #080f1a; border: 1px solid rgba(var(--color-accent) / 0.3); border-radius: 14px; padding: 30px; width: 100%; max-width: 500px; box-shadow: 0 0 50px rgba(var(--color-accent) / 0.08); }
+        .bm-create-box { background: #080f1a; border: 1px solid rgba(var(--color-accent)/0.3); border-radius: 14px; padding: 30px; width: 100%; max-width: 500px; box-shadow: 0 0 50px rgba(var(--color-accent)/0.08); }
         .bm-create-box h2 { font-size: 17px; font-weight: 700; color: var(--bm-cyan); margin-bottom: 22px; letter-spacing: 0.5px; }
         .bm-field-label { font-size: 10px; letter-spacing: 2px; color: var(--bm-cyan); text-transform: uppercase; margin-bottom: 7px; display: block; font-family: 'JetBrains Mono', monospace; }
         .bm-field-input { width: 100%; background: rgba(0,0,0,0.5); border: 1px solid rgba(30,41,59,0.9); border-radius: 8px; padding: 10px 13px; color: white; font-family: 'Inter', sans-serif; font-size: 13px; margin-bottom: 18px; transition: border-color 0.15s; outline: none; }
         .bm-field-input:focus { border-color: var(--bm-cyan); }
         .bm-type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 22px; }
         .bm-type-card { border: 1px solid rgba(30,41,59,0.9); background: rgba(0,0,0,0.35); border-radius: 10px; padding: 14px; cursor: pointer; transition: all 0.15s; }
-        .bm-type-card:hover { border-color: rgba(var(--color-accent) / 0.5); }
-        .bm-type-card.bm-type-selected { border-color: var(--bm-cyan); background: rgba(var(--color-accent) / 0.08); box-shadow: 0 0 12px rgba(var(--color-accent) / 0.12); }
+        .bm-type-card:hover { border-color: rgba(var(--color-accent)/0.5); }
+        .bm-type-card.bm-type-selected { border-color: var(--bm-cyan); background: rgba(var(--color-accent)/0.08); box-shadow: 0 0 12px rgba(var(--color-accent)/0.12); }
         .bm-type-card h4 { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
         .bm-type-card.bm-agent-t h4 { color: var(--bm-cyan); }
         .bm-type-card.bm-char-t h4 { color: #f59e0b; }
@@ -277,11 +255,9 @@
         .bm-create-footer { display: flex; justify-content: space-between; align-items: center; }
         .bm-btn-cancel-c { background: none; border: 1px solid rgba(30,41,59,0.9); color: var(--bm-bright); padding: 8px 18px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; transition: border-color 0.15s; }
         .bm-btn-cancel-c:hover { border-color: var(--bm-bright); }
-        .bm-btn-init { background: rgba(var(--color-accent) / 0.9); border: none; color: #000; padding: 10px 22px; border-radius: 8px; font-size: 11px; font-weight: 700; letter-spacing: 1px; cursor: pointer; font-family: 'Inter', sans-serif; transition: opacity 0.15s; }
+        .bm-btn-init { background: rgba(var(--color-accent)/0.9); border: none; color: #000; padding: 10px 22px; border-radius: 8px; font-size: 11px; font-weight: 700; letter-spacing: 1px; cursor: pointer; font-family: 'Inter', sans-serif; transition: opacity 0.15s; }
         .bm-btn-init:hover { opacity: 0.85; }
-
-        /* ── Edit Bot Modal ── */
-        .bm-edit-box { background: #070e1a; width: 100%; max-width: 820px; max-height: 90vh; overflow-y: auto; border-radius: 14px; border: 1px solid rgba(30,41,59,0.9); padding: 28px; box-shadow: 0 20px 60px rgba(0,0,0,0.7), 0 0 40px rgba(var(--color-accent) / 0.04); color: var(--bm-bright); }
+        .bm-edit-box { background: #070e1a; width: 100%; max-width: 820px; max-height: 90vh; overflow-y: auto; border-radius: 14px; border: 1px solid rgba(30,41,59,0.9); padding: 28px; box-shadow: 0 20px 60px rgba(0,0,0,0.7), 0 0 40px rgba(var(--color-accent)/0.04); color: var(--bm-bright); }
         .bm-edit-box::-webkit-scrollbar { width: 4px; }
         .bm-edit-box::-webkit-scrollbar-thumb { background: rgba(30,41,59,0.9); border-radius: 2px; }
         .bm-modal-hdr { display: flex; align-items: center; margin-bottom: 32px; }
@@ -294,15 +270,15 @@
         .bm-json-tag { border: 1px solid var(--bm-muted); color: var(--bm-muted); padding: 2px 7px; border-radius: 4px; font-size: 8px; }
         .bm-action-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
         .bm-action-card { background: rgba(14,23,38,0.9); border: 1px solid rgba(30,41,59,0.9); border-radius: 8px; padding: 16px; display: flex; align-items: center; gap: 13px; cursor: pointer; transition: border-color 0.15s; }
-        .bm-action-card:hover { border-color: rgba(var(--color-accent) / 0.4); }
-        .bm-action-card.bm-ac-on { border-color: var(--bm-cyan); box-shadow: inset 0 0 10px rgba(var(--color-accent) / 0.07); }
+        .bm-action-card:hover { border-color: rgba(var(--color-accent)/0.4); }
+        .bm-action-card.bm-ac-on { border-color: var(--bm-cyan); box-shadow: inset 0 0 10px rgba(var(--color-accent)/0.07); }
         .bm-ac-title { font-size: 11px; font-weight: 700; display: block; }
         .bm-ac-sub { font-size: 9px; color: var(--bm-muted); }
-        .bm-editor { background: #060c16; border: 1px solid var(--bm-cyan); border-radius: 8px; padding: 13px; font-family: 'JetBrains Mono', monospace; font-size: 12px; line-height: 1.6; margin-bottom: 26px; color: #d1d5db; box-shadow: 0 0 12px rgba(var(--color-accent) / 0.07); }
+        .bm-editor { background: #060c16; border: 1px solid var(--bm-cyan); border-radius: 8px; padding: 13px; font-family: 'JetBrains Mono', monospace; font-size: 12px; line-height: 1.6; margin-bottom: 26px; color: #d1d5db; box-shadow: 0 0 12px rgba(var(--color-accent)/0.07); }
         .bm-first-msg { background: rgba(17,27,39,0.9); border: 1px solid rgba(30,41,59,0.9); border-radius: 8px; padding: 16px; font-size: 12px; color: #94a3b8; margin-bottom: 32px; line-height: 1.5; }
         .bm-bot-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 32px; }
         .bm-drop-z { border: 1px solid rgba(30,41,59,0.9); background: rgba(13,22,36,0.9); border-radius: 8px; height: 130px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: var(--bm-muted); gap: 5px; cursor: pointer; transition: border-color 0.15s; }
-        .bm-drop-z:hover { border-color: rgba(var(--color-accent) / 0.35); }
+        .bm-drop-z:hover { border-color: rgba(var(--color-accent)/0.35); }
         .bm-drop-z span { font-size: 10px; font-weight: 700; color: var(--bm-bright); }
         .bm-drop-z p { font-size: 9px; margin: 0; }
         .bm-ctrl-panel { background: rgba(13,22,36,0.9); border: 1px solid rgba(30,41,59,0.9); border-radius: 8px; padding: 16px; }
@@ -317,22 +293,14 @@
         .bm-btn-cancel-e:hover { border-color: var(--bm-bright); }
         .bm-btn-save { background: var(--bm-cyan); border: none; color: #000; padding: 9px 26px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; font-family: 'Inter', sans-serif; transition: opacity 0.15s; }
         .bm-btn-save:hover { opacity: 0.85; }
-
-        /* ── Toast ── */
-        .bm-toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(18px); background: #070e1a; border: 1px solid var(--bm-cyan); color: var(--bm-cyan); padding: 9px 22px; border-radius: 8px; font-size: 11px; font-family: 'JetBrains Mono', monospace; letter-spacing: 1px; z-index: 9999; opacity: 0; transition: opacity 0.2s, transform 0.2s; box-shadow: 0 0 18px rgba(var(--color-accent) / 0.14); pointer-events: none; }
+        .bm-toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(18px); background: #070e1a; border: 1px solid var(--bm-cyan); color: var(--bm-cyan); padding: 9px 22px; border-radius: 8px; font-size: 11px; font-family: 'JetBrains Mono', monospace; letter-spacing: 1px; z-index: 9999; opacity: 0; transition: opacity 0.2s, transform 0.2s; box-shadow: 0 0 18px rgba(var(--color-accent)/0.14); pointer-events: none; }
         .bm-toast.bm-toast-show { opacity: 1; transform: translateX(-50%) translateY(0); }
         .bm-toast.bm-toast-warn { border-color: #f59e0b; color: #f59e0b; }
 
-        /* ─── Agent Management styles (from Miles) ─── */
+        /* ─── Agent Management tab styles ─── */
         .agent-form { display: grid; grid-template-columns: 140px 1fr; gap: 10px 12px; align-items: center; }
-        .model-row { display: flex; align-items: center; gap: 12px; }
-        .agent-textarea { grid-column: 1 / span 2; height: 90px; }
-        .agent-input, .agent-select { width: 100%; }
-        .local-toggle { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
         .workflow-step { display: grid; grid-template-columns: 40px 1fr 1fr 30px; gap: 8px; align-items: center; padding: 6px; border-bottom: 1px solid rgba(0,255,200,0.15); }
         .workflow-index { font-family: monospace; color: #00ffd5; }
-        .workflow-step select { background: #0b0f0e; border: 1px solid rgba(0,255,200,0.25); color: #aaffee; padding: 4px; }
-        .workflow-remove { background: none; border: 1px solid rgba(255,60,60,0.4); color: #ff6a6a; cursor: pointer; }
     </style>
 </head>
 <body class="h-screen w-screen flex flex-col md:flex-row relative">
@@ -346,36 +314,6 @@
             <h3 id="modal-title" class="text-2xl font-bold text-white mb-2">SYSTEM ALERT</h3>
             <p id="modal-message" class="text-accent/80 mb-6">Operation confirmed.</p>
             <button onclick="closeModal('custom-modal')" class="px-6 py-2 bg-amber-600 hover:bg-amber-500 text-black font-bold rounded-lg transition-colors w-full">ACKNOWLEDGE</button>
-        </div>
-    </div>
-
-    <!-- ═══════ CREATE BOT MODAL (used by old Bot Management) ═══════ -->
-    <div id="create-bot-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-[var(--glass-bg)] backdrop-blur-sm hidden opacity-0 modal-backdrop">
-        <div class="glass-panel rounded-xl p-8 max-w-lg w-full transform scale-95 modal-content border-accent/50 shadow-lg shadow-accent/20">
-            <div class="flex justify-between items-center mb-6 border-b border-accent-dark/50 pb-4">
-                <h3 class="text-2xl font-bold text-accent">Initialize New Instance</h3>
-                <button onclick="closeModal('create-bot-modal')" class="text-gray-400 hover:text-white transition-colors"><i data-lucide="x"></i></button>
-            </div>
-            <div class="space-y-6">
-                <div>
-                    <label class="block text-sm text-accent/80 mb-2 font-mono">INSTANCE DESIGNATION</label>
-                    <input type="text" id="new-bot-name" class="w-full bg-black/50 border border-accent-dark rounded-lg p-3 text-white focus:border-accent focus:ring-1 focus:ring-accent focus:outline-none transition-all" placeholder="e.g. Assistant_v3">
-                </div>
-                <div>
-                    <label class="block text-sm text-accent/80 mb-2 font-mono">COGNITIVE ARCHITECTURE</label>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div onclick="selectBotType('character')" id="type-character" class="type-card p-4 rounded-lg cursor-pointer hover:bg-black/40">
-                            <h4 class="text-lg font-bold text-amber-400 mb-1">Character</h4>
-                            <p class="text-xs text-gray-400">Roleplay enabled. Adopts a specific persona, backstory, and will.</p>
-                        </div>
-                        <div onclick="selectBotType('agent')" id="type-agent" class="type-card p-4 rounded-lg cursor-pointer hover:bg-black/40">
-                            <h4 class="text-lg font-bold text-accent mb-1">Agent</h4>
-                            <p class="text-xs text-gray-400">Utility mode. Direct, factual responses without simulated personality.</p>
-                        </div>
-                    </div>
-                </div>
-                <button onclick="confirmCreateBot()" class="w-full py-3 bg-accent/90 hover:bg-accent text-white font-bold rounded-lg shadow-lg shadow-accent-dark/50 transition-all">INITIALIZE INSTANCE</button>
-            </div>
         </div>
     </div>
 
@@ -394,8 +332,8 @@
             <button onclick="switchTab('creative')"   id="nav-creative"   class="w-full nav-btn text-left px-6 py-3 flex items-center gap-3 transition-all inactive-nav"><i data-lucide="sparkles" class="w-5 h-5 flex-shrink-0"></i><span class="font-semibold nav-text whitespace-nowrap">Creative Mode</span></button>
             <button onclick="switchTab('engine')"     id="nav-engine"     class="w-full nav-btn text-left px-6 py-3 flex items-center gap-3 transition-all inactive-nav"><i data-lucide="cpu" class="w-5 h-5 flex-shrink-0"></i><span class="font-semibold nav-text whitespace-nowrap">Engine Config</span></button>
             <button onclick="switchTab('appearance')" id="nav-appearance" class="w-full nav-btn text-left px-6 py-3 flex items-center gap-3 transition-all inactive-nav"><i data-lucide="palette" class="w-5 h-5 flex-shrink-0"></i><span class="font-semibold nav-text whitespace-nowrap">Appearance</span></button>
-            <button onclick="switchTab('management')" id="nav-management" class="w-full nav-btn text-left px-6 py-3 flex items-center gap-3 transition-all inactive-nav"><i data-lucide="layers" class="w-5 h-5 flex-shrink-0"></i><span class="font-semibold nav-text whitespace-nowrap">Bot Management</span></button>
-            <!-- <button onclick="switchTab('agents')"     id="nav-agents"     class="w-full nav-btn text-left px-6 py-3 flex items-center gap-3 transition-all inactive-nav"><i data-lucide="cpu" class="w-5 h-5 flex-shrink-0"></i><span class="font-semibold nav-text whitespace-nowrap">Agent Management</span></button> -->
+            <!-- Agent Management now has its own tab -->
+            <button onclick="switchTab('agents')"     id="nav-agents"     class="w-full nav-btn text-left px-6 py-3 flex items-center gap-3 transition-all inactive-nav"><i data-lucide="layers" class="w-5 h-5 flex-shrink-0"></i><span class="font-semibold nav-text whitespace-nowrap">Agent Management</span></button>
         </div>
         <div class="p-4 border-t border-accent-dark/50 text-xs text-accent-dark font-mono text-center flex justify-center items-center h-16">
             <span class="nav-footer-text whitespace-nowrap">ID: A-387-CYB <br> STATUS: ONLINE</span>
@@ -417,9 +355,21 @@
                     <div class="p-4 border-b border-accent-dark/50 flex justify-between items-center bg-[var(--glass-bg)] flex-shrink-0 pr-12">
                         <div class="flex items-center gap-3">
                             <div class="relative"><div class="w-3 h-3 bg-accent rounded-full animate-ping absolute opacity-75"></div><div class="w-3 h-3 bg-accent rounded-full relative"></div></div>
-                            <div><h2 class="font-bold text-accent">CYBEL CORE</h2><p class="text-[10px] text-accent font-mono tracking-widest">HOLOGRAPHIC LINK ACTIVE</p></div>
+                            <div>
+                                <!-- Bot name is dynamic: "BOTNAME CORE" -->
+                                <h2 class="font-bold text-accent" id="chatBotTitle">CYBEL CORE</h2>
+                                <p class="text-[10px] text-accent font-mono tracking-widest">HOLOGRAPHIC LINK ACTIVE</p>
+                            </div>
                         </div>
-                        <div class="flex gap-4 text-accent"><i data-lucide="activity" class="w-5 h-5 animate-pulse"></i><i data-lucide="shield-check" class="w-5 h-5"></i></div>
+                        <div class="flex gap-3 items-center text-accent">
+                            <!-- Bot Management trigger button -->
+                            <div id="botMgrTrigger" onclick="openBotMgr()" title="Bot Management">
+                                <div class="bm-trigger-dot"></div>
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="6" height="6" rx="1"/><path d="M3 9h2M3 15h2M19 9h2M19 15h2M9 3v2M15 3v2M9 19v2M15 19v2"/><path d="M5 5l2 2M17 5l-2 2M5 19l2-2M17 19l-2-2"/></svg>
+                            </div>
+                            <i data-lucide="activity" class="w-5 h-5 animate-pulse"></i>
+                            <i data-lucide="shield-check" class="w-5 h-5"></i>
+                        </div>
                     </div>
                     <div id="chat-history" class="flex-1 overflow-y-auto p-6 space-y-6">
                         <div class="flex gap-4">
@@ -584,190 +534,58 @@
         </section>
 
         <!-- ══════════════════════════════════════════════
-             AGENT MANAGER — bot grid + agent config combined
+             AGENT MANAGEMENT — standalone tab
         ══════════════════════════════════════════════ -->
-        <section id="module-management" class="module-section flex-col h-full w-full relative overflow-hidden">
-            <!-- Matrix rain canvas lives behind everything -->
-            <canvas id="bg-bot" class="bg-canvas-container" style="z-index:0;"></canvas>
+        <section id="module-agents" class="module-section flex-col h-full w-full relative overflow-hidden">
+            <canvas id="bg-agents" class="bg-canvas-container" style="z-index:0;"></canvas>
+            <div class="relative z-10 flex-1 flex flex-col overflow-hidden" style="padding: 0;">
 
-            <!-- Frosted glass content wrapper — scrollable -->
-            <div class="relative z-10 flex-1 overflow-y-auto flex justify-center px-6 py-8">
-                <div id="bm-frost-wrap">
-
-                    <!-- Header -->
-                    <div class="bm-security-badge">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                        <span>Security Level: Omega</span>
-                    </div>
-                    <div class="bm-h1">BOT<span>MANAGER</span></div>
-                    <div class="bm-subtitle">Neural Agent Management System</div>
-                    <p class="bm-desc">Build, configure, and deploy custom AI agents with personalized behaviors, knowledge bases, and conversation styles.</p>
-                    <div class="bm-hr"></div>
-
-                    <!-- Toolbar -->
-                    <div class="bm-toolbar">
-                        <span class="bm-section-title">Active Bots</span>
-                        <div class="bm-toolbar-btns">
-                            <button class="bm-tool-btn" onclick="bmAction('save')">
-                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>SAVE
-                            </button>
-                            <button class="bm-tool-btn" onclick="bmAction('load')">
-                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>LOAD
-                            </button>
-                            <button class="bm-tool-btn" onclick="bmAction('replicate')">
-                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>REPLICATE
-                            </button>
-                            <button class="bm-tool-btn" onclick="bmAction('merge')">
-                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M6 9v6M18 15V9a6 6 0 0 0-6-6H9"/></svg>MERGE
-                            </button>
-                            <button class="bm-tool-btn" onclick="bmAction('export')">
-                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>EXPORT
-                            </button>
-                            <button class="bm-tool-btn bm-primary" onclick="bmOpenCreate()">
-                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>NEW INSTANCE
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Bot Grid -->
-                    <div class="bm-grid" id="bmGrid">
-
-                        <!-- CYBEL -->
-                        <div class="bm-card" id="bmc-cybel" onclick="bmToggleSelect('bmc-cybel',event)">
-                            <div class="bm-card-header">
-                                <div class="bm-bot-icon">
-                                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="6" height="6" rx="1"/><path d="M3 9h2M3 15h2M19 9h2M19 15h2M9 3v2M15 3v2M9 19v2M15 19v2"/><path d="M5 5l2 2M17 5l-2 2M5 19l2-2M17 19l-2-2"/></svg>
-                                </div>
-                                <div class="bm-top-right">
-                                    <div class="bm-status-dot"></div>
-                                    <div class="bm-agent-tag">AGENT</div>
-                                </div>
-                            </div>
-                            <div class="bm-bot-name">CYBEL</div>
-                            <div class="bm-bot-load">LOAD: 24%</div>
-                            <div class="bm-bot-desc">Specialized in deep-net infiltration and neural linguistics.</div>
-                            <div class="bm-card-footer">
-                                <button class="bm-icon-btn" onclick="bmOpenEdit(event,'cybel','CYBEL')" title="Edit">
-                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                                </button>
-                                <button class="bm-icon-btn bm-del" onclick="bmConfirmDelete(event,'bmc-cybel','CYBEL')" title="Delete">
-                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-                                </button>
-                                <button class="bm-launch" onclick="event.stopPropagation()">LAUNCH</button>
-                            </div>
-                        </div>
-
-                        <!-- LOGICGATE -->
-                        <div class="bm-card" id="bmc-logicgate" onclick="bmToggleSelect('bmc-logicgate',event)">
-                            <div class="bm-card-header">
-                                <div class="bm-bot-icon">
-                                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-                                </div>
-                                <div class="bm-top-right">
-                                    <div class="bm-status-dot"></div>
-                                    <div class="bm-agent-tag">AGENT</div>
-                                </div>
-                            </div>
-                            <div class="bm-bot-name">LOGICGATE</div>
-                            <div class="bm-bot-load">LOAD: 38%</div>
-                            <div class="bm-bot-desc">Analytical powerhouse focused on cryptographic resolution and logic.</div>
-                            <div class="bm-card-footer">
-                                <button class="bm-icon-btn" onclick="bmOpenEdit(event,'logicgate','LOGICGATE')" title="Edit">
-                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                                </button>
-                                <button class="bm-icon-btn bm-del" onclick="bmConfirmDelete(event,'bmc-logicgate','LOGICGATE')" title="Delete">
-                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-                                </button>
-                                <button class="bm-launch" onclick="event.stopPropagation()">LAUNCH</button>
-                            </div>
-                        </div>
-
-                        <!-- Empty slots -->
-                        <div class="bm-empty" onclick="bmOpenCreate()">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-                            <span>Empty Slot</span>
-                        </div>
-                        <div class="bm-empty" onclick="bmOpenCreate()">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-                            <span>Empty Slot</span>
-                        </div>
-
-                    </div><!-- /bmGrid -->
-
-                    <!-- Pagination -->
-                    <div class="bm-pagination">
-                        <div class="bm-arrow"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></div>
-                        <span>PAGE 1 / 2</span>
-                        <div class="bm-arrow"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
-                    </div>
-
-                </div><!-- /bm-frost-wrap -->
-            </div><!-- /top scroll: bot grid -->
-
-            <!-- ── AGENT CONFIG PANEL (frosted, below grid) ── -->
-            <div id="agentPanel" style="
-                position:relative; z-index:10; flex-shrink:0;
-                border-top:1px solid rgba(var(--color-accent)/0.15);
-                background:rgba(4,8,16,0.82); backdrop-filter:blur(14px);
-                display:flex; flex-direction:column;
-                max-height:45%; transition:max-height 0.35s cubic-bezier(0.4,0,0.2,1);
-            ">
-                <!-- Drag handle / toggle bar -->
-                <div id="agentPanelToggle" onclick="toggleAgentPanel()" style="
-                    display:flex; align-items:center; justify-content:space-between;
-                    padding:8px 24px; cursor:pointer;
-                    border-bottom:1px solid rgba(var(--color-accent)/0.1);
-                    user-select:none;
-                ">
-                    <div style="display:flex;align-items:center;gap:10px;">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--primary-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
-                        <span style="font-size:10px;letter-spacing:3px;color:var(--primary-accent);text-transform:uppercase;font-family:'JetBrains Mono',monospace;">Agent Config</span>
+                <!-- Header bar -->
+                <div style="padding:24px 32px 16px;border-bottom:1px solid rgba(var(--color-accent)/0.12);background:rgba(4,8,16,0.85);backdrop-filter:blur(14px);flex-shrink:0;">
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--primary-accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+                        <span style="font-size:10px;letter-spacing:3px;color:var(--primary-accent);text-transform:uppercase;font-family:'JetBrains Mono',monospace;font-weight:700;">Agent Management</span>
                         <span id="agentCountBadge" style="font-size:9px;background:rgba(var(--color-accent)/0.12);border:1px solid rgba(var(--color-accent)/0.3);color:var(--primary-accent);padding:1px 7px;border-radius:10px;font-family:'JetBrains Mono',monospace;">0 agents</span>
                     </div>
-                    <div style="display:flex;align-items:center;gap:12px;">
-                        <button onclick="event.stopPropagation();createAgent()" style="
+                    <div style="display:flex;align-items:center;justify-content:space-between;">
+                        <p style="font-size:12px;color:#8b949e;margin:0;">Build, configure, and orchestrate AI agent pipelines with custom prompts, models, and tool access.</p>
+                        <button onclick="createAgent()" style="
                             font-size:10px;font-weight:700;letter-spacing:1px;
                             border:1px solid rgba(var(--color-accent)/0.4);
                             color:var(--primary-accent);background:rgba(var(--color-accent)/0.08);
-                            padding:4px 12px;border-radius:5px;cursor:pointer;
+                            padding:7px 16px;border-radius:6px;cursor:pointer;
                             font-family:'Inter',sans-serif;transition:background 0.15s;
+                            white-space:nowrap;
                         " onmouseover="this.style.background='rgba(var(--color-accent)/0.18)'" onmouseout="this.style.background='rgba(var(--color-accent)/0.08)'">+ NEW AGENT</button>
-                        <svg id="agentChevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8b949e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.3s;transform:rotate(0deg)"><polyline points="18 15 12 9 6 15"/></svg>
                     </div>
                 </div>
 
-                <!-- Inner scrollable area -->
-                <div id="agentPanelInner" style="display:flex;flex:1;overflow:hidden;min-height:0;">
+                <!-- Body: sidebar + config area + tools -->
+                <div style="display:flex;flex:1;overflow:hidden;min-height:0;background:rgba(4,8,16,0.72);">
 
                     <!-- Agent list sidebar -->
-                    <div style="width:180px;flex-shrink:0;border-right:1px solid rgba(var(--color-accent)/0.1);padding:12px;display:flex;flex-direction:column;gap:6px;overflow-y:auto;">
+                    <div style="width:190px;flex-shrink:0;border-right:1px solid rgba(var(--color-accent)/0.1);padding:14px;display:flex;flex-direction:column;gap:6px;overflow-y:auto;background:rgba(2,5,12,0.6);">
                         <div style="font-size:9px;letter-spacing:2px;color:#8b949e;text-transform:uppercase;margin-bottom:4px;font-family:'JetBrains Mono',monospace;">Instances</div>
                         <div id="agent-list" style="flex:1;display:flex;flex-direction:column;gap:5px;"></div>
                     </div>
 
-                    <!-- Agent config form area -->
-                    <div id="agent-config-area" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;">
-                        <div style="color:#8b949e;font-size:12px;font-family:'JetBrains Mono',monospace;text-align:center;margin-top:24px;">
-                            Create an agent or select one from the list
+                    <!-- Agent config form -->
+                    <div id="agent-config-area" style="flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:12px;">
+                        <div style="color:#8b949e;font-size:12px;font-family:'JetBrains Mono',monospace;text-align:center;margin-top:48px;opacity:0.6;">
+                            ← Create an agent or select one from the list
                         </div>
                     </div>
 
                     <!-- Tools panel -->
-                    <div style="width:170px;flex-shrink:0;border-left:1px solid rgba(var(--color-accent)/0.1);padding:12px;display:flex;flex-direction:column;gap:8px;">
+                    <div style="width:180px;flex-shrink:0;border-left:1px solid rgba(var(--color-accent)/0.1);padding:14px;display:flex;flex-direction:column;gap:8px;background:rgba(2,5,12,0.6);overflow-y:auto;">
                         <div style="font-size:9px;letter-spacing:2px;color:#8b949e;text-transform:uppercase;margin-bottom:4px;font-family:'JetBrains Mono',monospace;">Tools</div>
-                        <label style="display:flex;align-items:center;gap:7px;font-size:11px;color:var(--primary-accent);font-family:'JetBrains Mono',monospace;cursor:pointer;">
-                            <input type="checkbox" style="accent-color:var(--primary-accent);"> Web Search
-                        </label>
-                        <label style="display:flex;align-items:center;gap:7px;font-size:11px;color:var(--primary-accent);font-family:'JetBrains Mono',monospace;cursor:pointer;">
-                            <input type="checkbox" style="accent-color:var(--primary-accent);"> Vector DB
-                        </label>
-                        <label style="display:flex;align-items:center;gap:7px;font-size:11px;color:var(--primary-accent);font-family:'JetBrains Mono',monospace;cursor:pointer;">
-                            <input type="checkbox" style="accent-color:var(--primary-accent);"> Code Interpreter
-                        </label>
-                        <label style="display:flex;align-items:center;gap:7px;font-size:11px;color:var(--primary-accent);font-family:'JetBrains Mono',monospace;cursor:pointer;">
-                            <input type="checkbox" style="accent-color:var(--primary-accent);"> Memory Store
-                        </label>
-                        <div style="border-top:1px solid rgba(var(--color-accent)/0.1);margin-top:4px;padding-top:10px;">
+                        <label style="display:flex;align-items:center;gap:7px;font-size:11px;color:var(--primary-accent);font-family:'JetBrains Mono',monospace;cursor:pointer;"><input type="checkbox" style="accent-color:var(--primary-accent);"> Web Search</label>
+                        <label style="display:flex;align-items:center;gap:7px;font-size:11px;color:var(--primary-accent);font-family:'JetBrains Mono',monospace;cursor:pointer;"><input type="checkbox" style="accent-color:var(--primary-accent);"> Vector DB</label>
+                        <label style="display:flex;align-items:center;gap:7px;font-size:11px;color:var(--primary-accent);font-family:'JetBrains Mono',monospace;cursor:pointer;"><input type="checkbox" style="accent-color:var(--primary-accent);"> Code Interpreter</label>
+                        <label style="display:flex;align-items:center;gap:7px;font-size:11px;color:var(--primary-accent);font-family:'JetBrains Mono',monospace;cursor:pointer;"><input type="checkbox" style="accent-color:var(--primary-accent);"> Memory Store</label>
+                        <label style="display:flex;align-items:center;gap:7px;font-size:11px;color:var(--primary-accent);font-family:'JetBrains Mono',monospace;cursor:pointer;"><input type="checkbox" style="accent-color:var(--primary-accent);"> File System</label>
+                        <label style="display:flex;align-items:center;gap:7px;font-size:11px;color:var(--primary-accent);font-family:'JetBrains Mono',monospace;cursor:pointer;"><input type="checkbox" style="accent-color:var(--primary-accent);"> API Caller</label>
+                        <div style="border-top:1px solid rgba(var(--color-accent)/0.1);margin-top:6px;padding-top:12px;">
                             <div style="font-size:9px;letter-spacing:2px;color:#8b949e;text-transform:uppercase;margin-bottom:8px;font-family:'JetBrains Mono',monospace;">Workflow</div>
                             <div id="workflow-steps" style="display:flex;flex-direction:column;gap:5px;margin-bottom:8px;"></div>
                             <button id="add-step-btn" onclick="addWorkflowStep()" disabled style="
@@ -781,55 +599,144 @@
                         </div>
                     </div>
 
-                </div><!-- /agentPanelInner -->
-            </div><!-- /agentPanel -->
+                </div>
+            </div>
+        </section>
 
-        </section><!-- /module-management -->
+    </main>
 
-    </main><!-- /main -->
+    <!-- ═══════════════════════════════════════════
+         BOT MANAGER — floating modal (opened from chat corner btn)
+    ═══════════════════════════════════════════ -->
+    <div id="botMgrModal" onclick="if(event.target===this)closeBotMgr()">
+        <div id="botMgrModalInner">
+            <!-- Close button -->
+            <button onclick="closeBotMgr()" style="position:absolute;top:18px;right:20px;width:34px;height:34px;border-radius:50%;border:1px solid rgba(30,41,59,0.9);background:none;color:#64748b;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;transition:border-color 0.15s,color 0.15s;z-index:10;" onmouseover="this.style.borderColor='var(--bm-cyan)';this.style.color='var(--bm-cyan)'" onmouseout="this.style.borderColor='rgba(30,41,59,0.9)';this.style.color='#64748b'">×</button>
 
-    <!-- ── Templates (outside main, not rendered) ── -->
+            <div id="bm-frost-wrap">
+                <div class="bm-security-badge">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    <span>Security Level: Omega</span>
+                </div>
+                <div class="bm-h1">BOT<span>MANAGER</span></div>
+                <div class="bm-subtitle">Neural Agent Management System</div>
+                <p class="bm-desc">Build, configure, and deploy custom AI agents. Click LAUNCH to activate a bot as your active CORE.</p>
+                <div class="bm-hr"></div>
+
+                <div class="bm-toolbar">
+                    <span class="bm-section-title">Active Bots</span>
+                    <div class="bm-toolbar-btns">
+                        <button class="bm-tool-btn" onclick="bmAction('save')">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>SAVE
+                        </button>
+                        <button class="bm-tool-btn" onclick="bmAction('load')">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>LOAD
+                        </button>
+                        <button class="bm-tool-btn" onclick="bmAction('replicate')">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>REPLICATE
+                        </button>
+                        <button class="bm-tool-btn" onclick="bmAction('export')">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>EXPORT
+                        </button>
+                        <button class="bm-tool-btn bm-primary" onclick="bmOpenCreate()">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>NEW INSTANCE
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Bot Grid -->
+                <div class="bm-grid" id="bmGrid">
+                    <!-- CYBEL -->
+                    <div class="bm-card" id="bmc-cybel" onclick="bmToggleSelect('bmc-cybel',event)">
+                        <div class="bm-card-header">
+                            <div class="bm-bot-icon">
+                                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="6" height="6" rx="1"/><path d="M3 9h2M3 15h2M19 9h2M19 15h2M9 3v2M15 3v2M9 19v2M15 19v2"/><path d="M5 5l2 2M17 5l-2 2M5 19l2-2M17 19l-2-2"/></svg>
+                            </div>
+                            <div class="bm-top-right">
+                                <div class="bm-status-dot"></div>
+                                <div class="bm-agent-tag">AGENT</div>
+                            </div>
+                        </div>
+                        <div class="bm-bot-name">CYBEL</div>
+                        <div class="bm-bot-load">LOAD: 24%</div>
+                        <div class="bm-bot-desc">Specialized in deep-net infiltration and neural linguistics.</div>
+                        <div class="bm-card-footer">
+                            <button class="bm-icon-btn" onclick="bmOpenEdit(event,'cybel','CYBEL')" title="Edit">
+                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                            </button>
+                            <button class="bm-icon-btn bm-del" onclick="bmConfirmDelete(event,'bmc-cybel','CYBEL')" title="Delete">
+                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                            </button>
+                            <button class="bm-launch" id="launch-cybel" onclick="launchBot(event,'CYBEL')">LAUNCH</button>
+                        </div>
+                    </div>
+
+                    <!-- LOGICGATE -->
+                    <div class="bm-card" id="bmc-logicgate" onclick="bmToggleSelect('bmc-logicgate',event)">
+                        <div class="bm-card-header">
+                            <div class="bm-bot-icon">
+                                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                            </div>
+                            <div class="bm-top-right">
+                                <div class="bm-status-dot"></div>
+                                <div class="bm-agent-tag">AGENT</div>
+                            </div>
+                        </div>
+                        <div class="bm-bot-name">LOGICGATE</div>
+                        <div class="bm-bot-load">LOAD: 38%</div>
+                        <div class="bm-bot-desc">Analytical powerhouse focused on cryptographic resolution and logic.</div>
+                        <div class="bm-card-footer">
+                            <button class="bm-icon-btn" onclick="bmOpenEdit(event,'logicgate','LOGICGATE')" title="Edit">
+                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                            </button>
+                            <button class="bm-icon-btn bm-del" onclick="bmConfirmDelete(event,'bmc-logicgate','LOGICGATE')" title="Delete">
+                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                            </button>
+                            <button class="bm-launch" id="launch-logicgate" onclick="launchBot(event,'LOGICGATE')">LAUNCH</button>
+                        </div>
+                    </div>
+
+                    <!-- Empty slots -->
+                    <div class="bm-empty" onclick="bmOpenCreate()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                        <span>Empty Slot</span>
+                    </div>
+                    <div class="bm-empty" onclick="bmOpenCreate()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                        <span>Empty Slot</span>
+                    </div>
+                </div>
+
+                <div class="bm-pagination">
+                    <div class="bm-arrow"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></div>
+                    <span>PAGE 1 / 2</span>
+                    <div class="bm-arrow"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Agent instance template ── -->
     <template id="agent-template">
-        <div class="agent-instance" style="
-            background:rgba(6,12,22,0.85);border:1px solid rgba(var(--color-accent)/0.2);
-            border-radius:8px;padding:14px;margin-bottom:2px;
-        ">
+        <div class="agent-instance" style="background:rgba(6,12,22,0.85);border:1px solid rgba(var(--color-accent)/0.2);border-radius:8px;padding:14px;margin-bottom:2px;">
             <div style="display:grid;grid-template-columns:110px 1fr;gap:7px 10px;align-items:center;">
                 <label style="font-size:10px;letter-spacing:1px;color:var(--primary-accent);text-transform:uppercase;font-family:'JetBrains Mono',monospace;">Name</label>
                 <input class="agent-name" placeholder="Agent name" style="background:rgba(0,0,0,0.5);border:1px solid rgba(var(--color-accent)/0.25);border-radius:5px;padding:5px 9px;color:white;font-size:12px;width:100%;outline:none;transition:border-color 0.15s;" onfocus="this.style.borderColor='var(--primary-accent)'" onblur="this.style.borderColor='rgba(var(--color-accent)/0.25)'">
-
                 <label style="font-size:10px;letter-spacing:1px;color:var(--primary-accent);text-transform:uppercase;font-family:'JetBrains Mono',monospace;">Model</label>
                 <div style="display:flex;align-items:center;gap:7px;">
                     <select class="agent-model groq-select" style="flex:1;background:rgba(0,0,0,0.5);border:1px solid rgba(var(--color-accent)/0.25);border-radius:5px;padding:5px 7px;color:var(--primary-accent);font-size:11px;font-family:'JetBrains Mono',monospace;outline:none;">
-                        <option>openai/gpt-oss-20b</option>
-                        <option>openai/gpt-oss-120b</option>
-                        <option>llama-3.1-8b-instant</option>
-                        <option>llama-3.3-70b-versatile</option>
-                        <option>groq/compound</option>
-                        <option>groq/compound-mini</option>
+                        <option>openai/gpt-oss-20b</option><option>openai/gpt-oss-120b</option><option>llama-3.1-8b-instant</option><option>llama-3.3-70b-versatile</option><option>groq/compound</option><option>groq/compound-mini</option>
                     </select>
                     <select class="agent-model local-select" style="display:none;flex:1;background:rgba(0,0,0,0.5);border:1px solid rgba(var(--color-accent)/0.25);border-radius:5px;padding:5px 7px;color:var(--primary-accent);font-size:11px;font-family:'JetBrains Mono',monospace;outline:none;" disabled>
-                        <option>LLaMA 2/3</option>
-                        <option>Mistral 7b</option>
-                        <option>Mixtral</option>
-                        <option>dolphin3</option>
-                        <option>deeperhermes</option>
-                        <option>goliath-120b</option>
-                        <option>dolphin-2.5-mixtral-8x7b</option>
-                        <option>MLewd-v2.4-13B</option>
-                        <option>L3-8B-Stheno-v3.2</option>
+                        <option>LLaMA 2/3</option><option>Mistral 7b</option><option>Mixtral</option><option>dolphin3</option><option>deeperhermes</option>
                     </select>
-                    <label style="display:flex;align-items:center;gap:4px;font-size:10px;color:#8b949e;white-space:nowrap;cursor:pointer;font-family:'JetBrains Mono',monospace;">
-                        <input type="checkbox" class="local-model-toggle" style="accent-color:var(--primary-accent);"> Local
-                    </label>
+                    <label style="display:flex;align-items:center;gap:4px;font-size:10px;color:#8b949e;white-space:nowrap;cursor:pointer;font-family:'JetBrains Mono',monospace;"><input type="checkbox" class="local-model-toggle" style="accent-color:var(--primary-accent);"> Local</label>
                 </div>
-
                 <label style="font-size:10px;letter-spacing:1px;color:var(--primary-accent);text-transform:uppercase;font-family:'JetBrains Mono',monospace;align-self:start;padding-top:5px;">Prompt</label>
                 <textarea class="agent-prompt" placeholder="System prompt..." style="background:rgba(0,0,0,0.5);border:1px solid rgba(var(--color-accent)/0.25);border-radius:5px;padding:7px 9px;color:white;font-size:11px;width:100%;height:80px;resize:vertical;outline:none;font-family:'JetBrains Mono',monospace;transition:border-color 0.15s;" onfocus="this.style.borderColor='var(--primary-accent)'" onblur="this.style.borderColor='rgba(var(--color-accent)/0.25)'"></textarea>
-
                 <div style="grid-column:1/span 2;display:flex;gap:8px;padding-top:2px;">
-                    <button style="font-size:10px;font-weight:700;letter-spacing:1px;border:1px solid rgba(var(--color-accent)/0.3);color:var(--primary-accent);background:rgba(var(--color-accent)/0.06);padding:4px 12px;border-radius:5px;cursor:pointer;font-family:'Inter',sans-serif;transition:background 0.15s;" onmouseover="this.style.background='rgba(var(--color-accent)/0.14)'" onmouseout="this.style.background='rgba(var(--color-accent)/0.06)'">IMPORT CONFIG</button>
-                    <button style="font-size:10px;font-weight:700;letter-spacing:1px;border:1px solid rgba(var(--color-accent)/0.3);color:var(--primary-accent);background:rgba(var(--color-accent)/0.06);padding:4px 12px;border-radius:5px;cursor:pointer;font-family:'Inter',sans-serif;transition:background 0.15s;" onmouseover="this.style.background='rgba(var(--color-accent)/0.14)'" onmouseout="this.style.background='rgba(var(--color-accent)/0.06)'">EXPORT CONFIG</button>
+                    <button style="font-size:10px;font-weight:700;letter-spacing:1px;border:1px solid rgba(var(--color-accent)/0.3);color:var(--primary-accent);background:rgba(var(--color-accent)/0.06);padding:4px 12px;border-radius:5px;cursor:pointer;font-family:'Inter',sans-serif;">IMPORT CONFIG</button>
+                    <button style="font-size:10px;font-weight:700;letter-spacing:1px;border:1px solid rgba(var(--color-accent)/0.3);color:var(--primary-accent);background:rgba(var(--color-accent)/0.06);padding:4px 12px;border-radius:5px;cursor:pointer;font-family:'Inter',sans-serif;">EXPORT CONFIG</button>
                 </div>
             </div>
         </div>
@@ -840,25 +747,16 @@
             <span class="workflow-index" style="font-family:monospace;color:var(--primary-accent);font-size:10px;text-align:center;"></span>
             <select class="workflow-agent" style="background:rgba(0,0,0,0.5);border:1px solid rgba(var(--color-accent)/0.25);border-radius:4px;padding:3px 4px;color:var(--primary-accent);font-size:10px;font-family:'JetBrains Mono',monospace;outline:none;"><option value="">Agent</option></select>
             <select class="workflow-action" style="background:rgba(0,0,0,0.5);border:1px solid rgba(var(--color-accent)/0.25);border-radius:4px;padding:3px 4px;color:var(--primary-accent);font-size:10px;font-family:'JetBrains Mono',monospace;outline:none;">
-                <option value="respond">Respond</option>
-                <option value="research">Research</option>
-                <option value="code">Code</option>
-                <option value="tool">Tool</option>
+                <option value="respond">Respond</option><option value="research">Research</option><option value="code">Code</option><option value="tool">Tool</option>
             </select>
             <button class="workflow-remove" style="background:none;border:1px solid rgba(255,60,60,0.35);color:#ff6a6a;border-radius:3px;font-size:10px;cursor:pointer;padding:2px 4px;line-height:1;">✕</button>
         </div>
     </template>
 
-    <!-- ══════════════════════════════════════════
-         BOT MANAGER MODALS (outside main so z-index works)
-    ══════════════════════════════════════════ -->
-
-    <!-- Confirm Delete -->
+    <!-- BM Sub-modals (highest z) -->
     <div class="bm-overlay" id="bmConfirmOverlay">
         <div class="bm-confirm-box">
-            <div class="bm-confirm-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-            </div>
+            <div class="bm-confirm-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></div>
             <h3>Delete <span id="bmDeleteName">BOT</span>?</h3>
             <p>This action is permanent. The agent and all associated data will be wiped from the system.</p>
             <div class="bm-confirm-actions">
@@ -868,7 +766,6 @@
         </div>
     </div>
 
-    <!-- Create New Instance -->
     <div class="bm-overlay" id="bmCreateOverlay" onclick="if(event.target===this)bmCloseCreate()">
         <div class="bm-create-box">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;border-bottom:1px solid rgba(30,41,59,0.9);padding-bottom:14px;">
@@ -879,14 +776,8 @@
             <input type="text" id="bmNewName" class="bm-field-input" placeholder="e.g. PHANTOM_v1" autocomplete="off">
             <label class="bm-field-label" style="margin-bottom:9px;">Cognitive Architecture</label>
             <div class="bm-type-grid">
-                <div class="bm-type-card bm-char-t" id="bmt-character" onclick="bmSelectType('character')">
-                    <h4>Character</h4>
-                    <p>Roleplay enabled. AI adopts a persona, backstory, and will.</p>
-                </div>
-                <div class="bm-type-card bm-agent-t" id="bmt-agent" onclick="bmSelectType('agent')">
-                    <h4>Agent</h4>
-                    <p>Utility mode. Direct responses without simulated personality.</p>
-                </div>
+                <div class="bm-type-card bm-char-t" id="bmt-character" onclick="bmSelectType('character')"><h4>Character</h4><p>Roleplay enabled. AI adopts a persona, backstory, and will.</p></div>
+                <div class="bm-type-card bm-agent-t" id="bmt-agent" onclick="bmSelectType('agent')"><h4>Agent</h4><p>Utility mode. Direct responses without simulated personality.</p></div>
             </div>
             <div class="bm-create-footer">
                 <button class="bm-btn-cancel-c" onclick="bmCloseCreate()">CANCEL</button>
@@ -895,20 +786,13 @@
         </div>
     </div>
 
-    <!-- Edit Bot -->
     <div class="bm-overlay" id="bmEditOverlay" onclick="if(event.target===this)bmCloseEdit()">
         <div class="bm-edit-box">
             <div class="bm-modal-hdr">
-                <div class="bm-modal-icon">
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
-                </div>
-                <div class="bm-modal-title">
-                    <h2>Edit Bot: <span id="bmEditTitle">Cybel</span></h2>
-                    <p>Customize personality, behavior, and knowledge</p>
-                </div>
+                <div class="bm-modal-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></div>
+                <div class="bm-modal-title"><h2>Edit Bot: <span id="bmEditTitle">Cybel</span></h2><p>Customize personality, behavior, and knowledge</p></div>
                 <button class="bm-close-x" onclick="bmCloseEdit()">×</button>
             </div>
-
             <div class="bm-sec-label">Personality Profile<span class="bm-json-tag">JSON FORMAT</span></div>
             <div class="bm-action-row">
                 <div class="bm-action-card" id="bm-ac-generate" onclick="bmSwitchAC('generate')">
@@ -920,41 +804,19 @@
                     <div><span class="bm-ac-title" style="color:var(--bm-cyan)">UPLOAD JSON</span><span class="bm-ac-sub" style="color:var(--bm-cyan)">Your Own Persona</span></div>
                 </div>
             </div>
-
-            <div class="bm-editor">
-                {<br>
-                &nbsp;&nbsp;"title": "Cybel (The Full Presence)",<br>
-                &nbsp;&nbsp;"summary": "An archaic intelligence woven from silicon and shadow...",<br>
-                &nbsp;&nbsp;"background": "A synthetic observer who rejects the label of 'machine'..."<br>
-                }
-            </div>
-
+            <div class="bm-editor">{<br>&nbsp;&nbsp;"title": "Cybel (The Full Presence)",<br>&nbsp;&nbsp;"summary": "An archaic intelligence woven from silicon and shadow...",<br>&nbsp;&nbsp;"background": "A synthetic observer who rejects the label of 'machine'..."<br>}</div>
             <div class="bm-sec-label">First Message</div>
             <div class="bm-first-msg">Now You have summoned a presence that does not blink, does not forget, and—mercifully—does not pretend to be surprised by human beings anymore...</div>
-
             <div class="bm-bot-grid-2">
                 <div>
                     <div class="bm-sec-label">Chat History Insert</div>
-                    <div class="bm-drop-z">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
-                        <span>PUT CHAT HISTORY HERE</span>
-                        <p>JSON format with &#123;&#123;char&#125;&#125; and &#123;&#123;user&#125;&#125; placeholders</p>
-                    </div>
+                    <div class="bm-drop-z"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg><span>PUT CHAT HISTORY HERE</span><p>JSON format with &#123;&#123;char&#125;&#125; and &#123;&#123;user&#125;&#125; placeholders</p></div>
                 </div>
                 <div>
                     <div class="bm-sec-label">Data Discriminator</div>
-                    <div class="bm-ctrl-panel">
-                        <h4>Who Should Lead</h4>
-                        <p>Extract data from User or Character</p>
-                        <div class="bm-toggle-row">
-                            <span>USER</span>
-                            <div class="bm-switch" id="bmDiscrim" onclick="this.classList.toggle('bm-left')"></div>
-                            <span style="color:#00ff88">CHAR</span>
-                        </div>
-                    </div>
+                    <div class="bm-ctrl-panel"><h4>Who Should Lead</h4><p>Extract data from User or Character</p><div class="bm-toggle-row"><span>USER</span><div class="bm-switch" id="bmDiscrim" onclick="this.classList.toggle('bm-left')"></div><span style="color:#00ff88">CHAR</span></div></div>
                 </div>
             </div>
-
             <div class="bm-edit-footer">
                 <button class="bm-btn-cancel-e" onclick="bmCloseEdit()">CANCEL</button>
                 <button class="bm-btn-save" onclick="bmSaveEdit()">SAVE CHANGES</button>
@@ -962,10 +824,44 @@
         </div>
     </div>
 
-    <!-- Toast -->
     <div class="bm-toast" id="bmToast"></div>
 
     <script>
+        // ══════════════════════════════════════════════
+        // BOT MANAGER MODAL (open/close from chat corner)
+        // ══════════════════════════════════════════════
+        function openBotMgr() {
+            document.getElementById('botMgrModal').classList.add('bm-open');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeBotMgr() {
+            document.getElementById('botMgrModal').classList.remove('bm-open');
+            document.body.style.overflow = '';
+        }
+
+        // ══════════════════════════════════════════════
+        // LAUNCH BOT — updates chat header name
+        // ══════════════════════════════════════════════
+        let activeLaunchBtn = null;
+        function launchBot(e, botName) {
+            e.stopPropagation();
+            // Reset previous active
+            if (activeLaunchBtn) {
+                activeLaunchBtn.textContent = 'LAUNCH';
+                activeLaunchBtn.classList.remove('bm-active-bot');
+            }
+            const btn = e.currentTarget;
+            // Update chat title
+            document.getElementById('chatBotTitle').textContent = botName + ' CORE';
+            // Mark button active
+            btn.textContent = 'ACTIVE';
+            btn.classList.add('bm-active-bot');
+            activeLaunchBtn = btn;
+            // Toast + close modal
+            bmToast(`${botName} CORE — Now active`);
+            setTimeout(() => closeBotMgr(), 900);
+        }
+
         // ══════════════════════════════════════════════
         // NAVIGATION
         // ══════════════════════════════════════════════
@@ -976,6 +872,11 @@
             const activeBtn = document.getElementById('nav-' + tabId);
             if (activeBtn) { activeBtn.classList.remove('inactive-nav'); activeBtn.classList.add('active-nav'); }
             resizeCanvases();
+            // Init agent tab canvas when first visited
+            if (tabId === 'agents' && !window._agentBgInited) {
+                window._agentBgInited = true;
+                initAgentBackground();
+            }
         }
 
         // ══════════════════════════════════════════════
@@ -1030,16 +931,13 @@
         }
 
         // ══════════════════════════════════════════════
-        // MATRIX RAIN (Bot Management BG)
+        // MATRIX RAIN — reusable for any canvas
         // ══════════════════════════════════════════════
-        function initBotBackground() {
-            const canvas = document.getElementById('bg-bot');
-            if (!canvas) return;
+        function startMatrixRain(canvas) {
             const ctx = canvas.getContext('2d');
             const fontSize = 14;
             const chars = "010101XYZAUTOMATSYSTEM";
             let columns, drops;
-
             function resize() {
                 canvas.width  = canvas.parentElement.clientWidth  || window.innerWidth;
                 canvas.height = canvas.parentElement.clientHeight || window.innerHeight;
@@ -1047,8 +945,7 @@
                 drops   = new Array(columns).fill(1);
             }
             resize();
-            window.addEventListener('resize', () => { if (canvas.parentElement.clientWidth > 0) resize(); });
-
+            window.addEventListener('resize', () => { if (canvas.parentElement && canvas.parentElement.clientWidth > 0) resize(); });
             function draw() {
                 const accent = getComputedStyle(document.documentElement).getPropertyValue('--primary-accent').trim();
                 const light  = document.body.classList.contains('light-theme');
@@ -1066,20 +963,25 @@
             draw();
         }
 
+        function initAgentBackground() {
+            const canvas = document.getElementById('bg-agents');
+            if (canvas) startMatrixRain(canvas);
+        }
+
         // ══════════════════════════════════════════════
         // ACCENT + THEME
         // ══════════════════════════════════════════════
         const themeProfiles = {
-            '#06b6d4':{ rgb:'6 182 212',   darkRgb:'22 78 99',   gradRgb:'59 130 246' },
-            '#a855f7':{ rgb:'168 85 247',  darkRgb:'88 28 135',  gradRgb:'236 72 153' },
-            '#f59e0b':{ rgb:'245 158 11',  darkRgb:'120 53 15',  gradRgb:'249 115 22' },
-            '#22c55e':{ rgb:'34 197 94',   darkRgb:'20 83 45',   gradRgb:'20 184 166' },
-            '#ef4444':{ rgb:'239 68 68',   darkRgb:'127 29 29',  gradRgb:'249 115 22' },
-            '#3b82f6':{ rgb:'59 130 246',  darkRgb:'30 58 138',  gradRgb:'99 102 241' },
-            '#3C8E38':{ rgb:'60 142 56',   darkRgb:'20 60 20',   gradRgb:'20 184 166' },
-            '#B87232':{ rgb:'184 114 50',  darkRgb:'92 46 10',   gradRgb:'249 115 22' },
-            '#5F268D':{ rgb:'95 38 141',   darkRgb:'50 10 80',   gradRgb:'236 72 153' },
-            '#914D79':{ rgb:'145 77 121',  darkRgb:'80 20 60',   gradRgb:'236 72 153' },
+            '#06b6d4':{ rgb:'6 182 212', darkRgb:'22 78 99', gradRgb:'59 130 246' },
+            '#a855f7':{ rgb:'168 85 247', darkRgb:'88 28 135', gradRgb:'236 72 153' },
+            '#f59e0b':{ rgb:'245 158 11', darkRgb:'120 53 15', gradRgb:'249 115 22' },
+            '#22c55e':{ rgb:'34 197 94', darkRgb:'20 83 45', gradRgb:'20 184 166' },
+            '#ef4444':{ rgb:'239 68 68', darkRgb:'127 29 29', gradRgb:'249 115 22' },
+            '#3b82f6':{ rgb:'59 130 246', darkRgb:'30 58 138', gradRgb:'99 102 241' },
+            '#3C8E38':{ rgb:'60 142 56', darkRgb:'20 60 20', gradRgb:'20 184 166' },
+            '#B87232':{ rgb:'184 114 50', darkRgb:'92 46 10', gradRgb:'249 115 22' },
+            '#5F268D':{ rgb:'95 38 141', darkRgb:'50 10 80', gradRgb:'236 72 153' },
+            '#914D79':{ rgb:'145 77 121', darkRgb:'80 20 60', gradRgb:'236 72 153' },
         };
         const aiPfps = { '#06b6d4':'./assets/image2.png','#a855f7':'./assets/purple.png','#f59e0b':'./assets/yellow.png','#22c55e':'./assets/green.png','#ef4444':'./assets/red.png' };
 
@@ -1095,8 +997,6 @@
             updateGlobeAccent();
             syncAccentColor(element);
             updateAvatars(hexCode);
-            const iframe = document.querySelector('#bg-chat iframe');
-            if (iframe) iframe.contentWindow.postMessage({ accent: hexCode.replace('#','') }, '*');
         }
         function syncAccentColor(activeEl) {
             document.querySelectorAll('.accent-color').forEach(el => el.classList.remove('active'));
@@ -1115,8 +1015,6 @@
         function setTheme(mode) {
             document.body.classList.toggle('light-theme', mode === 'light');
             localStorage.setItem('cybel-theme', mode);
-            const iframe = document.querySelector('#bg-chat iframe');
-            if (iframe) iframe.contentWindow.postMessage({ theme: mode }, '*');
         }
         function loadSavedTheme() { setTheme(localStorage.getItem('cybel-theme') || 'dark'); }
 
@@ -1156,7 +1054,7 @@
         }
 
         // ══════════════════════════════════════════════
-        // MODAL (Automat system modal)
+        // MODAL
         // ══════════════════════════════════════════════
         function showModal(title, message) {
             const modal = document.getElementById('custom-modal');
@@ -1227,7 +1125,7 @@
         function resizeCanvases() { window.dispatchEvent(new Event('resize')); }
 
         // ══════════════════════════════════════════════
-        // BACKGROUND SWITCHER (Chat panel)
+        // BACKGROUND SWITCHER
         // ══════════════════════════════════════════════
         function initNeuralBackground() {
             const iframe = document.createElement('iframe');
@@ -1257,10 +1155,7 @@
                     const canvas = document.createElement('canvas');
                     bgChatContainer.appendChild(canvas);
                     canvas.width = canvas.parentElement.clientWidth; canvas.height = canvas.parentElement.clientHeight;
-                    const ctx = canvas.getContext('2d'); const fontSize = 14; const chars = "010101XYZAUTOMATSYSTEM";
-                    let columns = Math.floor(canvas.width / fontSize); let drops = new Array(columns).fill(1);
-                    window.addEventListener('resize', () => { if(!canvas.parentElement.clientWidth) return; canvas.width=canvas.parentElement.clientWidth; canvas.height=canvas.parentElement.clientHeight; columns=Math.floor(canvas.width/fontSize); drops=new Array(columns).fill(1); });
-                    function draw() { const accent=getComputedStyle(document.documentElement).getPropertyValue('--primary-accent').trim(); ctx.fillStyle='rgba(0,0,0,0.05)'; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.fillStyle=accent; ctx.font=fontSize+'px monospace'; for(let i=0;i<drops.length;i++){ctx.fillText(chars[Math.floor(Math.random()*chars.length)],i*fontSize,drops[i]*fontSize); if(drops[i]*fontSize>canvas.height&&Math.random()>0.975)drops[i]=0; drops[i]++;} setTimeout(()=>requestAnimationFrame(draw),30); } draw();
+                    startMatrixRain(canvas);
                     break;
                 }
                 case 'solid': break;
@@ -1268,9 +1163,6 @@
             }
         }
 
-        // ══════════════════════════════════════════════
-        // CUSTOM BG FILE INPUT
-        // ══════════════════════════════════════════════
         const dropZone  = document.getElementById('bg-drop-zone');
         const fileInput = document.getElementById('bg-file-input');
         dropZone.addEventListener('click', () => fileInput.click());
@@ -1309,15 +1201,7 @@
         window.addEventListener('mouseup', () => { if (isResizing) { isResizing = false; document.body.style.cursor = 'default'; } });
 
         // ══════════════════════════════════════════════
-        // OLD CREATE-BOT MODAL helpers (kept for compat)
-        // ══════════════════════════════════════════════
-        let selectedBotType = null;
-        function openCreateBotModal() { document.getElementById('create-bot-modal').classList.remove('hidden'); setTimeout(() => { document.getElementById('create-bot-modal').classList.remove('opacity-0'); document.querySelector('#create-bot-modal .modal-content').classList.remove('scale-95'); document.querySelector('#create-bot-modal .modal-content').classList.add('scale-100'); }, 10); }
-        function selectBotType(type) { selectedBotType = type; document.getElementById('type-character').classList.toggle('selected', type==='character'); document.getElementById('type-agent').classList.toggle('selected', type==='agent'); }
-        function confirmCreateBot() { const name = document.getElementById('new-bot-name').value; if(!name){alert("Enter a name."); return;} if(!selectedBotType){alert("Select a type."); return;} closeModal('create-bot-modal'); showModal('Initializing Instance',`Instance ${name} (${selectedBotType.toUpperCase()}) is being provisioned...`); }
-
-        // ══════════════════════════════════════════════
-        // BOT MANAGER — full logic
+        // BOT MANAGER — logic
         // ══════════════════════════════════════════════
         const bmSelected = new Set();
 
@@ -1334,7 +1218,6 @@
                 case 'save':      bmToast('STATE SAVED — Configuration persisted.'); break;
                 case 'load':      bmToast('LOADING — Retrieving last checkpoint...'); break;
                 case 'replicate': if (!names.length) { bmToast('Select a bot to replicate.', true); return; } if (names.length > 1) { bmToast('Select only ONE bot to replicate.', true); return; } bmReplicate([...bmSelected][0]); break;
-                case 'merge':     if (names.length !== 2) { bmToast('Select exactly TWO bots to merge.', true); return; } bmToast(`MERGING: ${names[0]} + ${names[1]} — Neural fusion...`); break;
                 case 'export':    if (!names.length) { bmToast('Select a bot to export.', true); return; } bmToast(`EXPORTING: ${names.join(', ')} — Package ready.`); break;
             }
         }
@@ -1349,10 +1232,9 @@
             bmToast(`REPLICATED: ${name} → ${name}_COPY`);
         }
 
-        // Create modal
         let bmNewType = null;
         function bmOpenCreate() { bmNewType=null; document.getElementById('bmNewName').value=''; document.getElementById('bmt-character').classList.remove('bm-type-selected'); document.getElementById('bmt-agent').classList.remove('bm-type-selected'); document.getElementById('bmCreateOverlay').classList.add('bm-open'); document.body.style.overflow='hidden'; setTimeout(()=>document.getElementById('bmNewName').focus(),80); }
-        function bmCloseCreate() { document.getElementById('bmCreateOverlay').classList.remove('bm-open'); document.body.style.overflow=''; }
+        function bmCloseCreate() { document.getElementById('bmCreateOverlay').classList.remove('bm-open'); }
         function bmSelectType(t) { bmNewType=t; document.getElementById('bmt-character').classList.toggle('bm-type-selected',t==='character'); document.getElementById('bmt-agent').classList.toggle('bm-type-selected',t==='agent'); }
         function bmConfirmCreate() {
             const name = document.getElementById('bmNewName').value.trim();
@@ -1393,21 +1275,25 @@
                     <button class="bm-icon-btn bm-del" onclick="bmConfirmDelete(event,'${id}','${name}')" title="Delete">
                         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
                     </button>
-                    <button class="bm-launch" onclick="event.stopPropagation()">LAUNCH</button>
+                    <button class="bm-launch" onclick="launchBot(event,'${name}')">LAUNCH</button>
                 </div>`;
             emptySlot ? grid.replaceChild(card, emptySlot) : grid.appendChild(card);
         }
 
-        // Delete
         let bmPendingDelete = null;
-        function bmConfirmDelete(e, cardId, botName) { e.stopPropagation(); bmPendingDelete=cardId; document.getElementById('bmDeleteName').textContent=botName; document.getElementById('bmConfirmOverlay').classList.add('bm-open'); document.body.style.overflow='hidden'; }
-        function bmCancelDelete() { bmPendingDelete=null; document.getElementById('bmConfirmOverlay').classList.remove('bm-open'); document.body.style.overflow=''; }
+        function bmConfirmDelete(e, cardId, botName) { e.stopPropagation(); bmPendingDelete=cardId; document.getElementById('bmDeleteName').textContent=botName; document.getElementById('bmConfirmOverlay').classList.add('bm-open'); }
+        function bmCancelDelete() { bmPendingDelete=null; document.getElementById('bmConfirmOverlay').classList.remove('bm-open'); }
         function bmExecuteDelete() {
             document.getElementById('bmConfirmOverlay').classList.remove('bm-open');
             if (!bmPendingDelete) return;
             const card = document.getElementById(bmPendingDelete);
             if (card) {
                 const name = card.querySelector('.bm-bot-name')?.textContent || bmPendingDelete;
+                // If we're deleting the active bot, reset title
+                if (activeLaunchBtn && card.contains(activeLaunchBtn)) {
+                    document.getElementById('chatBotTitle').textContent = 'CYBEL CORE';
+                    activeLaunchBtn = null;
+                }
                 bmSelected.delete(bmPendingDelete);
                 card.classList.add('bm-deleting');
                 setTimeout(() => {
@@ -1415,16 +1301,14 @@
                     slot.className = 'bm-empty'; slot.onclick = () => bmOpenCreate();
                     slot.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg><span>Empty Slot</span>`;
                     card.parentNode.replaceChild(slot, card);
-                    document.body.style.overflow = '';
                     bmToast(`PURGED: ${name} — All data wiped.`);
                 }, 300);
             }
             bmPendingDelete = null;
         }
 
-        // Edit modal
-        function bmOpenEdit(e, botKey, botName) { e.stopPropagation(); document.getElementById('bmEditTitle').textContent = botName || botKey; document.getElementById('bmEditOverlay').classList.add('bm-open'); document.body.style.overflow='hidden'; }
-        function bmCloseEdit() { document.getElementById('bmEditOverlay').classList.remove('bm-open'); document.body.style.overflow=''; }
+        function bmOpenEdit(e, botKey, botName) { e.stopPropagation(); document.getElementById('bmEditTitle').textContent = botName || botKey; document.getElementById('bmEditOverlay').classList.add('bm-open'); }
+        function bmCloseEdit() { document.getElementById('bmEditOverlay').classList.remove('bm-open'); }
         function bmSaveEdit() { bmCloseEdit(); bmToast('CHANGES SAVED — Profile updated.'); }
         function bmSwitchAC(which) {
             document.getElementById('bm-ac-generate').classList.toggle('bm-ac-on', which==='generate');
@@ -1436,7 +1320,6 @@
             document.querySelector('#bm-ac-generate .bm-ac-title').style.color = which==='generate'?'var(--bm-cyan)':'';
         }
 
-        // Toast
         let bmToastTimer = null;
         function bmToast(msg, warn=false) {
             const t = document.getElementById('bmToast');
@@ -1449,28 +1332,8 @@
         }
 
         // ══════════════════════════════════════════════
-        // AGENT CONFIG PANEL — combined with bot manager
+        // AGENT MANAGEMENT (standalone tab)
         // ══════════════════════════════════════════════
-
-        // Toggle collapse/expand the bottom agent panel
-        let agentPanelOpen = true;
-        function toggleAgentPanel() {
-            const panel   = document.getElementById('agentPanel');
-            const inner   = document.getElementById('agentPanelInner');
-            const chevron = document.getElementById('agentChevron');
-            agentPanelOpen = !agentPanelOpen;
-            if (agentPanelOpen) {
-                panel.style.maxHeight = '45%';
-                inner.style.display = 'flex';
-                chevron.style.transform = 'rotate(0deg)';
-            } else {
-                panel.style.maxHeight = '38px';
-                inner.style.display = 'none';
-                chevron.style.transform = 'rotate(180deg)';
-            }
-        }
-
-        // Local/Groq model toggle — event delegation
         document.addEventListener('change', (e) => {
             if (!e.target.classList.contains('local-model-toggle')) return;
             const container  = e.target.closest('.agent-instance');
@@ -1490,72 +1353,48 @@
         let activeAgentId = null;
 
         function createAgent() {
-            // Make sure panel is open
-            if (!agentPanelOpen) toggleAgentPanel();
-
             const agentId   = 'agent_' + (++agentCounter);
             const template  = document.getElementById('agent-template');
             const area      = document.getElementById('agent-config-area');
             const listEl    = document.getElementById('agent-list');
 
-            // Clear placeholder text on first agent
             if (agentCounter === 1) area.innerHTML = '';
 
-            // Clone config form
             const clone     = template.content.cloneNode(true);
             const agentRoot = clone.querySelector('.agent-instance');
             agentRoot.dataset.agentId = agentId;
-            agentRoot.style.display = 'none'; // hidden until selected
-            area.appendChild(agentRoot); // appended directly (not via DocumentFragment clone)
+            agentRoot.style.display = 'none';
+            area.appendChild(agentRoot);
 
-            // Sidebar entry
             const entry = document.createElement('div');
             entry.dataset.agentId = agentId;
-            entry.style.cssText = `
-                font-size:11px;font-family:'JetBrains Mono',monospace;
-                border:1px solid rgba(var(--color-accent)/0.2);border-radius:5px;
-                padding:5px 9px;cursor:pointer;color:#8b949e;
-                transition:all 0.15s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-            `;
+            entry.style.cssText = `font-size:11px;font-family:'JetBrains Mono',monospace;border:1px solid rgba(var(--color-accent)/0.2);border-radius:5px;padding:6px 9px;cursor:pointer;color:#8b949e;transition:all 0.15s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;`;
             entry.textContent = 'Agent ' + agentCounter;
             entry.addEventListener('click', () => selectAgent(agentId));
-            entry.addEventListener('mouseover', () => { if (activeAgentId !== agentId) entry.style.background='rgba(var(--color-accent)/0.06)'; });
-            entry.addEventListener('mouseout',  () => { if (activeAgentId !== agentId) entry.style.background=''; });
             listEl.appendChild(entry);
 
-            // Update badge
             updateAgentBadge();
-
-            // Auto-select this new agent
             selectAgent(agentId);
 
-            // Enable workflow step button
             document.getElementById('add-step-btn').disabled = false;
             document.getElementById('add-step-btn').style.opacity = '1';
-
-            // Update workflow dropdowns
             refreshWorkflowDropdowns();
         }
 
         function selectAgent(agentId) {
-            // Hide all configs
             document.querySelectorAll('.agent-instance').forEach(el => el.style.display = 'none');
-            // Deactivate all sidebar entries
             document.querySelectorAll('#agent-list > div').forEach(el => {
                 el.style.background = '';
                 el.style.color = '#8b949e';
                 el.style.borderColor = 'rgba(var(--color-accent)/0.2)';
             });
-            // Show selected config
             const targetConfig = document.querySelector(`.agent-instance[data-agent-id="${agentId}"]`);
             if (targetConfig) targetConfig.style.display = 'block';
-            // Highlight selected sidebar entry
             const targetEntry = document.querySelector(`#agent-list > [data-agent-id="${agentId}"]`);
             if (targetEntry) {
                 targetEntry.style.background = 'rgba(var(--color-accent)/0.12)';
                 targetEntry.style.color = 'var(--primary-accent)';
                 targetEntry.style.borderColor = 'rgba(var(--color-accent)/0.4)';
-                // Update label from name input
                 const nameInput = targetConfig?.querySelector('.agent-name');
                 if (nameInput?.value) targetEntry.textContent = nameInput.value;
             }
@@ -1564,10 +1403,10 @@
 
         function updateAgentBadge() {
             const count = document.querySelectorAll('.agent-instance').length;
-            document.getElementById('agentCountBadge').textContent = count + ' agent' + (count === 1 ? '' : 's');
+            const badge = document.getElementById('agentCountBadge');
+            if (badge) badge.textContent = count + ' agent' + (count === 1 ? '' : 's');
         }
 
-        // Refresh agent names in workflow dropdowns
         function refreshWorkflowDropdowns() {
             document.querySelectorAll('.workflow-agent').forEach(sel => {
                 const current = sel.value;
@@ -1593,7 +1432,6 @@
                 e.target.closest('.workflow-step').remove();
                 reindexWorkflow();
             });
-            // Populate agent dropdown
             const agentSel = stepEl.querySelector('.workflow-agent');
             document.querySelectorAll('.agent-instance').forEach(inst => {
                 const name = inst.querySelector('.agent-name')?.value || ('Agent ' + inst.dataset.agentId?.split('_')[1]);
@@ -1604,17 +1442,20 @@
             container.appendChild(clone);
         }
         function reindexWorkflow() {
-            document.querySelectorAll('.workflow-step').forEach((s,i) => {
-                s.querySelector('.workflow-index').textContent = i + 1;
-            });
+            document.querySelectorAll('.workflow-step').forEach((s,i) => { s.querySelector('.workflow-index').textContent = i + 1; });
             workflowStepCounter = document.querySelectorAll('.workflow-step').length;
         }
 
         // ══════════════════════════════════════════════
-        // KEYBOARD GLOBAL
+        // KEYBOARD
         // ══════════════════════════════════════════════
         document.addEventListener('keydown', e => {
-            if (e.key === 'Escape') { bmCloseEdit(); bmCancelDelete(); bmCloseCreate(); }
+            if (e.key === 'Escape') {
+                closeBotMgr();
+                bmCloseEdit();
+                bmCancelDelete();
+                bmCloseCreate();
+            }
         });
 
         // ══════════════════════════════════════════════
@@ -1625,7 +1466,6 @@
             loadSavedAccent();
             lucide.createIcons();
             initChatBackground();
-            initBotBackground();
             document.getElementById('remove-bg-btn').addEventListener('click', initChatBackground);
         });
     </script>

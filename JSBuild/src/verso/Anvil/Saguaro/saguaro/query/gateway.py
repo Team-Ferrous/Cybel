@@ -20,7 +20,7 @@ from saguaro.indexing.auto_scaler import calibrate_runtime_profile, load_runtime
 from saguaro.services.comparative import ComparativeAnalysisService
 from saguaro.state.ledger import StateLedger
 from saguaro.storage.atomic_fs import atomic_write_json
-
+from queue import Queue
 
 def gateway_socket_path(repo_path: str) -> str:
     root = os.path.abspath(repo_path)
@@ -197,6 +197,40 @@ class QueryGateway:
             telemetry_cb=self._write_state,
         )
         self._server: _GatewayServer | None = None
+        self._queue = Queue()  # or maxsize=queue_limit if you want bounded
+        # Start workers (this replaces active_limit)
+        for _ in range(self._governor.active_limit):
+            threading.Thread(target=self._worker_loop, daemon=True).start()
+
+    def _worker_loop(self):
+        while True:
+            payload, response_q = self._queue.get()
+
+            started = time.perf_counter()
+            try:
+                response = self._api.query(
+                    text=str(payload.get("text") or ""),
+                    k=int(payload.get("k", 5) or 5),
+                    file=payload.get("file"),
+                    level=int(payload.get("level", 3) or 3),
+                    strategy=str(payload.get("strategy") or "hybrid"),
+                    explain=bool(payload.get("explain", False)),
+                    scope=str(payload.get("scope") or "global"),
+                    dedupe_by=str(payload.get("dedupe_by") or "entity"),
+                )
+                response["gateway"] = read_gateway_state(self.repo_path)
+                response_q.put(response)
+
+            except Exception as exc:
+                self._last_error = str(exc)
+                response_q.put({"status": "error", "message": str(exc)})
+
+            finally:
+                elapsed_ms = (time.perf_counter() - started) * 1000.0
+                self._latencies_ms.append(elapsed_ms)
+                self._processed += 1
+                self._queue.task_done()
+                self._write_state()
 
     def _metrics(self) -> dict[str, Any]:
         latencies = sorted(self._latencies_ms)
@@ -207,8 +241,10 @@ class QueryGateway:
             return round(float(latencies[index]), 3)
 
         return {
+            #"active_sessions": self._governor.active,
+            #"queued_sessions": self._governor.queued,
             "active_sessions": self._governor.active,
-            "queued_sessions": self._governor.queued,
+            "queued_sessions": self._queue.qsize(),
             "rejected_sessions": self._governor.rejected,
             "processed_requests": self._processed,
             "corpus_session_count": int(
@@ -300,7 +336,7 @@ class QueryGateway:
         if action != "query":
             return {"status": "error", "message": f"unsupported action: {action}"}
 
-        ok, reason = self._governor.acquire(
+        '''ok, reason = self._governor.acquire(
             timeout_seconds=float(payload.get("timeout_seconds", 30.0) or 30.0)
         )
         if not ok:
@@ -331,7 +367,27 @@ class QueryGateway:
             elapsed_ms = (time.perf_counter() - started) * 1000.0
             self._latencies_ms.append(elapsed_ms)
             self._processed += 1
-            self._governor.release()
+            self._governor.release()'''
+        response_q = Queue(maxsize=1)
+
+        try:
+            self._queue.put((payload, response_q), timeout=float(payload.get("timeout_seconds", 30.0)))
+        except:
+            return {
+                "status": "busy",
+                "reason": "queue_full",
+                "gateway": read_gateway_state(self.repo_path),
+            }
+
+        try:
+            response = response_q.get(timeout=float(payload.get("timeout_seconds", 30.0)))
+            return response
+        except:
+            return {
+                "status": "busy",
+                "reason": "timeout",
+                "gateway": read_gateway_state(self.repo_path),
+            }
             self._write_state()
 
     def _delayed_shutdown(self) -> None:

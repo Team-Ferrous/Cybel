@@ -1,5 +1,5 @@
 // renderer.js
-import { AutoTokenizer, AutoModelForCausalLM } from "https://cdn.jsdelivr.net/npm/@xenova/transformers/dist/transformers.min.js"; //"@xenova/transformers";
+import { AutoTokenizer, AutoModelForCausalLM } from "https://cdn.jsdelivr.net/npm/@huggingface/transformers/dist/transformers.min.js"; //"@xenova/transformers";
 
 async function updateQRCode() {
     try {
@@ -12,20 +12,30 @@ async function updateQRCode() {
 
 document.querySelectorAll("input[type='range']").forEach(slider => {
 slider.addEventListener("input", (e) => {
-    const value = e.target.value;
+        const value = e.target.value;
+        if (e.target.name === "temperature") {
+            window.api.setTemperature(parseFloat(value));
+        }
 
-    if (e.target.name === "temperature") {
-        window.api.setTemperature({ temperature: parseFloat(value) });
-    }
-
-    if (e.target.name === "contextWindowKey") {
-        window.api.setContextWindowKey({ temperature: parseFloat(value) });
-    }
-
-    if (e.target.name === "context") {
-        window.api.updateEngine({ contextWindow: parseInt(value) });
-    }
+        if (e.target.name === "contextWindowKey") {
+            window.api.setMaxTokens(parseFloat(value));
+        }
+    });
 });
+
+document.querySelectorAll("select").forEach(select => {
+    select.addEventListener("change", (e) => {
+        const value = e.target.value;
+
+        if (
+            e.target.id === "model-selector"       ||
+            e.target.id === "grok-model-selector"  ||
+            e.target.id === "local-model-selector" ||
+            e.target.id === "vs-model-selector"
+        ) {
+            window.api.setEngine(value);
+        }
+    });
 });
 
 // --- 1. Navigation ---
@@ -711,21 +721,6 @@ async function createAgent(config = {}) {
     });*/
 }
 
-/*function showQRCode(data) {
-  const modal = document.getElementById("module-qr");
-  const qrContainer = document.getElementById("qrcode");
-
-  qrContainer.innerHTML = "";
-
-  new QRCode(qrContainer, {
-    text: data,
-    width: 256,
-    height: 256
-  });
-
-  modal.style.display = "block";
-}*/
-
 document.getElementById("qrClose").onclick = () => {
   document.getElementById("module-qr").style.display = "none";
 };
@@ -743,17 +738,6 @@ function deleteAgent(agentId) {
   agentRoot.remove();
   engine.destroy(agentId); // also tell backend
 }
-
-/*function resetAgentSlot(slot) {
-    slot.dataset.agentId = "";
-    slot.querySelector(".agent-name").value = "";
-    slot.querySelector(".agent-prompt").value = "";
-
-    const selects = slot.querySelectorAll(".agent-model");
-    selects.forEach(s => s.selectedIndex = 0);
-    const toggles = slot.querySelectorAll("input[type='checkbox']");
-    toggles.forEach(t => t.checked = false);
-}*/
 
 function resetAgentSlot(slot) {
     const slotId = slot.id;
@@ -832,12 +816,6 @@ function loadSavedAccent() {
         if (color === saved) el.classList.add('active');
     });
 }
-
-/*document.querySelector("#ingestBtn").addEventListener("click", () => {
-    window.api.openGDDialog();
-});*/
-
-
 
 // --- 2. Chat Background: Holographic Globe ---
 function initMatrixRain() {
@@ -1390,10 +1368,7 @@ async function handleChatSubmit(e) {
         }
 
         const content = await window.api.sendMessage(text);
-
-        if (!content) {
-            throw new Error("No response from backend");
-        }
+        console.log("BACKEND OUTPUT:", content);
 
         // Parse markdown
         const html = marked.parse(content);
@@ -1960,9 +1935,18 @@ function initModelControls(){
     if(tempRange && tempValue){
         tempRange.addEventListener("input",()=>{
             tempValue.textContent = tempRange.value;
+            window.api.setTemperature(tempRange.value)
         });
     }
+    const contRange = document.getElementById("contextRange");
+    const contValue = document.getElementById("contextValue");
 
+    if(contRange && contValue){
+        contRange.addEventListener("input",()=>{
+            contValue.textContent = contRange.value;
+            window.api.setMaxTokens(contRange.value)
+        });
+    }
 }
 
 function initWorkflow(){

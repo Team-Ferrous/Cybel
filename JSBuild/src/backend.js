@@ -1,17 +1,20 @@
 // backend.js
 import fs     from "fs";
+import os     from "os"
 import crypto from "crypto";
 import Store  from 'electron-store';
 import path   from 'path';
-import { dialog, ipcMain, shell, BrowserWindow }   from "electron";
+import { dialog, ipcMain, shell, BrowserWindow, app }   from "electron";
+// Import ES6 way
+import { rootPath } from 'electron-root-path';
 
 import OpenAI             from "openai";
 import { google       }   from "googleapis";
 import { createXai    }   from '@ai-sdk/xai';
 import { generateText }   from 'ai';
 import { error        }   from "node:console";
-import { pipeline, env     }   from "@huggingface/transformers";
-import { spawn        }   from "child_process";
+import { pipeline, env }   from "@huggingface/transformers";
+import { spawn         }   from "child_process";
 
 import { InstanceEngine } from "./instance_engine.js";
 import { embeddingDim,  embeddingIndex, embedText   } from "./embeddings.js";
@@ -40,12 +43,14 @@ const store = new Store();
 let CONFIG = {
     temperature:      0.75,
     contextWindow:    4096,
+    max_new_tokens:   200,
     generationMode:   "groq", //  "groq" | "local" | "grok" | "verso"
     model:            "openai/gpt-oss-20b",
     citation_options: 'enabled',
     tokenKey:          store.get("tokenKey") || null, //localStorage.getItem("groqKey") //process.env.GROQ_API_KEY,
     agent_instances:   engine.instances,
 };
+
 
 async function makeQRCode(){
     // Generate QR code as a Base64 data URL
@@ -227,13 +232,14 @@ function setTemperature(gen){
     CONFIG.temperature = gen;
 }
 
+function setMaxTokens(maxT){
+    CONFIG.max_new_tokens = maxT;
+}
+
 function setContextWindowKey(key){
     CONFIG.contextWindow = key;
 }
 
-function updateEngine(engine){
-    CONFIG.model = engine;
-}
 
 function setTokenKey(key){
     CONFIG.tokenKey = key;
@@ -245,7 +251,7 @@ function setEngineInstance(eng){
 }
 
 function setEngine(conf){
-    CONFIG.engine = conf;
+    CONFIG.model = conf;
     store.set("current-engine", CONFIG.engine)
 }
 
@@ -653,78 +659,102 @@ function retrieveTopK(queryVector, k = 5) {
     }
 }
 
-// ---------------------------
-// Generation
-// ---------------------------
-/*async function generateLocal(prompt) {
-    if(generator == null){
-        await loadModels();
+// This resolves whether we're in dev or dist
+function getAssetPath(...paths) {
+    const modelPath = path.join(
+        rootPath,
+        "dist",
+        "win-unpacked",
+        "resources",
+        "app.asar.unpacked",
+        "models",
+        "onnx-community"
+    );
+    const location   = path.join(rootPath, "resources", "app.asar.unpacked", "models", "onnx-community");
+    const isPackaged = process.resourcesPath.includes("app.asar");
+   
+    if (isPackaged) {
+        return location;
+    } else {
+        return modelPath; 
     }
-    //CONFIG.tokenKey
-    const result = await generator(prompt, { max_new_tokens: 200, temperature: 0.7 });
+}
 
-    if (!Array.isArray(result) || !result[0]?.generated_text) {
-        console.warn("generateLocal returned invalid output", result);
-        return "Error: LLM did not return text";
-    }
-    return result[0].generated_text;
-}*/
+function isValidOutput(output) {
+    if (!output) return false;
+    if (typeof output !== "string") return false;
 
-const GRANITE_FALLBACK = "onnx-community/granite-4.0-350m-ONNX-web"; //"ibm-granite/granite-4.0-h-tiny" //path.resolve("granite-4.0-h-tiny-Q5_K_M.gguf");
-//./resources/models/
+    const trimmed = output.trim();
 
+    if (trimmed.length < 5) return false;
+
+    // catch common silent failures
+    if (trimmed.toLowerCase().includes("error")) return false;
+    if (trimmed.toLowerCase().includes("undefined")) return false;
+    if (trimmed.toLowerCase().includes("nan")) return false;
+
+    return true;
+}
+
+const LOCAL_MODEL_DIR  = "./models/"
+const GRANITE_FALLBACK = "onnx-community/granite-4.0-350m-ONNX-web"; //getAssetPath('models', 'onnx-community') + path.sep; //= "./models/onnx-community/" //"onnx-community/granite-4.0-350m-ONNX-web"; //"ibm-granite/granite-4.0-h-tiny" //path.resolve("granite-4.0-h-tiny-Q5_K_M.gguf");
+
+//./assets/onnx-community/onnx/model.onnx
 async function generateLocal(prompt, modelPath = null) {
     const modelToUse = modelPath || CONFIG.model;
-
-    let pipe = await pipeline("text-generation", GRANITE_FALLBACK, {
-        //local_files_only: true,
-        trust_remote_code: true,
-        allowRemoteModels: true
-    });
     try {
-        pipe = await pipeline("text-generation", GRANITE_FALLBACK, {//path.join(LOCAL_MODEL_DIR, modelToUse), {
-            //local_files_only: true,    // <- force offline
+        const pipe = await pipeline("text-generation", path.join(LOCAL_MODEL_DIR, modelToUse), {
             trust_remote_code: true,
             allowRemoteModels: true
         });
-    } catch (err) {
-        console.warn(`Local model load failed for "${modelToUse}": ${err}. Using Granite fallback.`);
-        pipe = await pipeline("text-generation", GRANITE_FALLBACK, {
-            local_files_only: true,
-            trust_remote_code: false,
-            allowRemoteModels: true
-        });
-    }
 
-    try {
-        const result = await pipe(prompt, { max_new_tokens: 200, temperature: 0.7 });
-        if (!Array.isArray(result) || !result[0]?.generated_text) {
-            throw new Error("Pipeline returned invalid output");
+        const result = await pipe(prompt, {           
+            max_new_tokens: CONFIG.max_new_tokens, 
+            temperature: CONFIG.temperature
+        });
+
+        const output = result?.[0]?.generated_text;
+
+        if (!isValidOutput(output)) {
+            throw new Error("Primary model returned invalid output");
         }
-        return result[0].generated_text;
+
+        return output;
+
     } catch (err) {
-        console.error(`Generation failed on "${modelToUse}": ${err}. Using Granite fallback.`);
-        if (modelToUse !== GRANITE_FALLBACK) {
-            const fallbackPipe = await pipeline("text-generation", GRANITE_FALLBACK, {
-                local_files_only: true,
-                trust_remote_code: false,
+        console.warn("Primary failed, using fallback:", err);
+
+        try {
+            const pipe = await pipeline("text-generation", GRANITE_FALLBACK, { //"ibm-granite/granite-4.0-h-tiny", {
+                local_files_only:  false,
+                trust_remote_code: true,
+                allowRemoteModels: true,
             });
-            const fallbackResult = await fallbackPipe(prompt, { max_new_tokens: 200, temperature: 0.7 });
-            return fallbackResult[0]?.generated_text || "Error: Granite fallback failed";
+
+            const result = await pipe(prompt, {           
+                max_new_tokens: CONFIG.max_new_tokens, 
+                temperature: CONFIG.temperature
+            });
+
+            const fallbackOutput = result?.[0]?.generated_text;
+
+            if (!fallbackOutput) {
+                return "Error: fallback produced no output";
+            }
+
+            return fallbackOutput;
+
+        } catch (fallbackErr) {
+            console.error("Fallback also failed:", fallbackErr);
+            return "Error: both primary and fallback models failed";
         }
-        return "Error: Generation failed with Granite fallback";
     }
 }
 
 async function generateVerso(prompt) {
-    generator = async function(prompt, options = {}) {
-        return new Promise((resolve, reject) => {
-
-            const proc = spawn("python", [
-                "saguaro.py",
-                "--prompt",
-                prompt
-            ], {
+    try {
+        const result = await new Promise((resolve, reject) => {
+            const proc = spawn("python", ["-m", "./verso/Anvil/Saguaro/saguaro", "--prompt", prompt], {
                 env: {
                     ...process.env,
                     HIGHNOON_API_KEY: CONFIG.tokenKey
@@ -734,68 +764,84 @@ async function generateVerso(prompt) {
             let output = "";
 
             proc.stdout.on("data", d => output += d.toString());
+            proc.stderr.on("data", d => console.error(d.toString()));
 
             proc.on("close", code => {
                 if (code !== 0) reject("Saguaro failed");
-                else resolve([{ generated_text: output.trim() }]);
+                else resolve(output.trim());
             });
         });
-    };
 
-    const result = await generator(prompt, { max_new_tokens: 200, temperature: 0.7 });
-    if (!Array.isArray(result) || !result[0]?.generated_text) {
-        console.error(`Grok generation failed: ${err}, falling back to Granite`);
-        let resp = await generateGranite(prompt);
-        return resp.output_text;
-        
-         // "Error: could not generate response";
-        //console.warn("generateLocal returned invalid output", result);
-        //return "Error: LLM did not return text";
+        if (!result) throw new Error("Empty Verso output");
+
+        return result;
+
+    } catch (err) {
+        console.error("❌ Verso failed, falling back to Granite:", err);
+        return await generateLocal(prompt, GRANITE_FALLBACK);
     }
-    return result[0].generated_text;
 }
 
-/*async function generateVerso(prompt) {
-    if(generator == null){
-        await loadModels();
+// Optional: set cache directory
+env.cacheDir = path.join(process.cwd(), "models");
+const LOCAL_MODEL_PATH = path.join(
+    process.cwd(),
+    "models",
+    "granite-4.0-h-tiny-Q5_K_M.gguf"
+);
+
+// Hugging Face fallback (replace with actual repo if needed)
+const HF_MODEL_ID = "ibm-granite/granite-4.0-h-tiny";
+async function getModelSource() {
+    if (fs.existsSync(LOCAL_MODEL_PATH)) {
+        console.log("✅ Using local model:", LOCAL_MODEL_PATH);
+        return LOCAL_MODEL_PATH;
+    } else {
+        console.log("⬇️ Local model missing, downloading from HF...");
+        return HF_MODEL_ID;
     }
-    //CONFIG.tokenKey
-    const result = await generator(prompt, { max_new_tokens: 200, temperature: 0.7 });
-
-    if (!Array.isArray(result) || !result[0]?.generated_text) {
-        console.warn("generateLocal returned invalid output", result);
-        return "Error: LLM did not return text";
-    }
-    return result[0].generated_text;
-}*/
-
-
-// Hardcoded path to the bundled model
-const GRANITE_MODEL_PATH = "granite-4.0-h-tiny-Q5_K_M.gguf" //path.join(
-    //process.resourcesPath,
-    //"models",
-    //"granite-4.0-h-tiny-Q5_K_M.gguf"
-//);
+}
 
 async function generateGranite(prompt) {
-    if (!fs.existsSync(GRANITE_MODEL_PATH)) {
-        throw new Error("Granite model not found at " + GRANITE_MODEL_PATH);
-    }
+    const modelSource = await getModelSource();
 
-    // Initialize the pipeline with the hardcoded model
-    const pipe = await pipeline("text-generation", GRANITE_MODEL_PATH);
+    const pipe = await pipeline("text-generation", modelSource);
 
-    // Generate text
-    const result = await pipe(prompt, { max_new_tokens: 200, temperature: 0.7 });
+    const result = await pipe(prompt, {
+        max_new_tokens: CONFIG.max_new_tokens,
+        temperature:    CONFIG.temperature,
+    });
 
     if (!Array.isArray(result) || !result[0]?.generated_text) {
         console.warn("generateGranite returned invalid output", result);
         return "Error: LLM did not return text";
     }
+
     return result[0].generated_text;
 }
 
 async function generateGroq(prompt) {
+    try {
+        const client = new OpenAI({
+            apiKey: CONFIG.tokenKey,
+            baseURL: "https://api.groq.com/openai/v1",
+        });
+        const response = await client.responses.create({
+            input: prompt,
+            model: CONFIG.model,
+            temperature: CONFIG.temperature
+        });
+        if (!response?.output_text) {
+            throw new Error("Invalid Groq output");
+        }
+        return response.output_text;
+    } catch (err) {
+        console.error("❌ Groq failed, falling back to Granite:", err);
+        return await generateLocal(prompt, GRANITE_FALLBACK);
+    }
+}
+
+/*async function generateGroq(prompt) {
     try {
         generator = new OpenAI({
             apiKey: CONFIG.tokenKey,
@@ -818,9 +864,28 @@ async function generateGroq(prompt) {
         let resp = await generateGranite(prompt);
         return resp.output_text; // "Error: could not generate response";
     }
-}
+}*/
 
-async function generateGrok(model, query) {
+async function generateGrok(model, prompt) {
+    try {
+        const client = createXai({ apiKey: CONFIG.tokenKey });
+
+        const { text } = await generateText({
+            model: client.responses(model),
+            system: 'You are Grok, a helpful assistant.',
+            prompt
+        });
+
+        if (!text) throw new Error("Invalid Grok output");
+
+        return text;
+
+    } catch (err) {
+        console.error("❌ Grok failed, falling back to Granite:", err);
+        return await generateLocal(prompt, GRANITE_FALLBACK);
+    }
+}
+/*async function generateGrok(model, query) {
     try {
         generator = createXai({ apiKey: CONFIG.tokenKey });
         const { text } = await generateText({
@@ -836,7 +901,7 @@ async function generateGrok(model, query) {
         let resp = await generateGranite(prompt);
         return resp.output_text; // "Error: could not generate response";
     }
-}
+}*/
 
 async function generateResponse(model="grok-4-1-fast-reasoning", prompt) {
     switch (CONFIG.generationMode) {
@@ -964,7 +1029,7 @@ async function sendMessage(userInput) {
 
     } catch (err) {
         console.error("Error generating response:", err);
-        return null;
+        return err;
     }
 }
 
@@ -1051,6 +1116,7 @@ async function generateAgentResponse(agent, input, k = 5) {
 export  {
     setTokenKey,
     setTemperature,
+    setMaxTokens,
     setContextWindowKey,
     setGenerationMode,
     saveDocument,
@@ -1066,7 +1132,7 @@ export  {
     createGroqClient,
     setEngine, 
     getEngine,
-    updateEngine,
+    setEngineInstance,
     getEngineInstance,
     authorizeSheets,
     ingestSpreadsheetToFAISS,
